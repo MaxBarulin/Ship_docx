@@ -118,7 +118,14 @@ def deck_shell(name, sill=800, window=1_500, cabins=True):
     parts += lines.band(points, level + sill, window, 60, dh.GLAZING,
                         dh.MAT_GLASS, "остекление")
     parts += lines.band(points, level + sill + window, height - sill - window,
-                        t, dh.SUPERSTRUCTURE, dh.MAT_PAINT, "фриз борта")
+                        t, dh.SUPERSTRUCTURE, dh.MAT_PAINT, "фриз борта",
+                        tilt=9.0)
+    # Карниз кладётся снаружи борта: его контур раздвинут на толщину
+    # бортовой панели, иначе он совпадает с фризом гранью в грань и кернел
+    # считает касание пересечением на всю толщину.
+    parts += lines.eaves(
+        lines.clip_to_hull(lines.inset(points, -(t + 40)), margin=260),
+        level + height - 90, reach=260)
     if cabins:
         parts += piers(points, level, sill, window, name)
     return parts
@@ -211,7 +218,8 @@ def build(explode=0, interior=True, half=False):
                                if row[3] > 400])
     tier(1, lines.deck_slab(promenade, ship.MAIN_DECK, 120, dh.DECK_TEAK,
                             dh.MAT_TEAK, "главная палуба"))
-    tier(1, lines.railing(promenade, ship.MAIN_DECK))
+    tier(1, lines.glass_railing(lines.inset(promenade, 220),
+                                ship.MAIN_DECK))
     tier(1, deck_shell("главная", sill=350, window=2_000, cabins=False))
     for side in (-1, 1):
         tier(1, dh.gangway(104_000, side, ship.MAIN_DECK))
@@ -236,25 +244,27 @@ def build(explode=0, interior=True, half=False):
     sun = deck_contour("солнечная")
     tier(5, lines.deck_slab(sun, ship.SUN_DECK, 120, dh.DECK_TEAK,
                             dh.MAT_TEAK, "солнечная палуба"))
-    tier(5, lines.band(sun, ship.SUN_DECK, 1_050, 40, dh.GLASS_RAIL,
-                       dh.MAT_GLASS, "ограждение"))
-    tier(5, lines.railing(sun, ship.SUN_DECK, height=1_080, post_step=3_200))
+    tier(5, lines.glass_railing(lines.inset(sun, 160), ship.SUN_DECK,
+                                height=1_150))
     tier(5, dh.solar_array(48_000, 30_000, ship.SUN_DECK, 9_000))
-    tier(5, lines.railing(sun, ship.SUN_DECK, height=1_080, post_step=3_200)
-          if False else [])
     # козырёк над зоной отдыха: даёт тень и ломает плоскую крышу, из-за
     # которой верхняя палуба читалась пустой плитой
     canopy_x0, canopy_len = 30_000, 22_000
     canopy = lines.contour(deck_stations(canopy_x0, canopy_x0 + canopy_len,
                                          4_600, stern=3_000, bow=5_000))
-    tier(5, lines.deck_slab(canopy, ship.SUN_DECK + 2_600, 140,
+    # Высота козырька выбрана от подмостового габарита, а не от удобства:
+    # на 2.6 м он поднимал верх судна до 15.7 м при пределе 15.5, и модель
+    # переставала проходить под мостами. 2.3 м над палубой — рабочая
+    # высота прохода, и запас до предела сохраняется.
+    canopy_height = 2_300
+    tier(5, lines.deck_slab(canopy, ship.SUN_DECK + canopy_height, 140,
                             dh.SUPERSTRUCTURE, dh.MAT_PAINT, "козырёк"))
     for x in (canopy_x0 + 3_000, canopy_x0 + canopy_len - 3_000):
         for side in (-1, 1):
             # стойка доходит до НИЗА козырька, а не до его верха: иначе
             # она протыкает плиту насквозь на её толщину
-            tier(5, _part(220, 220, 2_600 - 140, (x, side * 3_800 - 110,
-                                                  ship.SUN_DECK),
+            tier(5, _part(220, 220, canopy_height - 140,
+                          (x, side * 3_800 - 110, ship.SUN_DECK),
                           dh.RAIL, dh.MAT_METAL, "стойка козырька"))
 
     tier(5, wheelhouse(118_000, ship.CABIN_DECK_3))

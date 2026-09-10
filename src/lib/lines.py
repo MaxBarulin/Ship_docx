@@ -70,6 +70,72 @@ def simplify(points, tolerance=25.0):
     return kept
 
 
+def inset(points, amount):
+    """Сдвинуть контур на amount ПО НОРМАЛИ: внутрь при amount > 0.
+
+    Численно, а не kernel-offset: на плотных контурах offset возвращает
+    Null. И именно по нормали, а не по оси Y: на прямом борту это одно и
+    то же, но на скруглениях носа и кормы сегмент идёт под углом, и сдвиг
+    по Y уводит точку вдоль контура вместо поперёк — карниз тогда садится
+    прямо во фриз, хотя по числам «отстоит» на нужную величину.
+    """
+    if len(points) < 3:
+        return list(points)
+
+    result = []
+    count = len(points)
+    for index, (x, y) in enumerate(points):
+        px, py = points[index - 1]
+        nx, ny = points[(index + 1) % count]
+
+        normal_x, normal_y = 0.0, 0.0
+        for (ax, ay), (bx, by) in (((px, py), (x, y)), ((x, y), (nx, ny))):
+            dx, dy = bx - ax, by - ay
+            length = math.hypot(dx, dy)
+            if length < 1e-6:
+                continue
+            # Нормаль НАРУЖУ. Контур обходится против часовой: правый борт
+            # от кормы к носу, затем левый обратно, — поэтому наружу
+            # смотрит (-dy, dx), а не (dy, -dx). На прямом борту знак не
+            # виден, а на скруглениях уводит вынос внутрь корпуса.
+            normal_x += -dy / length
+            normal_y += dx / length
+        norm = math.hypot(normal_x, normal_y)
+        if norm < 1e-6:
+            result.append((x, y))
+            continue
+        normal_x, normal_y = normal_x / norm, normal_y / norm
+
+        shifted = (x - normal_x * amount, y - normal_y * amount)
+        if abs(shifted[1]) < 150:
+            continue
+        result.append(shifted)
+    return result
+
+
+def clip_to_hull(points, margin=0.0):
+    """Ограничить контур обводом КОРПУСА по палубе.
+
+    Всё, что выносится наружу от надстройки — карнизы, полки, привальные
+    брусья, — в оконечностях упирается в то, что корпус там уже. Обрезка по
+    корпусу оставляет вынос ровно там, где под ним есть борт.
+    """
+    from scipy.interpolate import PchipInterpolator
+
+    from . import ship
+
+    xs = [row[0] for row in ship.STATIONS]
+    curve = PchipInterpolator(xs, [row[3] for row in ship.STATIONS])
+
+    result = []
+    for x, y in points:
+        limit = float(curve(min(max(x, xs[0]), xs[-1]))) - margin
+        if limit <= 200:
+            continue
+        result.append((x, min(y, limit) if y > 0 else max(y, -limit)))
+    return result
+
+
 def deck_face(points, z):
     """Палубная плита по контуру."""
     wire = bd.Polyline(*[(x, y, z) for x, y in points], close=True)
@@ -88,7 +154,7 @@ def deck_slab(points, z, thickness=120, color=None, material=None,
 
 
 def band(points, z, height, thickness, color, material, label,
-         skip_short=400.0):
+         skip_short=400.0, tilt=0.0):
     """Пояс по контуру: по одной плоской панели на сегмент.
 
     Панель ставится серединой на сегмент и разворачивается по его
@@ -111,7 +177,12 @@ def band(points, z, height, thickness, color, material, label,
         panel = _part(length + thickness, thickness, height,
                       (-(length + thickness) / 2, 0, 0),
                       color, material, label)
-        placed = bd.Pos((x1 + x2) / 2, (y1 + y2) / 2, z) * bd.Rot(0, 0, angle) * panel
+        # tilt заваливает панель внутрь вокруг оси сегмента: положительный
+        # угол уводит верх к диаметральной плоскости. Вертикальный борт по
+        # всей высоте — примета судов прошлого поколения; завал верхней
+        # ленты даёт подрез под палубой и ломает сплошную вертикаль.
+        placed = (bd.Pos((x1 + x2) / 2, (y1 + y2) / 2, z)
+                  * bd.Rot(0, 0, angle) * bd.Rot(tilt, 0, 0) * panel)
         placed.label = label
         placed.color = panel.color
         placed.cad_material = dict(material)
@@ -156,6 +227,19 @@ def glass_railing(points, z, height=1_100, panel_gap=40):
     parts += band(points, z + height - 60, 60, 90, dh.RAIL, dh.MAT_METAL,
                   "поручень")
     return parts
+
+
+def eaves(points, z, reach=320, thickness=90, color=None, material=None,
+          label="карниз"):
+    """Выносная полка по контуру палубы.
+
+    Горизонтальная артикуляция: полка отбивает палубу от палубы, и борт
+    перестаёт читаться сплошной стеной остекления в четыре этажа.
+    """
+    from . import deckhouse as dh
+
+    return band(points, z, thickness, reach, color or dh.SUPERSTRUCTURE,
+                material or dh.MAT_PAINT, label)
 
 
 def railing(points, z, height=1_100, post_step=2_400):

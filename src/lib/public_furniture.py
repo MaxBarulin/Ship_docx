@@ -265,6 +265,12 @@ def stair_flight(rise=2_700, run=3_600, width=1_200):
                            STONE, MAT_STONE, "ступень"))
     parts.append(_part(1_400, width, 120, (run, 0, rise - 120), STONE,
                        MAT_STONE, "площадка трапа"))
+    # косоур: ступени опираются на него, а не висят каждая сама по себе
+    for side in (0, width - 90):
+        parts.append(_part(run, 90, 300, (0, side, 0), METAL, MAT_METAL,
+                           "косоур"))
+        parts.append(_part(run, 90, 300, (0, side, rise - 400), METAL,
+                           MAT_METAL, "косоур"))
     for side in (0, width - 60):
         parts.append(_part(run, 60, 1_000, (0, side, rise * 0.45),
                            METAL, MAT_METAL, "поручень трапа"))
@@ -278,3 +284,34 @@ def lift_shaft(width=1_800, depth=1_800, height=2_700):
         _part(width - 400, 60, 2_100, (200, -60, 0), DARK, MAT_METAL,
               "двери лифта"),
     ]
+
+
+def banquette(length=3_200, depth=700):
+    """Диван-банкетка вдоль борта: у окон сидят на диване, а не на стуле."""
+    return [
+        _part(length, depth, 420, (0, 0, 0), TEXTILE, MAT_TEXTILE, "банкетка"),
+        _part(length, 180, 600, (0, depth - 180, 420), TEXTILE, MAT_TEXTILE,
+              "спинка банкетки"),
+    ]
+
+
+def table_rect(width=1_400, depth=800):
+    """Прямоугольный стол к банкетке."""
+    return [
+        _part(width, depth, 60, (0, 0, 700), WOOD, MAT_WOOD, "стол"),
+        _part(160, 160, 700, ((width - 160) / 2, (depth - 160) / 2, 0),
+              METAL, MAT_METAL, "опора стола"),
+    ]
+
+
+def pendant_light(diameter=420, drop=900):
+    """Подвесной светильник: вертикальная деталь, которой не хватает залу."""
+    return [
+        _part(60, 60, drop, (diameter / 2 - 30, diameter / 2 - 30,
+                             HEIGHT_HINT - drop), METAL, MAT_METAL, "подвес"),
+        _part(diameter, diameter, 220, (0, 0, HEIGHT_HINT - drop - 220),
+              STONE, MAT_STONE, "плафон"),
+    ]
+
+
+HEIGHT_HINT = 2_350

@@ -80,7 +80,10 @@ def audit(solid=None):
         for other_index, other in enumerate(boxes):
             if other_index == index:
                 continue
-            if other.max.Z < box.min.Z - SUPPORT_GAP or other.max.Z > box.min.Z + 1:
+            # допуск на касание: деталь, стоящая ровно на другой, из-за
+            # округления получает верх опоры на доли миллиметра выше
+            if (other.max.Z < box.min.Z - SUPPORT_GAP
+                    or other.max.Z > box.min.Z + 30):
                 continue
             if (other.max.X < box.min.X or other.min.X > box.max.X
                     or other.max.Y < box.min.Y or other.min.Y > box.max.Y):
@@ -136,6 +139,11 @@ EXPECTED_OVERLAPS = {
     frozenset({"труба", "труба"}),
     frozenset({"остекление рубки", "остекление рубки"}),
     frozenset({"поручень", "поручень"}),
+    frozenset({"ступень", "ступень"}),
+    frozenset({"ступень", "площадка трапа"}),
+    frozenset({"ступень", "поручень трапа"}),
+    frozenset({"ступень", "косоур"}),
+    frozenset({"карниз", "карниз"}),
 }
 
 

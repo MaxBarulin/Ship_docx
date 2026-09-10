@@ -50,7 +50,10 @@ HEIGHT = ship.CEILING_HEIGHT
 DOOR_WIDTH = 800
 POD_DEPTH = 1_700
 FLOOR = 40  # толщина настила: всё вертикальное встаёт НА него, а не в него
-SKIN_GAP = 30  # зазор начинки от борта: касание «в ноль» кернел считает
+# Зазор начинки от борта. Считается от ЗАВАЛА фриза: наклонённая верхняя
+# лента борта уходит внутрь примерно на 60 мм, и начинка, отставленная на
+# 30 мм, попадала прямо в неё.
+SKIN_GAP = 130  # касание «в ноль» кернел считает
 # пересечением на всю толщину панели, и отчёт о коллизиях наполняется
 # сотнями срабатываний там, где детали просто соприкасаются
 
@@ -176,7 +179,7 @@ def centre_block(deck_name, level):
             moved.label, moved.color = item.label, item.color
             parts.append(moved)
         for item in pf.lift_shaft(1_800, 1_800, HEIGHT):
-            moved = bd.Pos(zone.x0 + inset + 5_400, 200, base + 120) * item
+            moved = bd.Pos(zone.x0 + inset + 5_400, -700, base + 120) * item
             moved.label, moved.color = item.label, item.color
             parts.append(moved)
     return parts
@@ -221,16 +224,22 @@ def deck_interior(deck_name, level, half_beam=None):
         for cabin in cabins:
             parts += cabin_walls(cabin, level)
 
-        # настилы коридоров и центрального блока по каютной зоне
-        x_from, x_to = min(starts), max(ends)
-        for sign in (1, -1):
-            y = ship.CENTRE_EDGE if sign > 0 else -ship.CORRIDOR_EDGE
-            parts.append(_part(x_to - x_from, ship.CORRIDOR_WIDTH, FLOOR,
-                               (x_from, y, level), FLOOR_CORRIDOR, MAT_WALL,
-                               "настил коридора"))
-        parts.append(_part(x_to - x_from, ship.CENTRE_BLOCK, FLOOR,
-                           (x_from, -ship.CENTRE_EDGE, level), FLOOR_CENTRE,
-                           MAT_WALL, "настил центрального блока"))
+        # Настилы коридоров и центрального блока кладутся ПОД КАЖДОЙ каютной
+        # зоной по отдельности, а не одной полосой от первой каюты до
+        # последней: между каютными зонами стоят общественные помещения со
+        # своей отделкой, и сплошная полоса ложилась поверх них.
+        for zone in ar.place(deck_name):
+            if zone.kind != "cabins":
+                continue
+            for sign in (1, -1):
+                y = ship.CENTRE_EDGE if sign > 0 else -ship.CORRIDOR_EDGE
+                parts.append(_part(zone.length, ship.CORRIDOR_WIDTH, FLOOR,
+                                   (zone.x0, y, level), FLOOR_CORRIDOR,
+                                   MAT_WALL, "настил коридора"))
+            parts.append(_part(zone.length, ship.CENTRE_BLOCK, FLOOR,
+                               (zone.x0, -ship.CENTRE_EDGE, level),
+                               FLOOR_CENTRE, MAT_WALL,
+                               "настил центрального блока"))
 
     parts += centre_block(deck_name, level)
     parts += zone_walls(deck_name, level, half_beam)
@@ -363,7 +372,27 @@ def furnish_zone(zone, deck_name, level, half_at):
     parts = []
 
     if "ресторан" in name or "кафе" in name:
-        parts += _grid(area, 2_700, 2_700, pf.dining_set, half_at, z)
+        # Зал делится продольным проходом: столы у бортов на банкетках, в
+        # середине — свободные круглые столы. Регулярная сетка во всю
+        # ширину читается как столовая, а не как ресторан, и не оставляет
+        # прохода официанту.
+        aisle = 1_600
+        step = 2_700
+        x = x0
+        while x + step <= x1:
+            local = min(half_at(x), half_at(x + step)) - 350
+            for side in (-1, 1):
+                edge = side * local
+                parts += _put(pf.banquette(step - 300, 700),
+                              x + 150, edge - 700 if side > 0 else edge, z)
+                parts += _put(pf.table_rect(1_400, 800), x + 500,
+                              edge - 1_700 if side > 0 else edge + 900, z)
+            if local > aisle / 2 + 1_800:
+                parts += _put(pf.dining_set(1_100, 4), x + 300,
+                              -1_100 / 2 - 550, z)
+            parts += _put(pf.pendant_light(), x + step / 2 - 210, -210,
+                          z + 0)
+            x += step
     elif "бассейн" in name:
         parts += _put(pf.pool(min(x1 - x0 - 2_000, 9_000), min(2 * half - 1_500,
                                                               4_600)),
@@ -373,9 +402,14 @@ def furnish_zone(zone, deck_name, level, half_at):
     elif "бар" in name or "салон" in name or "холл" in name:
         parts += _put(pf.bar_counter(min(x1 - x0 - 2_000, 6_000)), x0 + 800,
                       half - 3_200, z)
-        for index in range(int((x1 - x0 - 8_000) // 3_200)):
-            parts += _put(pf.lounge(), x0 + 7_500 + index * 3_200,
-                          -half + 600, z)
+        # мягкая зона вдоль обоих бортов и столики между ними
+        for index in range(int((x1 - x0 - 8_000) // 3_400)):
+            base_x = x0 + 7_500 + index * 3_400
+            parts += _put(pf.lounge(), base_x, -half + 600, z)
+            parts += _put(pf.banquette(2_600, 700), base_x, half - 1_500, z)
+            parts += _put(pf.table_rect(1_200, 700), base_x + 400,
+                          half - 2_600, z)
+            parts += _put(pf.pendant_light(), base_x + 1_200, -400, z)
     elif "конференц" in name:
         parts += _put(pf.theatre_rows(x1 - x0, 2 * half), x0, -half, z)
     elif "фитнес" in name or "спа" in name:
