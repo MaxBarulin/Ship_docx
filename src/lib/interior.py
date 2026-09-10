@@ -163,11 +163,22 @@ def centre_block(deck_name, level):
         if "трап" not in name and "лифт" not in name and "вестибюль" not in name:
             continue
         inset = ship.PARTITION + 40
-        parts.append(_part(min(zone.length - 2 * inset, 9_000),
-                           ship.CENTRE_BLOCK - 2 * inset, HEIGHT,
-                           (zone.x0 + inset, -ship.CENTRE_EDGE + inset,
-                            level + FLOOR),
-                           SHAFT, MAT_WALL, "шахта трапов и лифтов"))
+        block_len = min(zone.length - 2 * inset, 9_000)
+        base = level + FLOOR
+        # шахта, а в ней марш и лифт: раньше блок был глухим объёмом и на
+        # разрезе читался как ещё одна переборка
+        parts.append(_part(block_len, ship.CENTRE_BLOCK - 2 * inset, 120,
+                           (zone.x0 + inset, -ship.CENTRE_EDGE + inset, base),
+                           SHAFT, MAT_WALL, "площадка трапов"))
+        for item in pf.stair_flight(ship.DECK_PITCH, 3_600, 1_200):
+            moved = bd.Pos(zone.x0 + inset + 400, -ship.CENTRE_EDGE + 400,
+                           base + 120) * item
+            moved.label, moved.color = item.label, item.color
+            parts.append(moved)
+        for item in pf.lift_shaft(1_800, 1_800, HEIGHT):
+            moved = bd.Pos(zone.x0 + inset + 5_400, 200, base + 120) * item
+            moved.label, moved.color = item.label, item.color
+            parts.append(moved)
     return parts
 
 
@@ -223,6 +234,7 @@ def deck_interior(deck_name, level, half_beam=None):
 
     parts += centre_block(deck_name, level)
     parts += zone_walls(deck_name, level, half_beam)
+    parts += zone_floors(deck_name, level)
     parts += furnish(deck_name, level)
     return parts
 
@@ -392,9 +404,33 @@ def furnish_zone(zone, deck_name, level, half_at):
         for side in (-1, 1):
             parts += _put(pf.main_engine(min(x1 - x0 - 2_000, 7_000)),
                           x0 + 1_000, side * 3_200 - 1_300, z)
-    elif "танки" in name or "балласт" in name or "аккумулятор" in name:
+    elif "аккумулятор" in name:
+        parts += _grid(area, 3_000, 1_600, pf.battery_rack, half_at, z)
+    elif "танки" in name or "балласт" in name:
         parts += _put(pf.tank(x1 - x0 - 600, 2 * half - 1_200), x0 + 300,
                       -half + 600, z)
+    elif "электростанц" in name or "грщ" in name:
+        for index in range(2):
+            parts += _put(pf.diesel_generator(), x0 + 600,
+                          -half + 900 + index * 2_400, z)
+        parts += _put(pf.switchboard(), x0 + 4_600, half - 1_800, z)
+    elif "насосн" in name:
+        parts += _grid(area, 3_000, 2_400, pf.pump_station, half_at, z)
+    elif "кондиционир" in name or "вентиляц" in name:
+        parts += _grid(area, 3_800, 2_600, pf.air_conditioning, half_at, z)
+    elif "очистка стоков" in name or "опреснит" in name:
+        parts += _put(pf.sewage_plant(), x0 + 800, -half + 800, z)
+        parts += _put(pf.fresh_water_plant(), x0 + 800, half - 2_600, z)
+    elif "рулевая машина" in name:
+        parts += _put(pf.steering_gear(), x0 + 600, -1_300, z)
+    elif "подруливающ" in name or "форпик" in name:
+        parts += _put(pf.bow_thruster(), x0 + 600, -1_200, z)
+    elif "гребные" in name or "ахтерпик" in name:
+        for side in (-1, 1):
+            parts += _put(pf.stabilizer(), x0 + 1_200,
+                          side * (half - 1_400) - 1_400, z)
+    elif "прачечн" in name or "бытов" in name:
+        parts += _grid(area, 2_600, 2_200, pf.galley_unit, half_at, z)
     return parts
 
 
@@ -406,4 +442,50 @@ def furnish(deck_name, level):
         if zone.kind == "cabins":
             continue
         parts += furnish_zone(zone, deck_name, level, half_at)
+    return parts
+
+
+# --- Отделка общественных зон -----------------------------------------------
+
+ZONE_FLOOR = {
+    "ресторан": srgb("#8C6A44"),
+    "кафе": srgb("#8C6A44"),
+    "бар": srgb("#5C4030"),
+    "салон": srgb("#5C4030"),
+    "холл": srgb("#7A6A58"),
+    "вестибюль": srgb("#7A6A58"),
+    "конференц": srgb("#3E4A52"),
+    "фитнес": srgb("#4A5A52"),
+    "спа": srgb("#4A5A52"),
+    "боулинг": srgb("#6B5638"),
+    "бильярд": srgb("#6B5638"),
+    "магазин": srgb("#8A8073"),
+    "медпункт": srgb("#C9CFCF"),
+    "камбуз": srgb("#AEB6B8"),
+    "прачечная": srgb("#AEB6B8"),
+    "детская": srgb("#9C7A55"),
+}
+
+
+def zone_floors(deck_name, level):
+    """Настил общественной зоны в свой цвет.
+
+    Отделка не украшение: на плане и в разрезе по ней видно границу зоны
+    без подписи, а зал, отделённый только переборкой, сливается с соседним.
+    """
+    half_at = _zone_half_beam(deck_name)
+    parts = []
+    for zone in ar.place(deck_name):
+        if zone.kind not in ("service", "open"):
+            continue
+        colour = next((c for key, c in ZONE_FLOOR.items()
+                       if key in zone.name.lower()), None)
+        if colour is None:
+            continue
+        area = _usable(zone, half_at, margin=120)
+        if area is None:
+            continue
+        x0, x1, half = area
+        parts.append(_part(x1 - x0, 2 * half, FLOOR, (x0, -half, level),
+                           colour, MAT_WALL, f"настил зоны: {zone.name}"))
     return parts

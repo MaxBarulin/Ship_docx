@@ -22,20 +22,7 @@ from .furniture import _part
 from .hull import hull_solid
 
 # уровень -> (начало, конец, полуширота надстройки)
-# Солнечная палуба кончается ДО рубки: иначе рубка оказывается под ней,
-# внутри объёма надстройки, и её попросту не видно. Средняя и шлюпочная
-# идут одним обводом — вертикальный борт на две палубы вместо лишнего
-# уступа, силуэт от этого только собраннее.
-DECK_SHAPE = {
-    "главная": (13_000, 137_000, 6_400),
-    "средняя": (13_000, 135_000, 6_400),
-    "шлюпочная": (13_000, 135_000, 6_400),
-    # полуширота всех каютных палуб равна ship.SUPERSTRUCTURE_HALF: на
-    # 6.2 м каюта глубиной 3.5 м за коридором просто не помещается, и все
-    # двадцать кают верхней палубы торчали сквозь борт
-    "верхняя": (18_000, 128_000, 6_400),
-    "солнечная": (24_000, 106_000, 5_400),
-}
+DECK_SHAPE = ship.DECK_SHAPE
 
 DECK_LEVEL = {
     "главная": ship.MAIN_DECK,
@@ -96,9 +83,13 @@ def piers(points, level, sill, window, name):
     for segments in runs.values():
         for (ax, ay), (bx, by) in segments:
             start, end = min(ax, bx), max(ax, bx)
-            count = int((end - start) // ship.MODULE)
+            # Шаг простенков — два модуля каюты, а не один: частая решётка
+            # простенков читается как остекление прошлого поколения, тогда
+            # как современное судно несёт сплошную ленту стекла.
+            step = ship.MODULE * 2
+            count = int((end - start) // step)
             for index in range(count + 1):
-                x = start + index * ship.MODULE
+                x = start + index * step
                 if x > end:
                     break
                 # простенок ложится снаружи борта: изнутри на той же линии
@@ -251,6 +242,21 @@ def build(explode=0, interior=True, half=False):
     tier(5, dh.solar_array(48_000, 30_000, ship.SUN_DECK, 9_000))
     tier(5, lines.railing(sun, ship.SUN_DECK, height=1_080, post_step=3_200)
           if False else [])
+    # козырёк над зоной отдыха: даёт тень и ломает плоскую крышу, из-за
+    # которой верхняя палуба читалась пустой плитой
+    canopy_x0, canopy_len = 30_000, 22_000
+    canopy = lines.contour(deck_stations(canopy_x0, canopy_x0 + canopy_len,
+                                         4_600, stern=3_000, bow=5_000))
+    tier(5, lines.deck_slab(canopy, ship.SUN_DECK + 2_600, 140,
+                            dh.SUPERSTRUCTURE, dh.MAT_PAINT, "козырёк"))
+    for x in (canopy_x0 + 3_000, canopy_x0 + canopy_len - 3_000):
+        for side in (-1, 1):
+            # стойка доходит до НИЗА козырька, а не до его верха: иначе
+            # она протыкает плиту насквозь на её толщину
+            tier(5, _part(220, 220, 2_600 - 140, (x, side * 3_800 - 110,
+                                                  ship.SUN_DECK),
+                          dh.RAIL, dh.MAT_METAL, "стойка козырька"))
+
     tier(5, wheelhouse(118_000, ship.CABIN_DECK_3))
     tier(5, dh.mast(118_000, ship.CABIN_DECK_3 + 3_020))
     tier(5, funnel(88_000, ship.SUN_DECK))

@@ -182,3 +182,99 @@ def tank(width, depth, height=1_400):
     return [
         _part(width, depth, height, (0, 0, 0), METAL, MAT_METAL, "цистерна"),
     ]
+
+
+# --- Судовые системы: схематичные блоки -------------------------------------
+# Не модели агрегатов, а занятое ими место с подписью. На защите вопрос
+# звучит «где у вас ГРЩ и куда идёт вентиляция», и ответом служит блок в
+# отсеке, а не обещание в записке.
+
+SYSTEM = srgb("#6E7B82")
+SYSTEM_HOT = srgb("#8C4A3A")
+SYSTEM_COLD = srgb("#3F6E8C")
+SYSTEM_ELECTRIC = srgb("#8A7A3A")
+
+
+def system_block(width, depth, height, label, color=None):
+    return [_part(width, depth, height, (0, 0, 0), color or SYSTEM,
+                  MAT_METAL, label)]
+
+
+def diesel_generator():
+    return system_block(3_400, 1_600, 1_900, "дизель-генератор", SYSTEM_HOT)
+
+
+def switchboard():
+    return system_block(4_000, 900, 2_100, "главный распределительный щит",
+                        SYSTEM_ELECTRIC)
+
+
+def pump_station():
+    return system_block(2_400, 1_800, 1_600,
+                        "насосная: балластная, осушительная, пожарная")
+
+
+def sewage_plant():
+    return system_block(3_600, 2_200, 2_000,
+                        "станция очистки сточных вод", SYSTEM_COLD)
+
+
+def fresh_water_plant():
+    return system_block(2_600, 1_800, 1_900, "водоопреснительная установка",
+                        SYSTEM_COLD)
+
+
+def air_conditioning():
+    return system_block(3_200, 2_000, 2_100,
+                        "центральный кондиционер и вентагрегаты", SYSTEM_COLD)
+
+
+def steering_gear():
+    return system_block(3_000, 2_600, 1_800, "рулевая машина")
+
+
+def bow_thruster():
+    return system_block(2_400, 2_400, 2_200, "подруливающее устройство")
+
+
+def stabilizer():
+    return system_block(1_800, 2_800, 1_200, "успокоитель качки")
+
+
+def battery_rack():
+    return system_block(2_600, 1_200, 1_800,
+                        "аккумуляторные батареи гибридной установки",
+                        SYSTEM_ELECTRIC)
+
+
+# --- Трапы и лифты ----------------------------------------------------------
+
+def stair_flight(rise=2_700, run=3_600, width=1_200):
+    """Лестничный марш с площадкой: ступени задают уклон, а не намекают.
+
+    Марш строится реальными ступенями, потому что уклон — то, что на разрезе
+    сразу видно неправильным: наклонная плита читается как пандус.
+    """
+    steps = max(8, int(rise // 180))
+    step_rise = rise / steps
+    step_run = run / steps
+    parts = []
+    for index in range(steps):
+        parts.append(_part(step_run + 40, width, step_rise + 30,
+                           (index * step_run, 0, index * step_rise),
+                           STONE, MAT_STONE, "ступень"))
+    parts.append(_part(1_400, width, 120, (run, 0, rise - 120), STONE,
+                       MAT_STONE, "площадка трапа"))
+    for side in (0, width - 60):
+        parts.append(_part(run, 60, 1_000, (0, side, rise * 0.45),
+                           METAL, MAT_METAL, "поручень трапа"))
+    return parts
+
+
+def lift_shaft(width=1_800, depth=1_800, height=2_700):
+    return [
+        _part(width, depth, height, (0, 0, 0), METAL, MAT_METAL,
+              "шахта лифта"),
+        _part(width - 400, 60, 2_100, (200, -60, 0), DARK, MAT_METAL,
+              "двери лифта"),
+    ]

@@ -142,6 +142,22 @@ def side_runs(points, min_x, max_x, min_half_beam):
     return runs
 
 
+def glass_railing(points, z, height=1_100, panel_gap=40):
+    """Стеклянное ограждение по контуру: панель во всю длину и поручень.
+
+    Частые леерные стойки — примета судов прошлого поколения; на
+    современных открытых палубах ставят сплошное стекло, и силуэт от этого
+    читается как единый объём, а не как решётка.
+    """
+    from . import deckhouse as dh
+
+    parts = band(points, z, height - 60, 26, dh.GLASS_RAIL, dh.MAT_GLASS,
+                 "ограждение стеклянное")
+    parts += band(points, z + height - 60, 60, 90, dh.RAIL, dh.MAT_METAL,
+                  "поручень")
+    return parts
+
+
 def railing(points, z, height=1_100, post_step=2_400):
     """Леера по контуру: стойки с шагом вдоль обвода и два поручня.
 
