@@ -101,8 +101,15 @@ def band(points, z, height, thickness, color, material, label,
         if length < skip_short:
             continue
         angle = math.degrees(math.atan2(y2 - y1, x2 - x1))
+        # Панель длиннее сегмента на толщину и потому перекрывается с
+        # соседней в углу обвода — это намеренно: иначе на каждом изломе
+        # контура остаётся щель шириной в толщину борта. Проверка коллизий
+        # видит здесь перекрытие, и это ожидаемо.
+        # Панель ложится НАРУЖУ от линии обвода, а не по центру на неё:
+        # внутренняя грань борта тогда совпадает с контуром, и настилы кают,
+        # доведённые до той же линии, в борт не врезаются.
         panel = _part(length + thickness, thickness, height,
-                      (-(length + thickness) / 2, -thickness / 2, 0),
+                      (-(length + thickness) / 2, 0, 0),
                       color, material, label)
         placed = bd.Pos((x1 + x2) / 2, (y1 + y2) / 2, z) * bd.Rot(0, 0, angle) * panel
         placed.label = label
@@ -133,3 +140,40 @@ def side_runs(points, min_x, max_x, min_half_beam):
         y = (y1 + y2) / 2
         runs[side].append(((start, y), (end, y)))
     return runs
+
+
+def railing(points, z, height=1_100, post_step=2_400):
+    """Леера по контуру: стойки с шагом вдоль обвода и два поручня.
+
+    Прямоугольный леер на сужающемся корпусе уезжает за борт в носу — на
+    перспективе это читается как часть силуэта, а на виде сверху его
+    закрывает палуба. По контуру стойки стоят там, где палуба есть.
+    """
+    from . import deckhouse as dh
+
+    parts = []
+    carry = 0.0
+    for (x1, y1), (x2, y2) in zip(points, points[1:] + points[:1]):
+        length = math.hypot(x2 - x1, y2 - y1)
+        if length < 1:
+            continue
+        angle = math.degrees(math.atan2(y2 - y1, x2 - x1))
+        for rail_z in (height * 0.45, height * 0.95):
+            rail = _part(length, 55, 55, (-length / 2, -27, 0),
+                         dh.RAIL, dh.MAT_METAL, "поручень")
+            placed = bd.Pos((x1 + x2) / 2, (y1 + y2) / 2, z + rail_z) * \
+                bd.Rot(0, 0, angle) * rail
+            placed.label, placed.color = "поручень", dh.RAIL
+            placed.cad_material = dict(dh.MAT_METAL)
+            parts.append(placed)
+
+        position = post_step - carry
+        while position < length:
+            t = position / length
+            post = _part(60, 60, height,
+                         (x1 + (x2 - x1) * t - 30, y1 + (y2 - y1) * t - 30, z),
+                         dh.RAIL, dh.MAT_METAL, "стойка леера")
+            parts.append(post)
+            position += post_step
+        carry = (carry + length) % post_step
+    return parts

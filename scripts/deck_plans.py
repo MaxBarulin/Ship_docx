@@ -204,7 +204,6 @@ def draw_deck(draw, deck_name, y_center, fonts):
 
     beam = ship.SUPERSTRUCTURE_BEAM
     depth = ship.CABIN_DEPTH
-    corridor_half = ship.CORRIDOR_WIDTH / 2
 
     for zone in ar.place(deck_name):
         left = MARGIN_X + mm(zone.x0)
@@ -213,9 +212,15 @@ def draw_deck(draw, deck_name, y_center, fonts):
             continue
 
         if zone.kind == "cabins":
-            draw.rectangle([left, y_center - mm(corridor_half),
-                            right, y_center + mm(corridor_half)],
-                           fill=CORRIDOR, outline=HULL_LINE)
+            # два коридора вдоль бортов и центральный блок между ними
+            for sign in (-1, 1):
+                edges = sorted((y_center + sign * mm(ship.CENTRE_EDGE),
+                                y_center + sign * mm(ship.CORRIDOR_EDGE)))
+                draw.rectangle([left, edges[0], right, edges[1]],
+                               fill=CORRIDOR, outline=HULL_LINE)
+            draw.rectangle([left, y_center - mm(ship.CENTRE_EDGE),
+                            right, y_center + mm(ship.CENTRE_EDGE)],
+                           fill=KIND_COLOR["tech"], outline=HULL_LINE)
         else:
             draw.rectangle([left, y_center - mm(beam / 2),
                             right, y_center + mm(beam / 2)],
@@ -227,8 +232,8 @@ def draw_deck(draw, deck_name, y_center, fonts):
     for cabin in ar.cabin_numbers(deck_name):
         left = MARGIN_X + mm(cabin["x0"])
         right = left + mm(cabin["width"])
-        near = mm(corridor_half)
-        far = mm(corridor_half + depth)
+        near = mm(ship.CORRIDOR_EDGE)
+        far = mm(ship.CABIN_EDGE)
         top, bottom = ((y_center - far, y_center - near)
                        if cabin["side"] == "левый"
                        else (y_center + near, y_center + far))
