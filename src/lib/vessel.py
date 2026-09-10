@@ -133,9 +133,9 @@ def deck_shell(name, sill=800, window=1_500, cabins=True):
 
 def wheelhouse(x_center, level):
     """Рубка с наклонным лобовым стеклом и обтекаемой крышей."""
-    stations = [(x_center - 5_600, 2_600), (x_center - 3_000, 4_300),
-                (x_center + 800, 4_500), (x_center + 3_400, 3_600),
-                (x_center + 5_200, 1_500)]
+    stations = [(x_center - 4_200, 1_700), (x_center - 2_200, 2_900),
+                (x_center + 600, 3_000), (x_center + 2_600, 2_400),
+                (x_center + 4_000, 900)]
     points = lines.contour(stations, step=900)
     parts = [
         lines.deck_slab(points, level + 300, 300, dh.SUPERSTRUCTURE,
@@ -249,9 +249,9 @@ def build(explode=0, interior=True, half=False):
     tier(5, dh.solar_array(48_000, 30_000, ship.SUN_DECK, 9_000))
     # козырёк над зоной отдыха: даёт тень и ломает плоскую крышу, из-за
     # которой верхняя палуба читалась пустой плитой
-    canopy_x0, canopy_len = 30_000, 22_000
+    canopy_x0, canopy_len = 32_000, 13_000
     canopy = lines.contour(deck_stations(canopy_x0, canopy_x0 + canopy_len,
-                                         4_600, stern=3_000, bow=5_000))
+                                         3_200, stern=2_500, bow=3_500))
     # Высота козырька выбрана от подмостового габарита, а не от удобства:
     # на 2.6 м он поднимал верх судна до 15.7 м при пределе 15.5, и модель
     # переставала проходить под мостами. 2.3 м над палубой — рабочая
@@ -264,7 +264,7 @@ def build(explode=0, interior=True, half=False):
             # стойка доходит до НИЗА козырька, а не до его верха: иначе
             # она протыкает плиту насквозь на её толщину
             tier(5, _part(220, 220, canopy_height - 140,
-                          (x, side * 3_800 - 110, ship.SUN_DECK),
+                          (x, side * 2_600 - 110, ship.SUN_DECK),
                           dh.RAIL, dh.MAT_METAL, "стойка козырька"))
 
     tier(5, wheelhouse(118_000, ship.CABIN_DECK_3))

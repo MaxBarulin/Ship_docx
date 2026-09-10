@@ -118,11 +118,14 @@ def lifeboat(x_center, side, level):
     y = side * (ship.SUPERSTRUCTURE_BEAM / 2 + 250)
     body = _part(8_200, 2_600, 2_200, (x_center - 4_100, y - 1_300, level + 900),
                  ACCENT, MAT_PAINT, "спасательная шлюпка")
-    davits = [
-        _part(300, 300, 2_600, (x_center + dx, y - 150, level),
-              RAIL, MAT_METAL, "шлюпбалка")
-        for dx in (-3_400, 3_100)
-    ]
+    # шлюпбалка выше шлюпки: она её несёт, а не стоит рядом
+    davits = []
+    for dx in (-3_400, 3_100):
+        davits.append(_part(300, 300, 4_200, (x_center + dx, y - 150, level),
+                            RAIL, MAT_METAL, "шлюпбалка"))
+        davits.append(_part(300, 1_400, 300,
+                            (x_center + dx, y - 150 - 1_100, level + 3_900),
+                            RAIL, MAT_METAL, "нок шлюпбалки"))
     return [body, *davits]
 
 

@@ -376,22 +376,29 @@ def furnish_zone(zone, deck_name, level, half_at):
         # середине — свободные круглые столы. Регулярная сетка во всю
         # ширину читается как столовая, а не как ресторан, и не оставляет
         # прохода официанту.
-        aisle = 1_600
-        step = 2_700
+        # Секции ставятся с разрывом: банкетки вплотную одна к другой
+        # читаются сплошной перегородкой вдоль борта, а не рядом столиков,
+        # и между ними некуда подойти.
+        step = 3_400
+        seat_len = 2_200
+        index = 0
         x = x0
         while x + step <= x1:
             local = min(half_at(x), half_at(x + step)) - 350
             for side in (-1, 1):
                 edge = side * local
-                parts += _put(pf.banquette(step - 300, 700),
-                              x + 150, edge - 700 if side > 0 else edge, z)
-                parts += _put(pf.table_rect(1_400, 800), x + 500,
-                              edge - 1_700 if side > 0 else edge + 900, z)
-            if local > aisle / 2 + 1_800:
-                parts += _put(pf.dining_set(1_100, 4), x + 300,
-                              -1_100 / 2 - 550, z)
-            parts += _put(pf.pendant_light(), x + step / 2 - 210, -210,
-                          z + 0)
+                parts += _put(pf.banquette(seat_len, 700),
+                              x + 250, edge - 700 if side > 0 else edge, z)
+                # стол отодвигается от банкетки на 350 мм: вплотную он
+                # сливается с ней в один объём, и посадка не читается
+                parts += _put(pf.table_rect(1_400, 800), x + 650,
+                              edge - 1_850 if side > 0 else edge + 1_050, z)
+            # круглые столы через секцию, иначе середина зала забивается
+            # креслами и продольный проход исчезает
+            if index % 2 == 0 and local > 3_400:
+                parts += _put(pf.dining_set(1_100, 4), x + 700, -1_650, z)
+            parts += _put(pf.pendant_light(), x + step / 2 - 210, -210, z)
+            index += 1
             x += step
     elif "бассейн" in name:
         parts += _put(pf.pool(min(x1 - x0 - 2_000, 9_000), min(2 * half - 1_500,

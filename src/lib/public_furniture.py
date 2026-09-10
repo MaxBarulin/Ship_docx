@@ -38,12 +38,19 @@ def dining_set(diameter=1_100, seats=4):
     stem = _part(180, 180, 700, ((diameter - 180) / 2, (diameter - 180) / 2, 0),
                  METAL, MAT_METAL, "опора стола")
     parts = [top, stem]
-    offsets = [(-560, diameter / 2 - 220), (diameter + 100, diameter / 2 - 220),
-               (diameter / 2 - 220, -560), (diameter / 2 - 220, diameter + 100)]
+    offsets = [(-700, diameter / 2 - 220), (diameter + 260, diameter / 2 - 220),
+               (diameter / 2 - 220, -700), (diameter / 2 - 220, diameter + 260)]
     for index in range(min(seats, 4)):
         dx, dy = offsets[index]
-        parts.append(_part(440, 440, 460, (dx, dy, 0), TEXTILE, MAT_TEXTILE,
-                           "кресло"))
+        # сиденье и спинка вместо куба: куб на четырёх углах стола читается
+        # как коробка, а не как посадочное место
+        parts.append(_part(460, 460, 60, (dx, dy, 420), TEXTILE, MAT_TEXTILE,
+                           "сиденье"))
+        parts.append(_part(460, 90, 480, (dx, dy + (0 if dy < 0 else 370), 420),
+                           TEXTILE, MAT_TEXTILE, "спинка кресла"))
+        for foot_x in (dx + 40, dx + 360):
+            parts.append(_part(60, 60, 420, (foot_x, dy + 200, 0), METAL,
+                               MAT_METAL, "опора кресла"))
     return parts
 
 
@@ -304,7 +311,7 @@ def table_rect(width=1_400, depth=800):
     ]
 
 
-def pendant_light(diameter=420, drop=900):
+def pendant_light(diameter=420, drop=650):
     """Подвесной светильник: вертикальная деталь, которой не хватает залу."""
     return [
         _part(60, 60, drop, (diameter / 2 - 30, diameter / 2 - 30,

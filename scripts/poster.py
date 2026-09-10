@@ -220,6 +220,21 @@ def main():
     canvas.paste(plans, (PAD, y))
     y += plans.height + PAD
 
+    # --- интерьер общественного помещения
+    room = RENDERS / "ресторан_интерьер.png"
+    if room.exists():
+        caption(draw, PAD, y, W - PAD * 2, "ИНТЕРЬЕР: ПАНОРАМНЫЙ РЕСТОРАН",
+                fonts)
+        y += 44 + 14
+        shot = fit(trim(load(room.name)), width=W - PAD * 2)
+        canvas.paste(shot, (PAD, y))
+        bar = y + shot.height
+        draw.rectangle([PAD, bar, W - PAD, bar + 46], fill="#f2f4f6")
+        draw.text((PAD + 16, bar + 12),
+                  "банкетки у бортов, круглые столы в середине, продольный "
+                  "проход", fill=INK_2, font=fonts["note"])
+        y += shot.height + 46 + PAD
+
     # --- каюты
     caption(draw, PAD, y, W - PAD * 2, "КАТЕГОРИИ КАЮТ", fonts)
     y += 44 + 14
