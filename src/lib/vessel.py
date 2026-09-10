@@ -13,6 +13,7 @@
 
 from cadgen import build123d as bd
 
+from . import arrangement as ar_module
 from . import deckhouse as dh
 from . import interior as interior_mod
 from . import lines
@@ -184,10 +185,13 @@ def air_draft(solid=None, mast_raised=False):
 
 
 INTERIOR_DECKS = {
+    "техническая": ar_module.TANK_TOP,
+    "нижняя": ar_module.LOWER_DECK,
     "главная": ship.MAIN_DECK,
     "средняя": ship.CABIN_DECK_1,
     "шлюпочная": ship.CABIN_DECK_2,
     "верхняя": ship.CABIN_DECK_3,
+    "солнечная": ship.SUN_DECK,
 }
 
 
@@ -227,6 +231,12 @@ def build(explode=0, interior=True, half=False):
             tier(2 + index, interior_mod.deck_interior(name, DECK_LEVEL[name]))
     if interior:
         tier(1, interior_mod.deck_interior("главная", ship.MAIN_DECK))
+        # нижние палубы лежат внутри корпуса, солнечная — открытая
+        tier(0, interior_mod.deck_interior("техническая", ar_module.TANK_TOP,
+                                           half_beam=7_200))
+        tier(0, interior_mod.deck_interior("нижняя", ar_module.LOWER_DECK,
+                                           half_beam=7_800))
+        tier(5, interior_mod.furnish("солнечная", ship.SUN_DECK))
 
     for side in (-1, 1):
         tier(4, dh.balcony(46_000, 15_600, side, ship.CABIN_DECK_3,

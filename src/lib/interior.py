@@ -17,6 +17,7 @@ from cadgen import build123d as bd
 from cadgen import srgb
 
 from . import arrangement as ar
+from . import public_furniture as pf
 from . import ship
 from .furniture import _part
 
@@ -176,12 +177,19 @@ def zone_walls(deck_name, level, half_beam):
     Только у зон, где нет кают: в каютной зоне переборки уже стоят между
     каютами, и переборка отсека прошла бы прямо сквозь них через всю
     ширину палубы.
+
+    Ширина каждой переборки берётся по обводу в её собственном сечении:
+    номинальная ширина палубы в носу больше фактической, и переборка
+    носового отсека вылезала за борт.
     """
+    half_at = _zone_half_beam(deck_name)
     parts = []
     for zone in ar.place(deck_name):
         if zone.kind == "cabins":
             continue
-        reach = half_beam - SKIN_GAP
+        reach = min(half_beam, half_at(zone.x0)) - SKIN_GAP
+        if reach < 500:
+            continue
         parts.append(_part(ship.PARTITION, reach * 2, HEIGHT,
                            (zone.x0, -reach, level + FLOOR),
                            WALL_TECH if zone.kind in ("tech", "crew") else WALL,
@@ -215,6 +223,7 @@ def deck_interior(deck_name, level, half_beam=None):
 
     parts += centre_block(deck_name, level)
     parts += zone_walls(deck_name, level, half_beam)
+    parts += furnish(deck_name, level)
     return parts
 
 
@@ -223,4 +232,178 @@ def all_interior(levels):
     parts = []
     for deck_name, level in levels.items():
         parts += deck_interior(deck_name, level)
+    return parts
+
+
+# --- Мебель общественных зон ------------------------------------------------
+
+def _zone_half_beam(deck_name):
+    """Полуширота обвода палубы как функция длины.
+
+    Мебель расставляется по фактическому обводу, а не по прямоугольнику:
+    зоны в оконечностях лежат там, где палуба уже сузилась, и сетка столов,
+    разложенная по номинальной ширине, уехала бы за борт — ровно та ошибка,
+    которую аудит уже ловил на леерах и на каютах.
+    """
+    from scipy.interpolate import PchipInterpolator
+
+    from . import vessel
+
+    if deck_name not in vessel.DECK_SHAPE:
+        return _hull_half_beam(ar.deck(deck_name)[2])
+    stations = vessel.deck_stations(*vessel.DECK_SHAPE[deck_name])
+    curve = PchipInterpolator([x for x, _ in stations], [y for _, y in stations])
+    lo, hi = stations[0][0], stations[-1][0]
+    return lambda x: float(curve(min(max(x, lo), hi)))
+
+
+def _hull_half_beam(level):
+    """Полуширота КОРПУСА на заданной высоте.
+
+    Нижние палубы лежат внутри корпуса, а он и по длине сужается, и по
+    высоте: у днища полуширота меньше, чем у палубы. Брать для них ширину
+    надстройки — значит расставить цистерны сквозь обшивку.
+    """
+    from scipy.interpolate import PchipInterpolator
+
+    xs = [row[0] for row in ship.STATIONS]
+    curves = {}
+    for index, key in ((1, "bottom"), (2, "bilge"), (3, "deck")):
+        curves[key] = PchipInterpolator(xs, [row[index] for row in ship.STATIONS])
+    z_bilge = PchipInterpolator(xs, [row[4] for row in ship.STATIONS])
+    z_keel = PchipInterpolator(xs, [row[5] for row in ship.STATIONS])
+
+    def at(x):
+        x = min(max(x, xs[0]), xs[-1])
+        keel, bilge = float(z_keel(x)), float(z_bilge(x))
+        if level <= keel:
+            return float(curves["bottom"](x))
+        if level >= bilge + 1_100:
+            return float(curves["deck"](x))
+        if level <= bilge:
+            span = max(bilge - keel, 1.0)
+            ratio = (level - keel) / span
+            return (float(curves["bottom"](x))
+                    + ratio * (float(curves["bilge"](x))
+                               - float(curves["bottom"](x))))
+        span = 1_100.0
+        ratio = (level - bilge) / span
+        return (float(curves["bilge"](x))
+                + ratio * (float(curves["deck"](x)) - float(curves["bilge"](x))))
+
+    return at
+
+
+def _usable(zone, half_at, margin=350):
+    """Прямоугольник зоны, гарантированно лежащий внутри обвода."""
+    x0 = zone.x0 + margin
+    x1 = zone.x0 + zone.length - margin
+    if x1 - x0 < 1_200:
+        return None
+    samples = [x0 + (x1 - x0) * i / 6 for i in range(7)]
+    half = min(half_at(x) for x in samples) - margin
+    if half < 1_200:
+        return None
+    return x0, x1, half
+
+
+def _grid(area, step_x, step_y, make, half_at=None, z=0.0):
+    """Разложить мебель сеткой, следуя обводу.
+
+    Ширина ряда берётся в СВОЁМ сечении, а не по самому узкому месту зоны:
+    иначе длинный кормовой зал застраивается по ширине своего носка, и
+    посреди ресторана остаётся пустая полоса в половину палубы.
+    """
+    x0, x1, half = area
+    parts = []
+    x = x0
+    while x + step_x <= x1:
+        local = half if half_at is None else min(
+            half_at(x) - 350, half_at(x + step_x) - 350)
+        y = -local
+        while y + step_y <= local:
+            for item in make():
+                moved = bd.Pos(x, y, z) * item
+                moved.label, moved.color = item.label, item.color
+                parts.append(moved)
+            y += step_y
+        x += step_x
+    return parts
+
+
+def _put(items, x, y, z=0.0):
+    placed = []
+    for item in items:
+        moved = bd.Pos(x, y, z) * item
+        moved.label, moved.color = item.label, item.color
+        placed.append(moved)
+    return placed
+
+
+def furnish_zone(zone, deck_name, level, half_at):
+    """Мебель одной общественной зоны — по её назначению."""
+    area = _usable(zone, half_at)
+    if area is None:
+        return []
+    x0, x1, half = area
+    z = level + FLOOR
+    name = zone.name.lower()
+    parts = []
+
+    if "ресторан" in name or "кафе" in name:
+        parts += _grid(area, 2_700, 2_700, pf.dining_set, half_at, z)
+    elif "бассейн" in name:
+        parts += _put(pf.pool(min(x1 - x0 - 2_000, 9_000), min(2 * half - 1_500,
+                                                              4_600)),
+                      x0 + 1_000, -min(half - 750, 2_300), z)
+        for index in range(int((x1 - x0) // 1_100)):
+            parts += _put(pf.sun_lounger(), x0 + index * 1_100, half - 2_100, z)
+    elif "бар" in name or "салон" in name or "холл" in name:
+        parts += _put(pf.bar_counter(min(x1 - x0 - 2_000, 6_000)), x0 + 800,
+                      half - 3_200, z)
+        for index in range(int((x1 - x0 - 8_000) // 3_200)):
+            parts += _put(pf.lounge(), x0 + 7_500 + index * 3_200,
+                          -half + 600, z)
+    elif "конференц" in name:
+        parts += _put(pf.theatre_rows(x1 - x0, 2 * half), x0, -half, z)
+    elif "фитнес" in name or "спа" in name:
+        parts += _grid(area, 2_200, 2_400, pf.gym_station, half_at, z)
+    elif "шезлонг" in name or "отдыха" in name:
+        for index in range(int((x1 - x0) // 1_100)):
+            for side in (-1, 1):
+                parts += _put(pf.sun_lounger(), x0 + index * 1_100,
+                              side * (half - 2_100) - (0 if side > 0 else 0), z)
+    elif "магазин" in name or "кладов" in name or "провизион" in name:
+        parts += _grid(area, 1_600, 3_000, pf.shop_unit, half_at, z)
+    elif "боулинг" in name or "бильярд" in name:
+        for index in range(2):
+            parts += _put(pf.bowling_lane(min(x1 - x0 - 2_400, 19_000)),
+                          x0 + 600, -half + 900 + index * 1_500, z)
+        parts += _put(pf.billiard_table(), x0 + 1_500, half - 2_200, z)
+    elif "вестибюль" in name or "ресепшн" in name:
+        parts += _put(pf.reception_desk(min(x1 - x0 - 1_500, 4_500)),
+                      x0 + 700, half - 2_400, z)
+        parts += _put(pf.lounge(), x0 + 1_200, -half + 700, z)
+    elif "камбуз" in name:
+        parts += _grid(area, 2_400, 2_200, pf.galley_unit, half_at, z)
+    elif "экипаж" in name:
+        parts += _grid(area, 2_400, 1_100, pf.crew_berth, half_at, z)
+    elif "машинное" in name or "электродвиг" in name:
+        for side in (-1, 1):
+            parts += _put(pf.main_engine(min(x1 - x0 - 2_000, 7_000)),
+                          x0 + 1_000, side * 3_200 - 1_300, z)
+    elif "танки" in name or "балласт" in name or "аккумулятор" in name:
+        parts += _put(pf.tank(x1 - x0 - 600, 2 * half - 1_200), x0 + 300,
+                      -half + 600, z)
+    return parts
+
+
+def furnish(deck_name, level):
+    """Мебель всех общественных зон палубы."""
+    half_at = _zone_half_beam(deck_name)
+    parts = []
+    for zone in ar.place(deck_name):
+        if zone.kind == "cabins":
+            continue
+        parts += furnish_zone(zone, deck_name, level, half_at)
     return parts
