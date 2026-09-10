@@ -9,10 +9,12 @@
 мебель в lib.furniture, поэтому ставится одним Pos(x, y, z).
 """
 
+import math
+
 from cadgen import build123d as bd
 from cadgen import srgb
 
-from .furniture import _part
+from .furniture import _part, block
 
 WOOD = srgb("#7E5B38")
 WOOD_DARK = srgb("#6B4A32")
@@ -115,20 +117,31 @@ def sun_lounger():
     ]
 
 
-def pool(width=9_000, depth=4_600, rim=1_300):
+def pool(width=9_000, depth=4_600, rim=900):
     """Бассейн: приподнятая чаша, вода, обходной борт.
 
     Чаша стоит НА палубе, а не утоплена в неё: на судне бассейн верхней
     палубы приподнят, потому что под ним каюты, а не грунт.
+
+    Чаша собирается ЧЕТЫРЬМЯ стенками, а не одним блоком: сплошной блок с
+    водой внутри — это глухой каменный постамент, и ни воды, ни того, что
+    это бассейн, с уровня глаз не видно. Борт 1.1 м над палубой, а не 1.5:
+    с полутора метров вода не видна стоящему рядом человеку вообще.
     """
+    wall = 350
+    inner_depth = depth - 2 * wall
     return [
         _part(width, depth, 200, (0, 0, 0), STONE, MAT_STONE, "борт бассейна"),
-        _part(width - 700, depth - 700, rim, (350, 350, 200), STONE,
-              MAT_STONE, "чаша бассейна"),
-        _part(width - 900, depth - 900, rim - 250, (450, 450, 300), WATER,
-              MAT_WATER, "вода"),
+        _part(width, wall, rim, (0, 0, 200), STONE, MAT_STONE, "стенка чаши"),
+        _part(width, wall, rim, (0, depth - wall, 200), STONE, MAT_STONE,
+              "стенка чаши"),
+        _part(wall, inner_depth, rim, (0, wall, 200), STONE, MAT_STONE,
+              "стенка чаши"),
+        _part(wall, inner_depth, rim, (width - wall, wall, 200), STONE,
+              MAT_STONE, "стенка чаши"),
+        _part(width - 2 * wall, inner_depth, rim - 250, (wall, wall, 200),
+              WATER, MAT_WATER, "вода"),
     ]
-
 
 def shop_unit(width=1_000, depth=2_400):
     return [
@@ -261,10 +274,16 @@ def stair_flight(rise=2_700, run=3_600, width=1_200):
 
     Марш строится реальными ступенями, потому что уклон — то, что на разрезе
     сразу видно неправильным: наклонная плита читается как пандус.
+
+    Поручень идёт ПО УКЛОНУ на стойках, а не вертикальной плитой вдоль
+    марша: плита на виде с уровня глаз читается как глухая стена, и по ней
+    не понять ни высоты поручня, ни того, есть ли он вообще. Высота 900 мм
+    над проступью — то, что требуется от трапа для пассажиров.
     """
     steps = max(8, int(rise // 180))
     step_rise = rise / steps
     step_run = run / steps
+    angle = math.degrees(math.atan2(rise, run))
     parts = []
     for index in range(steps):
         parts.append(_part(step_run + 40, width, step_rise + 30,
@@ -278,11 +297,26 @@ def stair_flight(rise=2_700, run=3_600, width=1_200):
                            "косоур"))
         parts.append(_part(run, 90, 300, (0, side, rise - 400), METAL,
                            MAT_METAL, "косоур"))
-    for side in (0, width - 60):
-        parts.append(_part(run, 60, 1_000, (0, side, rise * 0.45),
-                           METAL, MAT_METAL, "поручень трапа"))
-    return parts
 
+    HANDRAIL = 900  # над проступью
+    # Поручень идёт ВНУТРИ проступи и снаружи косоура: между ними полоса
+    # шириной 10 мм. Стоя на самом косоуре, он давал пересечение на литр,
+    # а вынесенный за проступь — висел бы ни на чём.
+    for side in (100, width - 160):
+        rail = block(math.hypot(run, rise), 60, 60)
+        rail = bd.Rot(0, -angle, 0) * rail
+        rail = bd.Pos(0, side, HANDRAIL) * rail
+        rail.color, rail.cad_material = METAL, dict(MAT_METAL)
+        rail.label = "поручень трапа"
+        parts.append(rail)
+        for index in range(0, steps, 2):
+            # стойка встаёт НА проступь, а не в неё, и доходит ровно до
+            # поручня, который в этом сечении уже поднялся на полступени
+            parts.append(_part(50, 50, HANDRAIL - step_rise / 2 - 30,
+                               (index * step_run + step_run / 2, side + 5,
+                                (index + 1) * step_rise + 30),
+                               METAL, MAT_METAL, "стойка поручня"))
+    return parts
 
 def lift_shaft(width=1_800, depth=1_800, height=2_700):
     return [
@@ -311,8 +345,14 @@ def table_rect(width=1_400, depth=800):
     ]
 
 
-def pendant_light(diameter=420, drop=650):
-    """Подвесной светильник: вертикальная деталь, которой не хватает залу."""
+def pendant_light(diameter=420, drop=150):
+    """Подвесной светильник: вертикальная деталь, которой не хватает залу.
+
+    Вынос всего 150 мм, и это не скупость: подволок в свету 2350 мм, а
+    светильники висят над проходом. При выносе 650 мм низ плафона
+    оказывался на 1.48 м — ниже макушки любого пассажира. Судовой
+    светильник в такой высоте потолка и делают полунакладным.
+    """
     return [
         _part(60, 60, drop, (diameter / 2 - 30, diameter / 2 - 30,
                              HEIGHT_HINT - drop), METAL, MAT_METAL, "подвес"),
@@ -322,3 +362,94 @@ def pendant_light(diameter=420, drop=650):
 
 
 HEIGHT_HINT = 2_350
+
+
+# --- Фигура человека --------------------------------------------------------
+
+FIGURE = srgb("#4A5560")
+
+
+def figure(height=1_800, facing=0):
+    """Габаритный манекен: рост, плечи, шаг. Стоит НА ОСИ, а не углом к ней.
+
+    Без фигуры в кадре высоту ограждения и ширину прохода оценить нечем: на
+    рендере без масштаба полутораметровый парапет и двухметровая стена
+    выглядят одинаково. Поэтому рост задаётся явно — 1800 мм расчётного
+    мужчины, глаз у него на 1690 мм, с этой же высоты снимаются виды.
+
+    Доли роста антропометрические: ноги до 0.47, плечи на 0.82 — сумма
+    даёт ровно заданный рост, а не обрывается ниже.
+    """
+    legs = height * 0.47
+    torso = height * 0.35
+    head = height - legs - torso
+    shoulder = height * 0.26
+    parts = [
+        _part(190, 200, legs, (-95, -240, 0), FIGURE, MAT_TEXTILE,
+              "фигура: нога"),
+        _part(190, 200, legs, (-95, 40, 0), FIGURE, MAT_TEXTILE,
+              "фигура: нога"),
+        _part(240, shoulder, torso, (-120, -shoulder / 2, legs),
+              FIGURE, MAT_TEXTILE, "фигура: корпус"),
+        _part(190, 200, head, (-95, -100, legs + torso),
+              FIGURE, MAT_TEXTILE, "фигура: голова"),
+    ]
+    if facing:
+        turned = []
+        for item in parts:
+            moved = bd.Rot(0, 0, facing) * item
+            moved.label, moved.color = item.label, item.color
+            turned.append(moved)
+        return turned
+    return parts
+
+
+EYE_HEIGHT = 1_690  # глаз стоящего человека ростом 1800 мм
+
+
+def sport_court(width=18_000, depth=9_000):
+    """Спортивная площадка: покрытие, разметка, сетка и ограждение по краю.
+
+    Пустая зона на плане — это не «место под спорт», а дыра в компоновке:
+    на виде с уровня глаз кормовая треть солнечной палубы читалась голым
+    настилом. Площадка задаёт ей габарит и высоту ограждения.
+    """
+    net_x = width / 2
+    parts = [
+        _part(width, depth, 20, (0, 0, 0), srgb("#3E6B52"), MAT_TEXTILE,
+              "покрытие площадки"),
+        _part(width - 800, 80, 25, (400, depth / 2 - 40, 20), srgb("#E8EDEF"),
+              MAT_TEXTILE, "разметка"),
+    ]
+    # боковые линии внутри поля: side + 400 у дальней кромки выносило
+    # полосу на 320 мм ЗА площадку, прямо на тиковый настил
+    for side in (400, depth - 480):
+        parts.append(_part(width - 800, 80, 25, (400, side, 20),
+                           srgb("#E8EDEF"), MAT_TEXTILE, "разметка"))
+    # сетка: две стойки и полотно между ними
+    for side in (0, depth - 100):
+        parts.append(_part(100, 100, 1_800, (net_x - 50, side, 20), METAL,
+                           MAT_METAL, "стойка сетки"))
+    parts.append(_part(60, depth - 200, 800, (net_x - 30, 100, 1_020),
+                       srgb("#8A9098", 0.45), MAT_TEXTILE, "сетка"))
+    # Ограждение площадки: мяч не должен уходить за борт. Высота 2.0 м, а
+    # не привычные 3–4: над солнечной палубой остаётся всего 2.3 м до
+    # подмостового габарита 15.5 м, и трёхметровая сетка выводит судно за
+    # него — под мостами ЕГС оно тогда просто не пройдёт.
+    # Полотно прозрачное: сетка — это сетка, а не глухой щит. Сплошной
+    # цвет превращал площадку в закрытый ящик и перекрывал вид вдоль
+    # палубы у любого, кто стоит рядом.
+    FENCE = 2_000
+    MESH = srgb("#6E7A82", 0.30)
+    for side in (0, depth - 60):
+        parts.append(_part(width, 60, FENCE, (0, side, 20), MESH,
+                           MAT_TEXTILE, "сетчатое ограждение"))
+    for side in (0, width - 60):
+        parts.append(_part(60, depth, FENCE, (side, 0, 20), MESH,
+                           MAT_TEXTILE, "сетчатое ограждение"))
+    # стойки ограждения: без них прозрачное полотно висит ни на чём
+    for x in (0, width / 2 - 40, width - 80):
+        for y in (0, depth - 80):
+            parts.append(_part(80, 80, FENCE, (x, y, 20), METAL, MAT_METAL,
+                               "стойка ограждения"))
+    return parts

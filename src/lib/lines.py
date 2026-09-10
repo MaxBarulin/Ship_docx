@@ -48,26 +48,47 @@ def contour(stations, step=1_800):
 
 
 def simplify(points, tolerance=25.0):
-    """Выбросить точки, лежащие на прямой между соседями.
+    """Проредить полилинию, не уводя её от исходного обвода (Дуглас–Пекер).
 
     На цилиндрической вставке полуширота постоянна, и равномерная выборка
     плодит там десятки одинаковых панелей: они ничего не добавляют картинке,
     но умножают время сборки и вес STEP. Скругления при этом остаются
     плотными — там точки не коллинеарны.
+
+    Отклонение считается от хорды между СОХРАНЁННЫМИ концами, а не от линии
+    через соседей выброшенной точки. Проверка по соседям накапливает ошибку:
+    каждая точка длинного пологого участка коллинеарна своим соседям с
+    точностью до долей миллиметра, и участок схлопывается целиком. Ровно это
+    и случилось с променадом главной палубы: 114 метров борта стянуло в одну
+    хорду, и настил с ограждением ушли внутрь корпуса почти на метр в
+    середине судна, а на виде с уровня глаз человек оказался за леерами.
     """
     if len(points) < 3:
-        return points
-    kept = [points[0]]
-    for previous, current, following in zip(points, points[1:], points[2:]):
-        (x1, y1), (x2, y2), (x3, y3) = previous, current, following
-        span = math.hypot(x3 - x1, y3 - y1)
-        if span == 0:
+        return list(points)
+
+    keep = [False] * len(points)
+    keep[0] = keep[-1] = True
+    stack = [(0, len(points) - 1)]
+    while stack:
+        first, last = stack.pop()
+        if last - first < 2:
             continue
-        offset = abs((x3 - x1) * (y1 - y2) - (x1 - x2) * (y3 - y1)) / span
-        if offset > tolerance:
-            kept.append(current)
-    kept.append(points[-1])
-    return kept
+        (x1, y1), (x2, y2) = points[first], points[last]
+        span = math.hypot(x2 - x1, y2 - y1)
+        worst, at = -1.0, first
+        for index in range(first + 1, last):
+            x, y = points[index]
+            if span < 1e-9:
+                offset = math.hypot(x - x1, y - y1)
+            else:
+                offset = abs((x2 - x1) * (y1 - y) - (x1 - x) * (y2 - y1)) / span
+            if offset > worst:
+                worst, at = offset, index
+        if worst > tolerance:
+            keep[at] = True
+            stack.append((first, at))
+            stack.append((at, last))
+    return [point for point, taken in zip(points, keep) if taken]
 
 
 def inset(points, amount):

@@ -193,7 +193,8 @@ INTERIOR_DECKS = {
 }
 
 
-def build(explode=0, interior=True, half=False):
+def build(explode=0, interior=True, half=False, window=None,
+          figures=False):
     """Судно в сборе.
 
     explode раздвигает ярусы — так получается взрыв-схема. interior решает,
@@ -204,6 +205,13 @@ def build(explode=0, interior=True, half=False):
     отбрасывает, а не режет булевой операцией: резать две тысячи тел — это
     минуты счёта и риск самопересечений на каждом, а для показа начинки
     достаточно убрать то, что её загораживает.
+
+    window — (x0, x1, z0, z1) — оставляет только детали, попадающие в это
+    окно. Нужно там, где нужен фрагмент, а не всё судно.
+
+    figures ставит на палубы масштабные манекены. По умолчанию их нет:
+    в проверках пересечений и в составе деталей человеку не место. Их
+    включает только vessel_walk — модель для видов с уровня глаз.
     """
     tiers: dict[int, list] = {}
 
@@ -216,7 +224,11 @@ def build(explode=0, interior=True, half=False):
     # главная палуба: настил по обводу корпуса — это открытый променад
     promenade = lines.contour([(row[0], row[3]) for row in ship.STATIONS
                                if row[3] > 400])
-    tier(1, lines.deck_slab(promenade, ship.MAIN_DECK, 120, dh.DECK_TEAK,
+    # Настил кладётся НА палубу корпуса, а не в неё: верхняя грань корпуса
+    # лежит ровно на 5500, и плита, заканчивающаяся на той же отметке,
+    # совпадала с ней грань в грань. Рендер выбирал между ними произвольно,
+    # и на виде с уровня глаз человек шёл не по тику, а по борту корпуса.
+    tier(1, lines.deck_slab(promenade, ship.MAIN_DECK + 60, 60, dh.DECK_TEAK,
                             dh.MAT_TEAK, "главная палуба"))
     tier(1, lines.glass_railing(lines.inset(promenade, 220),
                                 ship.MAIN_DECK))
@@ -242,14 +254,23 @@ def build(explode=0, interior=True, half=False):
                            depth=1_800))
 
     sun = deck_contour("солнечная")
-    tier(5, lines.deck_slab(sun, ship.SUN_DECK, 120, dh.DECK_TEAK,
+    # Палуба в два слоя: снизу окрашенный набор, сверху тик. Одним тиковым
+    # слоем она читалась тиком и СНИЗУ — в коридоре верхней палубы над
+    # головой оказывался настил палубного тика вместо подволока.
+    tier(5, lines.deck_slab(sun, ship.SUN_DECK - 60, 60, dh.SUPERSTRUCTURE,
+                            dh.MAT_PAINT, "подволок верхней палубы"))
+    tier(5, lines.deck_slab(sun, ship.SUN_DECK, 60, dh.DECK_TEAK,
                             dh.MAT_TEAK, "солнечная палуба"))
     tier(5, lines.glass_railing(lines.inset(sun, 160), ship.SUN_DECK,
                                 height=1_150))
-    tier(5, dh.solar_array(48_000, 30_000, ship.SUN_DECK, 9_000))
+    # Панели стоят в СВОЕЙ зоне плана, а не поперёк бассейна: раньше
+    # массив 48–78 м накрывал и чашу, и бар у бассейна. На крышу козырька
+    # их не поднять: она сама уже на 18.6 м, а предел по мостам — 18.7 м
+    # от киля, панель со стойками выводила судно за габарит на метр.
+    tier(5, dh.solar_array(74_500, 9_000, ship.SUN_DECK, 9_000))
     # козырёк над зоной отдыха: даёт тень и ломает плоскую крышу, из-за
     # которой верхняя палуба читалась пустой плитой
-    canopy_x0, canopy_len = 32_000, 13_000
+    canopy_x0, canopy_len = 30_000, 13_000
     canopy = lines.contour(deck_stations(canopy_x0, canopy_x0 + canopy_len,
                                          3_200, stern=2_500, bow=3_500))
     # Высота козырька выбрана от подмостового габарита, а не от удобства:
@@ -275,11 +296,22 @@ def build(explode=0, interior=True, half=False):
         for side in (-1, 1):
             tier(3, dh.lifeboat(x, side, ship.CABIN_DECK_2))
 
+    if figures:
+        from . import people
+        for index, items in people.crowd().items():
+            tier(index, items)
+
     assembled = []
     for index in sorted(tiers):
         for part in tiers[index]:
-            if half and part.bounding_box().center().Y > 300:
+            box = part.bounding_box()
+            if half and box.center().Y > 300:
                 continue
+            if window is not None:
+                x0, x1, z0, z1 = window
+                if (box.max.X < x0 or box.min.X > x1
+                        or box.max.Z < z0 or box.min.Z > z1):
+                    continue
             moved = bd.Pos(0, 0, index * explode) * part if explode else part
             moved.label = part.label
             moved.color = part.color

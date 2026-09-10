@@ -17,6 +17,7 @@ from cadgen import build123d as bd
 from cadgen import srgb
 
 from . import arrangement as ar
+from . import lines
 from . import public_furniture as pf
 from . import ship
 from .furniture import _part
@@ -150,9 +151,26 @@ def longitudinal_walls(deck_name, level, x_from, x_to):
             continue
         for sign in (1, -1):
             y = ship.CENTRE_EDGE if sign > 0 else -ship.CENTRE_EDGE - ship.BULKHEAD
+            x = start + ship.PARTITION + 20
             parts.append(_part(length, ship.BULKHEAD, HEIGHT,
-                               (start + ship.PARTITION + 20, y, level + FLOOR),
+                               (x, y, level + FLOOR),
                                WALL, MAT_WALL, "переборка центрального блока"))
+            # Двери выгородок центрального блока. Без них коридор длиной
+            # в тридцать метров упирается в глухую стену на всю длину:
+            # на виде с уровня глаз это первое, что бросается в глаза, и
+            # это же неверно по существу — за переборкой кладовые, посты
+            # уборки и шахты, и в каждую есть вход.
+            step = 6_500
+            count = int(length // step)
+            for index in range(count):
+                door_x = x + step / 2 + index * step
+                # полотно ставится СНАРУЖИ переборки с зазором 10 мм: на
+                # левом борту оно врезалось в неё на 5 мм по всей площади,
+                # и ядро считало это пересечением на 7.6 литра
+                door_y = y + ship.BULKHEAD + 10 if sign > 0 else y - 50
+                parts.append(_part(DOOR_WIDTH - 40, 40, 2_000,
+                                   (door_x, door_y, level + FLOOR),
+                                   DOOR, MAT_DOOR, "дверь выгородки"))
     return parts
 
 
@@ -197,9 +215,16 @@ def zone_walls(deck_name, level, half_beam):
     носового отсека вылезала за борт.
     """
     half_at = _zone_half_beam(deck_name)
+    zones = ar.place(deck_name)
+    transom = zones[0].x0 if zones else None
     parts = []
-    for zone in ar.place(deck_name):
+    for zone in zones:
         if zone.kind == "cabins":
+            continue
+        # На самом транце переборку не ставим: там уже стоит поперечный
+        # пояс оболочки, и переборка отсека врезалась прямо в него на
+        # всю ширину палубы — три литра пересечения в аудите.
+        if transom is not None and abs(zone.x0 - transom) < 1:
             continue
         reach = min(half_beam, half_at(zone.x0)) - SKIN_GAP
         if reach < 500:
@@ -316,17 +341,22 @@ def _hull_half_beam(level):
 
 
 def _usable(zone, half_at, margin=350):
-    """Прямоугольник зоны, гарантированно лежащий внутри обвода."""
+    """Прямоугольник зоны, гарантированно лежащий внутри обвода.
+
+    Если зона упирается в сужение (нос солнечной палубы, корма нижних),
+    прямоугольник УКОРАЧИВАЕТСЯ по длине, а не отменяется целиком: иначе
+    зона молча выпадает из расстановки и палуба остаётся голым настилом —
+    ровно это и случилось со спортивной площадкой в носу.
+    """
     x0 = zone.x0 + margin
     x1 = zone.x0 + zone.length - margin
-    if x1 - x0 < 1_200:
-        return None
-    samples = [x0 + (x1 - x0) * i / 6 for i in range(7)]
-    half = min(half_at(x) for x in samples) - margin
-    if half < 1_200:
-        return None
-    return x0, x1, half
-
+    while x1 - x0 >= 1_200:
+        samples = [x0 + (x1 - x0) * i / 6 for i in range(7)]
+        half = min(half_at(x) for x in samples) - margin
+        if half >= 1_200:
+            return x0, x1, half
+        x1 -= max(500.0, (x1 - x0) * 0.1)
+    return None
 
 def _grid(area, step_x, step_y, make, half_at=None, z=0.0):
     """Разложить мебель сеткой, следуя обводу.
@@ -352,14 +382,58 @@ def _grid(area, step_x, step_y, make, half_at=None, z=0.0):
     return parts
 
 
-def _put(items, x, y, z=0.0):
+def _put(items, x, y, z=0.0, turn=0):
+    """Поставить набор деталей углом в точку (x, y, z).
+
+    turn разворачивает набор вокруг вертикали и заново приводит его к тому
+    же углу: мебель строится от ближнего угла, поэтому зеркалить её одним
+    знаком координаты нельзя — спинка шезлонга левого борта иначе смотрит
+    не к борту, а в проход.
+    """
     placed = []
     for item in items:
+        if turn:
+            item = bd.Rot(0, 0, turn) * item
         moved = bd.Pos(x, y, z) * item
         moved.label, moved.color = item.label, item.color
         placed.append(moved)
     return placed
 
+
+LOUNGER_PITCH = 1_100  # шезлонг 700 мм плюс проход между ними
+LOUNGER_DEPTH = 1_900
+LOUNGER_WIDTH = 700
+LOUNGER_WALK = 1_100  # проход вдоль ограждения за спинками
+
+
+def _loungers(x0, x1, half_at, z):
+    """Два ряда шезлонгов вдоль бортов, спинками к ограждению.
+
+    Ряд ЗЕРКАЛИТСЯ разворотом, а не сменой знака координаты: шезлонг
+    строится от ближнего угла, и левый борт, посчитанный как -(half-2100),
+    уезжал на два метра внутрь палубы. На виде с уровня глаз это читалось
+    сплошной грудой мебели посреди прохода вместо ряда у борта.
+
+    Полуширота берётся в СВОЁМ сечении, а не самая узкая по зоне: кормовая
+    зона начинается там, где палуба ещё сужена, и ряд, разложенный по её
+    носку, оказывался посреди палубы, а не у борта.
+
+    Между группами оставлен поперечный проход к ограждению: сплошная
+    двадцатиметровая шеренга отрезает борт от палубы.
+    """
+    parts = []
+    index = 0
+    x = x0
+    while x + LOUNGER_PITCH <= x1:
+        local = min(half_at(x), half_at(x + LOUNGER_WIDTH)) - 350
+        inboard = local - LOUNGER_WALK - LOUNGER_DEPTH
+        if index % 7 != 6 and inboard > 600:
+            parts += _put(pf.sun_lounger(), x, inboard, z)
+            parts += _put(pf.sun_lounger(), x + LOUNGER_WIDTH, -inboard, z,
+                          turn=180)
+        index += 1
+        x += LOUNGER_PITCH
+    return parts
 
 def furnish_zone(zone, deck_name, level, half_at):
     """Мебель одной общественной зоны — по её назначению."""
@@ -401,11 +475,14 @@ def furnish_zone(zone, deck_name, level, half_at):
             index += 1
             x += step
     elif "бассейн" in name:
-        parts += _put(pf.pool(min(x1 - x0 - 2_000, 9_000), min(2 * half - 1_500,
-                                                              4_600)),
+        pool_len = min(x1 - x0 - 2_000, 9_000)
+        parts += _put(pf.pool(pool_len, min(2 * half - 1_500, 4_600)),
                       x0 + 1_000, -min(half - 750, 2_300), z)
-        for index in range(int((x1 - x0) // 1_100)):
-            parts += _put(pf.sun_lounger(), x0 + index * 1_100, half - 2_100, z)
+        # Бар у бассейна назван в плане — значит, он должен там стоять.
+        # Ставится у борта за чашей, чтобы не перекрывать обход бассейна.
+        parts += _put(pf.bar_counter(min(pool_len - 2_000, 5_000)),
+                      x0 + 1_500, -half + 900, z)
+        parts += _loungers(x0 + 10_500, x1, half_at, z)
     elif "бар" in name or "салон" in name or "холл" in name:
         parts += _put(pf.bar_counter(min(x1 - x0 - 2_000, 6_000)), x0 + 800,
                       half - 3_200, z)
@@ -422,10 +499,31 @@ def furnish_zone(zone, deck_name, level, half_at):
     elif "фитнес" in name or "спа" in name:
         parts += _grid(area, 2_200, 2_400, pf.gym_station, half_at, z)
     elif "шезлонг" in name or "отдыха" in name:
-        for index in range(int((x1 - x0) // 1_100)):
-            for side in (-1, 1):
-                parts += _put(pf.sun_lounger(), x0 + index * 1_100,
-                              side * (half - 2_100) - (0 if side > 0 else 0), z)
+        parts += _loungers(x0, x1, half_at, z)
+    elif "вентиляц" in name or "кожух" in name:
+        # у трубы стоит то, что и должно: агрегаты, а не пустой настил
+        for index in range(2):
+            parts += _put(pf.air_conditioning(), x0 + 600 + index * 3_200,
+                          -half + 900, z)
+        parts += _put(pf.pump_station(), x0 + 600, half - 3_000, z)
+    elif "смотров" in name:
+        # открытая площадка: скамьи вдоль ограждения, ничего капитального —
+        # обвод здесь сужается вдвое, и любой объём вылезет за борт
+        step = 2_600
+        index = 0
+        x = x0 + 1_000
+        while x + step <= x1 - 1_000:
+            local = min(half_at(x), half_at(x + step)) - 900
+            if local > 1_400:
+                for side in (-1, 1):
+                    y = local - 700 if side > 0 else -local
+                    parts += _put(pf.banquette(2_000, 700), x, y, z)
+            index += 1
+            x += step
+    elif "спортив" in name:
+        court = min(x1 - x0 - 2_000, 18_000)
+        parts += _put(pf.sport_court(court, min(2 * half - 2_000, 9_000)),
+                      x0 + 1_000, -min(half - 1_000, 4_500), z)
     elif "магазин" in name or "кладов" in name or "провизион" in name:
         parts += _grid(area, 1_600, 3_000, pf.shop_unit, half_at, z)
     elif "боулинг" in name or "бильярд" in name:
@@ -508,6 +606,30 @@ ZONE_FLOOR = {
 }
 
 
+def zone_contour(x0, x1, half_at, margin=120, step=1_500):
+    """Контур участка палубы, ВЫБРАННЫЙ по её полушироте.
+
+    Прямоугольник по самому узкому сечению зоны, который отдаёт _usable,
+    годится для расстановки мебели: там важно не вылезти за борт. Настилу
+    он не годится — зал в оконечности сужается плавно, и прямоугольник по
+    его носку оставляет остальную палубу без пола. На виде с уровня глаз
+    это читается сразу: цветная дорожка посреди зала и голая палуба по
+    бортам.
+    """
+    count = max(2, int((x1 - x0) / step))
+    samples = [x0 + (x1 - x0) * i / count for i in range(count + 1)]
+    right, left = [], []
+    for x in samples:
+        half = half_at(x) - margin
+        if half < 400:
+            continue
+        right.append((x, half))
+        left.append((x, -half))
+    if len(right) < 2:
+        return None
+    return right + list(reversed(left))
+
+
 def zone_floors(deck_name, level):
     """Настил общественной зоны в свой цвет.
 
@@ -523,10 +645,11 @@ def zone_floors(deck_name, level):
                        if key in zone.name.lower()), None)
         if colour is None:
             continue
-        area = _usable(zone, half_at, margin=120)
-        if area is None:
+        points = zone_contour(zone.x0 + 120, zone.x0 + zone.length - 120,
+                              half_at)
+        if points is None:
             continue
-        x0, x1, half = area
-        parts.append(_part(x1 - x0, 2 * half, FLOOR, (x0, -half, level),
-                           colour, MAT_WALL, f"настил зоны: {zone.name}"))
+        slab = lines.deck_slab(points, level + FLOOR, FLOOR, colour, MAT_WALL,
+                               f"настил зоны: {zone.name}")
+        parts.append(slab)
     return parts
