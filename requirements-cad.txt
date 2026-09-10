@@ -1,0 +1,12 @@
+# Runtime for the text-to-cad skills (https://github.com/earthtojake/text-to-cad).
+# The pin must match skills/*/requirements.txt in the installed skill tree —
+# verify with: .venv/bin/cadgen doctor .agents/skills/cad
+cadgen[snapshot]==0.5.1
+
+# dfam-check skill (mesh printability measurement)
+trimesh
+numpy
+rtree
+scipy
+networkx
+lxml
