@@ -5,3 +5,6 @@ __pycache__/
 
 # cadgen build outputs kept out of git by default; commit deliberately
 *.step.json
+
+# рабочие снимки и отладочные рендеры
+tmp/
