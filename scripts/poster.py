@@ -100,9 +100,15 @@ def main():
     disp = hull.displacement(body)
     summary = ar.summary()
 
+    # число деталей берётся из самой сборки: на листе оно показывает
+    # степень проработки, и врать ему нечем
+    from lib import vessel
+
+    part_count = len(vessel.build().leaves)
+
     # холст с запасом: итоговая высота известна только после раскладки,
     # а обрезка по y в конце всё равно уберёт лишнее
-    canvas = Image.new("RGB", (W, 6400), PAPER)
+    canvas = Image.new("RGB", (W, 9600), PAPER)
     draw = ImageDraw.Draw(canvas)
 
     # --- шапка
@@ -137,6 +143,7 @@ def main():
         ("Высота габаритная", f"{ship.air_draft(0) / 1000:.1f} м"),
         ("Палуб", f"{len(ar.DECKS)}"),
         ("Кают для маломобильных", f"{summary['by_category'].get('accessible', 0)}"),
+        ("Деталей в модели", f"{part_count}"),
         ("Автономность", "10 суток"),
     ]
     ry = y + 84
@@ -180,6 +187,29 @@ def main():
         draw.text((x, y + profile.height - 26), label, fill=INK_3,
                   font=fonts["note"])
     y += profile.height + PAD
+
+    # --- насыщение палуб: то, что стоит внутри объёма
+    caption(draw, PAD, y, W - PAD * 2, "НАСЫЩЕНИЕ ПАЛУБ", fonts)
+    y += 44 + 14
+    cut = fit(trim(load("судно_разрез.png")), width=W - PAD * 2)
+    canvas.paste(cut, (PAD, y))
+    draw.text((PAD + 12, y + cut.height - 28), "продольный разрез",
+              fill=INK_3, font=fonts["note"])
+    y += cut.height + 16
+
+    for name, title in (("палуба_главная_сверху.png",
+                         "ГЛАВНАЯ ПАЛУБА · ресторан, вестибюль, магазины, "
+                         "конференц-зал"),
+                        ("палуба_средняя_сверху.png",
+                         "СРЕДНЯЯ ПАЛУБА · каюты, коридоры, центральный блок "
+                         "с трапами")):
+        deck = fit(trim(load(name)), width=W - PAD * 2)
+        canvas.paste(deck, (PAD, y))
+        bar = y + deck.height
+        draw.rectangle([PAD, bar, W - PAD, bar + 46], fill="#f2f4f6")
+        draw.text((PAD + 16, bar + 12), title, fill=INK_2, font=fonts["note"])
+        y += deck.height + 46 + 16
+    y += PAD - 16
 
     # --- планы палуб
     caption(draw, PAD, y, W - PAD * 2, "ОБЩЕЕ РАСПОЛОЖЕНИЕ ПО ПАЛУБАМ", fonts)
@@ -236,6 +266,8 @@ def main():
               "раскладки палуб, водоизмещение — по объёму подводной части.",
               fill=INK_3, font=fonts["note"])
 
+    if y + 60 > canvas.height:
+        raise SystemExit(f"лист не поместился в холст: нужно {y + 60} px")
     canvas = canvas.crop((0, 0, W, y + 60))
     out = RENDERS / "лист_проекта.png"
     canvas.save(out)
