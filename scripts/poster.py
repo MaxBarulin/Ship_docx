@@ -36,6 +36,7 @@ CABIN_TILES = [
     ("standard", "interior", "СТАНДАРТ"),
     ("business", "interior", "БИЗНЕС"),
     ("lux", "interior", "ЛЮКС"),
+    ("accessible", "interior", "ДЛЯ МАЛОМОБИЛЬНЫХ"),
 ]
 
 
@@ -135,6 +136,7 @@ def main():
         ("Водоизмещение", f"{disp['mass']:.0f} т"),
         ("Высота габаритная", f"{ship.air_draft(0) / 1000:.1f} м"),
         ("Палуб", f"{len(ar.DECKS)}"),
+        ("Кают для маломобильных", f"{summary['by_category'].get('accessible', 0)}"),
         ("Автономность", "10 суток"),
     ]
     ry = y + 84
@@ -149,7 +151,7 @@ def main():
     draw.text((px + 26, ry + 10), "ПРОВЕРКИ ПО ОГРАНИЧЕНИЯМ ТРАССЫ", fill=INK,
               font=fonts["h2"])
     ry += 62
-    for name, value, limit, ok in hull.checks(body)[:3]:
+    for name, value, limit, ok in hull.checks()[:3]:
         draw.text((px + 26, ry), f"✓  {name}", fill="#2c6e49", font=fonts["note"])
         draw.text((px + panel_w - 190, ry),
                   f"{value / 1000:.2f} / {limit / 1000:.1f} м", fill=INK_2,
@@ -193,7 +195,8 @@ def main():
     y += 44 + 14
     # плитки приводятся к одному боксу: после обрезки полей рендеры выходят
     # разной высоты, и подписи под ними разъезжаются по вертикали
-    tile_w = (W - PAD * 2 - 3 * 16) // 4
+    columns = len(CABIN_TILES)
+    tile_w = (W - PAD * 2 - (columns - 1) * 16) // columns
     tile_h = int(tile_w * 0.66)
     for index, (category, view, title) in enumerate(CABIN_TILES):
         shot = trim(load(f"{category}_{view}.png"))

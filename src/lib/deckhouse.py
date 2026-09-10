@@ -20,6 +20,7 @@ SUPERSTRUCTURE = srgb("#EFEDE6")
 DECK_TEAK = srgb("#A88A5E")
 DECK_PAINT = srgb("#8E9490")
 GLAZING = srgb("#8FB6CE", 0.38)
+GLASS_RAIL = srgb("#AFC9DA", 0.30)
 RAIL = srgb("#C8CCCE")
 DARK = srgb("#3A4048")
 SOLAR = srgb("#22304A")
@@ -167,9 +168,9 @@ def gangway(x_center, side, level):
     return parts
 
 
-def balcony(x0, length, side, level, depth=1_900):
-    """Балконы люксов на верхней палубе кают."""
-    y = side * (ship.SUPERSTRUCTURE_BEAM / 2)
+def balcony(x0, length, side, level, depth=1_800):
+    """Балконы люксов на верхней палубе кают, на ширине променада."""
+    y = side * 6_200
     y0 = y if side > 0 else y - depth
     return [
         _part(length, depth, 100, (x0, y0, level - 100), DECK_TEAK, MAT_TEAK,

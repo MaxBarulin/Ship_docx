@@ -254,3 +254,92 @@ def bath_pod(width=1500, depth=1700, height=2200, wet_stone=None, door_side="rig
         pod = bd.Pos(width, 0, 0) * bd.Rot(0, 0, 180) * bd.Pos(0, -depth, 0) * pod
         pod.label = "санблок"
     return pod
+
+
+# --- Доступная среда -------------------------------------------------------
+
+def grab_rail(length=800, vertical=False, diameter=40):
+    """Поручень. Ставится там, где человек переносит вес: у унитаза,
+    в душе, у кровати."""
+    if vertical:
+        bar = _part(diameter, diameter, length, (0, 0, 0),
+                    p.METAL, p.MAT_METAL, "поручень")
+    else:
+        bar = _part(length, diameter, diameter, (0, 0, 0),
+                    p.METAL, p.MAT_METAL, "поручень")
+    return bd.Compound(children=[bar], label="поручень")
+
+
+def shower_seat(width=450, depth=400):
+    """Откидное сиденье в душе на высоте пересадки."""
+    seat = _part(width, depth, 60, (0, 0, 480), p.LAMINATE, p.MAT_LACQUER,
+                 "сиденье")
+    bracket = _part(60, depth - 80, 200, (0, 40, 280),
+                    p.METAL, p.MAT_METAL, "кронштейн")
+    return bd.Compound(children=[seat, bracket], label="сиденье душевое")
+
+
+def accessible_pod(width=2_400, depth=2_300, height=2_200, door_side="right"):
+    """Санблок для маломобильных.
+
+    Отличается от обычного не размером, а устройством: душ без поддона и
+    порога (вода уходит в трап в полу), унитаз с боковым подходом под
+    кресло, раковина без тумбы — под неё должны заезжать колени, — и
+    поручни у каждой точки, где человек переносит вес.
+    """
+    t = 60
+    walls = [
+        _part(t, depth, height, (0, 0, 0), p.SANITARY, p.MAT_CERAMIC, "переборка"),
+        _part(width, t, height, (0, depth - t, 0), p.SANITARY, p.MAT_CERAMIC,
+              "переборка"),
+        _part(t, depth - 1_100, height, (width - t, 1_100, 0),
+              p.SANITARY, p.MAT_CERAMIC, "переборка"),
+    ]
+    floor = _part(width, depth, 30, (0, 0, 0), p.FLOOR_TILE, p.MAT_CERAMIC,
+                  "пол без порога")
+    drain = p.finish(bd.Pos(t + 600, depth - t - 600, 30) * bd.Cylinder(90, 20),
+                     p.METAL, p.MAT_METAL, "трап")
+
+    # душ: только штора и стойка, ни поддона, ни бортика
+    riser = _part(60, 60, 1_100, (t + 60, depth - t - 120, 1_000),
+                  p.METAL, p.MAT_METAL, "стойка душа")
+    curtain = _part(20, 1_200, 1_900, (t + 1_300, depth - t - 1_200, 200),
+                    p.GLASS_SHOWER, p.MAT_GLASS, "штора")
+
+    bowl = _part(380, 580, 450, (width - 900, 120, 30),
+                 p.SANITARY, p.MAT_CERAMIC, "унитаз")
+    cistern = _part(380, 200, 500, (width - 900, 120, 480),
+                    p.SANITARY, p.MAT_CERAMIC, "бачок")
+
+    # раковина консольная: под ней пусто, чтобы подъехать на кресле
+    basin = _part(650, 480, 140, (t + 120, 0, 780), p.SANITARY, p.MAT_CERAMIC,
+                  "раковина консольная")
+    tap = _part(45, 45, 240, (t + 420, 60, 920), p.METAL, p.MAT_METAL,
+                "смеситель")
+    mirror = _part(700, 20, 1_000, (t + 100, 0, 980), p.GLASS, p.MAT_GLASS,
+                   "зеркало")
+
+    rails = [
+        place_rail(grab_rail(900), width - 1_000, 60, 850),
+        place_rail(grab_rail(700, vertical=True), width - 1_050, 700, 800),
+        place_rail(grab_rail(800), t + 100, depth - t - 80, 900),
+        place_rail(grab_rail(600, vertical=True), t + 80, depth - t - 700, 900),
+    ]
+    seat = bd.Pos(t + 200, depth - t - 500, 0) * shower_seat()
+    seat.label = "сиденье душевое"
+
+    pod = bd.Compound(
+        children=[*walls, floor, drain, riser, curtain, bowl, cistern,
+                  basin, tap, mirror, seat, *rails],
+        label="санблок доступный",
+    )
+    if door_side == "left":
+        pod = bd.Pos(width, 0, 0) * bd.Rot(0, 0, 180) * bd.Pos(0, -depth, 0) * pod
+        pod.label = "санблок доступный"
+    return pod
+
+
+def place_rail(rail, x, y, z):
+    moved = bd.Pos(x, y, z) * rail
+    moved.label = rail.label
+    return moved

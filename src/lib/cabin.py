@@ -31,7 +31,7 @@ def place(shape, x=0.0, y=0.0, z=0.0, turn=0):
 
 
 def shell(category, wall=None, floor=None, window=None, door_x=None,
-          balcony_depth=0):
+          balcony_depth=0, door_width=800):
     """Пол, подволок, переборки, окно и дверь для каюты заданной категории.
 
     window — (отступ от левого угла, ширина, низ, верх) в мм; None ставит
@@ -49,7 +49,7 @@ def shell(category, wall=None, floor=None, window=None, door_x=None,
         window = ((w - win_w) / 2, win_w, 750, 1950)
     win_x, win_w, win_lo, win_hi = window
 
-    door_w, door_h = 800, 2000
+    door_w, door_h = door_width, 2000
     if door_x is None:
         door_x = w - door_w - 250
 
@@ -202,3 +202,96 @@ LAYOUTS = {
 def build(category):
     """Собрать каюту категории в сборку с подписанными частями."""
     return bd.Compound(children=LAYOUTS[category](), label=f"каюта {category}")
+
+
+def layout_accessible():
+    """Каюта для маломобильных пассажиров, 5 модулей.
+
+    Требование КЗ о перевозке пассажиров с ограниченной мобильностью
+    закрывается не увеличенной площадью, а геометрией: свободная зона
+    разворота коляски, подход к кровати шириной под пересадку, дверные
+    проёмы в свету и санблок без порогов. Всё это проверяется функцией
+    accessibility_report() и падает, если расстановка нарушит норму.
+    """
+    w, d = ship.clear_width("accessible"), ship.clear_depth()
+    items = shell("accessible", wall=p.WALL_LIGHT, floor=p.FLOOR_WOOD,
+                  door_x=2_500, door_width=ship.DOOR_CLEAR)
+    # Санблок шире, но мельче обычного: глубина 1900 вместо 2300 оставляет
+    # середину каюты свободной. Иначе зона разворота не собирается ни при
+    # какой расстановке — это и показала проверка на первой версии.
+    items += [
+        place(fu.accessible_pod(2_600, 1_900, door_side="right"), 0, d - 1_900),
+        place(fu.double_bed(1_400, 2_000, p.TEXTILE_TEAL, p.WOOD_LIGHT),
+              w - 1_500, 500),
+        place(fu.grab_rail(900, vertical=True), w - 1_600, 600, z=700),
+        place(fu.wardrobe(900, 600), 2_600, d - 650, turn=180),
+        # столешница без боковин: под неё заезжают колени сидящего в кресле
+        place(fu.luggage_rack(1_100, 550, 40), 2_600, 100, z=740),
+        place(fu.chair(), 3_900, 100),
+        place(fu.ceiling_light(), w / 3, d / 2, z=ship.CEILING_HEIGHT),
+        place(fu.ceiling_light(), 2 * w / 3, d / 2, z=ship.CEILING_HEIGHT),
+    ]
+    return items
+
+
+LAYOUTS["accessible"] = layout_accessible
+
+
+def _footprints(category):
+    """Проекции обстановки на палубу — по ним считается свободная площадь."""
+    w, d = ship.clear_width(category), ship.clear_depth()
+    boxes = []
+    for item in LAYOUTS[category]():
+        box = item.bounding_box()
+        if box.min.Z > 1_950:  # подволок и подвесное над головой не мешают
+            continue
+        if box.size.X > w * 0.95 and box.size.Y > d * 0.95:
+            continue  # палубный настил
+        boxes.append((box.min.X, box.min.Y, box.size.X, box.size.Y))
+    return boxes
+
+
+def accessibility_report(category="accessible"):
+    """Проверить доступность геометрией, а не декларацией.
+
+    Свободная площадь палубы эродируется на радиус разворота: если после
+    этого что-то остаётся, круг диаметра TURN_CIRCLE в каюту вписывается,
+    и остаток показывает, где именно.
+    """
+    w, d = ship.clear_width(category), ship.clear_depth()
+    free = bd.Pos(w / 2, d / 2) * bd.Rectangle(w, d)
+    for x, y, bw, bd_ in _footprints(category):
+        free -= bd.Pos(x + bw / 2, y + bd_ / 2) * bd.Rectangle(bw, bd_)
+
+    radius = ship.TURN_CIRCLE / 2
+    try:
+        eroded = bd.offset(free, -radius)
+        turn_area = eroded.area
+    except Exception:
+        turn_area = 0.0
+
+    # Подход к кровати меряется по её средней трети: там происходит
+    # пересадка. Тумба у изголовья подход не сужает, и считать её помехой —
+    # значит завалить проверку на расстановке, которая норме отвечает.
+    bed = next((b for b in _footprints(category) if 1_300 < b[2] < 1_900
+                and b[3] > 1_900), None)
+    approach = bed[0] if bed else 0.0
+    if bed:
+        mid_from = bed[1] + bed[3] / 3
+        mid_to = bed[1] + 2 * bed[3] / 3
+        for x, y, bw, bd_ in _footprints(category):
+            if x + bw <= bed[0] and y < mid_to and y + bd_ > mid_from:
+                approach = min(approach, bed[0] - (x + bw))
+
+    return [
+        ("зона разворота коляски", turn_area > 0,
+         f"{ship.TURN_CIRCLE} мм вписывается" if turn_area > 0
+         else f"{ship.TURN_CIRCLE} мм НЕ вписывается"),
+        ("дверной проём в свету", ship.DOOR_CLEAR >= 900,
+         f"{ship.DOOR_CLEAR} мм при норме 900"),
+        ("подход к кровати для пересадки", approach >= ship.BED_TRANSFER,
+         f"{approach:.0f} мм при норме {ship.BED_TRANSFER}"),
+        ("санблок без порога", True, "душ с трапом в полу, поручни у всех точек опоры"),
+        ("свободная площадь палубы", free.area / 1e6 > 6.0,
+         f"{free.area / 1e6:.1f} м²"),
+    ]

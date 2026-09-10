@@ -48,14 +48,14 @@ def render():
 
 
 def specs():
-    from lib import hull, ship
+    from lib import hull, ship, vessel
 
     body = hull.hull_solid()
     box = body.bounding_box()
     d = hull.displacement(body)
 
-    mix = {"econom": 10, "standard": 8, "business": 4, "lux": 1}
-    cap = ship.capacity(mix)
+    from lib import arrangement as ar
+    cap = ar.summary()
 
     print("\nОСНОВНЫЕ ХАРАКТЕРИСТИКИ")
     rows = [
@@ -67,11 +67,12 @@ def specs():
         ("Надводный борт", f"{ship.FREEBOARD / 1000:.1f} м"),
         ("Водоизмещение", f"{d['mass']:.0f} т"),
         ("Коэффициент общей полноты", f"{d['cb']:.3f}"),
-        ("Высота с заваленной мачтой", f"{ship.air_draft(0) / 1000:.1f} м"),
-        ("Палуб всего", f"{len(ship.DECK_LEVELS)}"),
+        ("Высота с заваленной мачтой", f"{vessel.air_draft() / 1000:.2f} м"),
+        ("Палуб всего", f"{len(ar.DECKS)}"),
         ("Палуб с каютами", f"{ship.CABIN_DECKS}"),
         ("Кают", f"{cap['cabins']}"),
         ("Пассажировместимость", f"{cap['passengers']} чел."),
+        ("Экипаж", f"{cap['crew']} чел."),
     ]
     for name, value in rows:
         print(f"  {name:32} {value:>12}")
@@ -82,14 +83,17 @@ def specs():
         print(f"  {'✓' if ok else '✗'} {name:34} "
               f"{value / 1000:6.2f} / {limit / 1000:5.2f} м   {mark}")
 
-    print("\nРАСКЛАДКА КАЮТ на борт одной палубы")
-    for category, count in mix.items():
-        print(f"  {category:10} x{count:2}  "
-              f"{count * ship.cabin_width(category) / 1000:6.2f} м  "
+    print("\nЗАНЯТОСТЬ ПАЛУБ")
+    for name, number, level, _x0, available in ar.DECKS:
+        used = sum(z.length for z in ar.place(name))
+        print(f"  {name:12} палуба {number}  {level / 1000:5.2f} м  "
+              f"{used / 1000:6.1f} / {available / 1000:5.1f} м  "
+              f"{'OK' if used <= available else 'ПЕРЕБОР'}")
+
+    print("\nКАЮТЫ ПО КАТЕГОРИЯМ")
+    for category, count in cap["by_category"].items():
+        print(f"  {category:11} {count:3} шт  "
               f"по {ship.clear_area(category):5.2f} м²")
-    print(f"  занято {cap['length_used'] / 1000:.1f} м "
-          f"из {cap['length_available'] / 1000:.0f} м доступных — "
-          f"{'влезает' if cap['fits'] else 'НЕ ВЛЕЗАЕТ'}")
 
 
 def main():

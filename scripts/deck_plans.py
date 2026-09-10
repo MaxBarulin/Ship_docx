@@ -42,10 +42,12 @@ CATEGORY_COLOR = {
     "standard": "#3F8375",
     "business": "#C2A883",
     "lux": "#8E4552",
+    "accessible": "#D08A3E",
 }
 CATEGORY_NAME = {
     "econom": "эконом", "standard": "стандарт",
     "business": "бизнес", "lux": "люкс",
+    "accessible": "доступная",
 }
 KIND_COLOR = {
     "service": "#DED9CE",
@@ -66,6 +68,89 @@ def hull_outline(y_center):
     bottom = [(MARGIN_X + mm(x), y_center + mm(b_deck))
               for x, _, _, b_deck, _, _, _ in reversed(ship.STATIONS)]
     return top + bottom
+
+
+FURNITURE = "#8d9a9f"
+WATER = "#7FB4CE"
+
+
+def furnish(draw, zone, left, right, y_center, beam_px):
+    """Расставить мебель в общественной зоне.
+
+    Пустой прямоугольник с подписью «ресторан» ничего не доказывает: зал на
+    сотню мест и зал на двадцать выглядят одинаково. Столы и кресла рисуются
+    по реальному шагу посадки, поэтому по плану видно, сколько людей зона
+    вмещает — а это следующий вопрос эксперта после «где ресторан».
+    """
+    name = zone.name.lower()
+    top, bottom = y_center - beam_px / 2 + 6, y_center + beam_px / 2 - 6
+    width, height = right - left, bottom - top
+    if width < 30 or height < 20:
+        return
+
+    def grid(step_x, step_y, draw_cell, inset=14):
+        x = left + inset
+        while x + step_x <= right - inset:
+            y = top + inset
+            while y + step_y <= bottom - inset:
+                draw_cell(x, y)
+                y += step_y
+            x += step_x
+
+    if "ресторан" in name or "кафе" in name:
+        grid(mm(2_600), mm(2_400), lambda x, y: draw.ellipse(
+            [x, y, x + mm(1_300), y + mm(1_300)], outline=FURNITURE, width=2))
+    elif "бассейн" in name:
+        draw.rounded_rectangle([left + width * 0.18, top + height * 0.24,
+                                left + width * 0.72, bottom - height * 0.24],
+                               radius=12, fill=WATER, outline=FURNITURE)
+        for index in range(3):
+            x = right - mm(3_200) + index * mm(1_100)
+            draw.ellipse([x, y_center - mm(500), x + mm(900),
+                          y_center + mm(400)], outline=FURNITURE, width=2)
+    elif "бар" in name or "салон" in name or "холл" in name:
+        draw.rectangle([left + 16, top + 10, left + 16 + mm(1_000),
+                        top + 10 + height * 0.5], fill=FURNITURE)
+        grid(mm(2_800), mm(2_600), lambda x, y: draw.ellipse(
+            [x, y, x + mm(1_100), y + mm(1_100)], outline=FURNITURE, width=2),
+            inset=int(mm(2_600)))
+    elif "конференц" in name:
+        draw.rectangle([right - 20, top + height * 0.3, right - 12,
+                        bottom - height * 0.3], fill=FURNITURE)
+        grid(mm(1_100), mm(950), lambda x, y: draw.rectangle(
+            [x, y, x + mm(600), y + mm(600)], fill=FURNITURE))
+    elif "фитнес" in name or "спа" in name:
+        grid(mm(2_000), mm(1_800), lambda x, y: draw.rectangle(
+            [x, y, x + mm(1_200), y + mm(800)], outline=FURNITURE, width=2))
+    elif "шезлонг" in name or "отдых" in name:
+        grid(mm(1_300), mm(2_600), lambda x, y: draw.rectangle(
+            [x, y, x + mm(700), y + mm(1_900)], outline=FURNITURE, width=2))
+    elif "магазин" in name or "кладов" in name:
+        grid(mm(1_600), mm(3_000), lambda x, y: draw.rectangle(
+            [x, y, x + mm(900), y + mm(2_400)], fill=FURNITURE))
+    elif "боулинг" in name or "бильярд" in name:
+        for index in range(4):
+            y = top + 12 + index * (height - 24) / 4
+            draw.rectangle([left + 18, y, right - 18, y + (height - 24) / 4 - 6],
+                           outline=FURNITURE, width=2)
+    elif "вестибюль" in name or "ресепшн" in name:
+        draw.rectangle([left + 18, y_center - mm(700), left + 18 + mm(4_000),
+                        y_center + mm(700)], fill=FURNITURE)
+    elif "камбуз" in name:
+        grid(mm(2_200), mm(2_000), lambda x, y: draw.rectangle(
+            [x, y, x + mm(1_600), y + mm(900)], fill=FURNITURE))
+    elif "экипаж" in name:
+        grid(mm(2_600), mm(2_800), lambda x, y: draw.rectangle(
+            [x, y, x + mm(2_200), y + mm(2_400)], outline=FURNITURE, width=2))
+    elif "машинное" in name:
+        for dy in (-1, 1):
+            draw.rectangle([left + width * 0.15, y_center + dy * mm(2_600)
+                            - mm(1_200), left + width * 0.55,
+                            y_center + dy * mm(2_600) + mm(1_200)],
+                           outline=FURNITURE, width=2)
+    elif "спортивная" in name:
+        draw.rectangle([left + 20, top + 14, right - 20, bottom - 14],
+                       outline=FURNITURE, width=2)
 
 
 def fit_label(draw, text, left, right, y_center, fonts, height=None):
@@ -135,6 +220,7 @@ def draw_deck(draw, deck_name, y_center, fonts):
             draw.rectangle([left, y_center - mm(beam / 2),
                             right, y_center + mm(beam / 2)],
                            fill=KIND_COLOR[zone.kind], outline=HULL_LINE)
+            furnish(draw, zone, left, right, y_center, mm(beam))
             fit_label(draw, zone.name, left, right, y_center, fonts,
                       height=mm(beam) - 14)
 
@@ -170,7 +256,7 @@ def legend(draw, y, fonts):
     x = MARGIN_X
     draw.text((18, y - 4), "Обозначения", fill=INK, font=fonts["title"])
     items = [(CATEGORY_COLOR[c], f"{CATEGORY_NAME[c]} · {ship.clear_area(c):.1f} м²")
-             for c in ("econom", "standard", "business", "lux")]
+             for c in ("econom", "standard", "business", "lux", "accessible")]
     items += [(KIND_COLOR["service"], "общественные помещения"),
               (KIND_COLOR["open"], "открытые палубы"),
               (KIND_COLOR["crew"], "экипаж"),
