@@ -6,5 +6,13 @@ __pycache__/
 # cadgen build outputs kept out of git by default; commit deliberately
 *.step.json
 
+# Автобэкапы Blender: дублируют .blend целиком при каждом сохранении
+*.blend1
+*.blend2
+
+# Настройки IDE — личные у каждого
+.idea/
+.vscode/
+
 # рабочие снимки и отладочные рендеры
 tmp/
