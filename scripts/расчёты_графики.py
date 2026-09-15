@@ -21,9 +21,12 @@ INK, ACC, SEA, GRN = "#1a2334", "#b02634", "#1c5c8a", "#187454"
 
 
 def head(fig, title, sub):
-    fig.suptitle(title, fontsize=15, fontweight="bold", x=0.01, ha="left", y=0.985)
-    fig.text(0.01, 0.945, sub, fontsize=9.5, color="#56627a", ha="left")
-    fig.text(0.99, 0.965, "«Волжский Горизонт» · проект 2026", fontsize=9,
+    h = fig.get_figheight()
+    y1 = 1.0 - 0.30 / h
+    y2 = 1.0 - 0.58 / h
+    fig.suptitle(title, fontsize=15, fontweight="bold", x=0.01, ha="left", y=y1)
+    fig.text(0.01, y2, sub, fontsize=9.5, color="#56627a", ha="left")
+    fig.text(0.99, y1 - 0.01 / h, "«Волжский Горизонт» · проект 2026", fontsize=9,
              color="#56627a", ha="right")
 
 
@@ -33,95 +36,13 @@ def save(fig, name):
     print("  ", name)
 
 
-def lines_plan():
-    fig = plt.figure(figsize=(15.5, 9.2))
-    head(fig, "Теоретический чертёж",
-         "Бок, полуширота и корпус. Шпации через 10 м, ватерлинии через 0.5 м")
-    gs = fig.add_gridspec(2, 2, width_ratios=[2.35, 1], height_ratios=[1, 1],
-                          hspace=0.22, wspace=0.14, top=0.90, bottom=0.06)
-    xs = [i * 0.5 for i in range(int(G.LOA / 0.5) + 1)]
-    T = H.equilibrium()["T"]
-
-    ax = fig.add_subplot(gs[0, 0])
-    for y in (0.5, 2.0, 4.0, 6.0, 7.5):
-        zz, xx = [], []
-        for x in xs:
-            b_dn, b_sk, b_pal, z_sk, z_kil, z_brt = H._station(x)
-            z = None
-            n = int((z_brt - z_kil) / 0.02) + 1
-            for k in range(n):
-                zt = z_kil + k * 0.02
-                if H.half_breadth(x, zt) >= y:
-                    z = zt
-                    break
-            if z is not None:
-                xx.append(x)
-                zz.append(z)
-        if xx:
-            ax.plot(xx, zz, color=INK, lw=1.0)
-            ax.annotate("%.1f" % y, (xx[0], zz[0]), fontsize=7, color=SEA,
-                        xytext=(2, 2), textcoords="offset points")
-    ax.plot(xs, [H._station(x)[4] for x in xs], color=INK, lw=1.6)
-    ax.plot(xs, [G.DEPTH] * len(xs), color=INK, lw=1.6)
-    for x in range(0, 140, 10):
-        ax.plot([x, x], [0, G.DEPTH], color="#b8c0cc", lw=0.6)
-    ax.axhline(T, color=SEA, lw=1.4)
-    ax.annotate("ВЛ %.2f м" % T, (2, T + 0.08), color=SEA, fontsize=8)
-    ax.set_xlim(-3, 142)
-    ax.set_ylim(-0.4, 5.2)
-    ax.set_title("Бок: батоксы, м от ДП", fontsize=10, loc="left")
-    ax.set_xlabel("x от кормового перпендикуляра, м")
-    ax.set_ylabel("z, м")
-    ax.set_aspect(2.6)
-
-    ax = fig.add_subplot(gs[1, 0])
-    for z in [0.5 * i for i in range(1, 9)]:
-        yy = [H.half_breadth(x, z) for x in xs]
-        ax.plot(xs, yy, color=INK, lw=1.0)
-        j = max(range(len(yy)), key=lambda i: yy[i])
-        ax.annotate("%.1f" % z, (xs[j] + 6, yy[j] - 0.35), fontsize=7, color=SEA)
-    ax.plot(xs, [H._station(x)[2] for x in xs], color=INK, lw=1.6)
-    for x in range(0, 140, 10):
-        ax.plot([x, x], [0, 8.6], color="#b8c0cc", lw=0.6)
-    ax.plot(xs, [H.half_breadth(x, T) for x in xs], color=SEA, lw=1.6)
-    ax.set_xlim(-3, 142)
-    ax.set_ylim(0, 9.2)
-    ax.set_title("Полуширота: ватерлинии через 0.5 м", fontsize=10, loc="left")
-    ax.set_xlabel("x, м")
-    ax.set_ylabel("полуширота, м")
-    ax.set_aspect(2.6)
-
-    ax = fig.add_subplot(gs[:, 1])
-    for x in (0, 10, 20, 30, 40, 50, 60, 69.5, 80, 90, 100, 110, 120, 127, 132, 136):
-        poly = H.section_polygon(x, G.DEPTH)
-        zs = [p[1] for p in poly]
-        sign = 1 if x >= 69.5 else -1
-        ys2 = [sign * abs(p[0]) for p in poly]
-        ax.plot(ys2, zs, color=ACC if x >= 69.5 else INK, lw=1.0)
-        ax.annotate("%d" % round(x),
-                    (sign * (max(abs(v) for v in ys2) + 0.15), max(zs) - 0.1),
-                    fontsize=7, color="#56627a",
-                    ha="left" if sign > 0 else "right")
-    ax.axvline(0, color="#3a4658", lw=1.2)
-    ax.axhline(T, color=SEA, lw=1.2)
-    for z in [0.5 * i for i in range(1, 9)]:
-        ax.axhline(z, color="#e2e6ec", lw=0.6)
-    ax.set_xlim(-9.4, 9.4)
-    ax.set_ylim(-0.3, 5.0)
-    ax.set_aspect(1.0)
-    ax.set_title("Корпус: слева корма, справа нос", fontsize=10, loc="left")
-    ax.set_xlabel("полуширота, м")
-    ax.set_ylabel("z, м")
-    save(fig, "01_теоретический_чертёж.png")
-
-
 def hydro_curves():
     ts = [0.8 + 0.2 * i for i in range(17)]
     rows = [H.hydrostatics(t) for t in ts]
     fig, axs = plt.subplots(1, 4, figsize=(15.5, 5.6))
     head(fig, "Кривые элементов теоретического чертежа",
          "Осадка от 0.8 до 4.0 м. Штриховая линия — расчётная осадка в полном грузу")
-    fig.subplots_adjust(top=0.84, wspace=0.34, bottom=0.12)
+    fig.subplots_adjust(top=0.80, wspace=0.34, bottom=0.12)
     T = H.equilibrium()["T"]
     sets = [
         [("Водоизмещение V, куб.м", [r["V"] for r in rows], SEA),
@@ -150,7 +71,7 @@ def bonjean_and_load():
     fig, axs = plt.subplots(2, 1, figsize=(15.5, 7.4), sharex=True)
     head(fig, "Строевая по шпангоутам и нагрузка масс",
          "Слева корма. Площади погружённых сечений и распределение массы по длине")
-    fig.subplots_adjust(top=0.87, hspace=0.18, bottom=0.09)
+    fig.subplots_adjust(top=0.85, hspace=0.18, bottom=0.09)
     om = [H.section_area(x, T) for x in xs]
     axs[0].fill_between(xs, om, color=SEA, alpha=0.18)
     axs[0].plot(xs, om, color=SEA, lw=1.8)
@@ -178,7 +99,7 @@ def stability_plots():
     fig, axs = plt.subplots(1, 3, figsize=(15.5, 5.4))
     head(fig, "Остойчивость на больших углах крена",
          "Сплошная — только корпус до 4.20 м, штриховая — с закрытой надстройкой до 7.00 м")
-    fig.subplots_adjust(top=0.84, wspace=0.26, bottom=0.14)
+    fig.subplots_adjust(top=0.80, wspace=0.26, bottom=0.14)
     axs[0].plot(a["theta"], a["lk"], color=SEA, lw=2, label="корпус")
     axs[0].plot(b["theta"], b["lk"], color=SEA, lw=1.6, ls="--", label="с надстройкой")
     axs[0].set_title("Пантокарены l_k", fontsize=10, loc="left")
@@ -246,7 +167,7 @@ def resistance_plots():
     fig, axs = plt.subplots(1, 2, figsize=(15.5, 5.4))
     head(fig, "Ходкость",
          "Сопротивление и потребная мощность на глубокой воде, ограничение по глубине фарватера")
-    fig.subplots_adjust(top=0.84, wspace=0.22, bottom=0.16)
+    fig.subplots_adjust(top=0.80, wspace=0.22, bottom=0.16)
     axs[0].plot(vs, [p["R"] for p in deep], color=SEA, lw=2, label="полное R")
     axs[0].plot(vs, [0.5 * H.RHO * 1000 * p["S"] * p["v"] ** 2 *
                      (p["Cf"] * (1 + p["k"]) + 0.0004) / 1000 for p in deep],
@@ -289,7 +210,6 @@ def resistance_plots():
 
 if __name__ == "__main__":
     print("строю графики:")
-    lines_plan()
     hydro_curves()
     bonjean_and_load()
     stability_plots()

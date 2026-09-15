@@ -212,7 +212,8 @@ renders/горизонт_2026/
     схемы/                      разрезы, взрыв-модель, доступность, системы, набор
     расчёты/                    теоретический чертёж, кривые, ДСО, прочность, ходкость
     чертежи/                    мидель-шпангоут, схема набора, чертёж детали
-    лист_проекта_горизонт.png   сводный лист
+    лист_проекта_горизонт.png   сводный лист проекта
+    лист_расчётов_горизонт.png  сводный лист расчётов по теории корабля
 ```
 
 ## Как пересчитать числа
@@ -228,6 +229,11 @@ python -c "import sys; sys.path.insert(0,'src'); from lib import gorizont_ga as 
 ```bash
 python -c "import sys;sys.path.insert(0,'src');from lib import gorizont_hydro as H;e=H.equilibrium();print('T=%.3f  h=%.3f'%(e['T'],H.initial_stability()['h']))"
 python -c "import sys;sys.path.insert(0,'src');from lib import gorizont_strength as S;[print(r['condition'],round(r['sigma_deck'],1)) for r in S.stresses()['rows']]"
-python scripts/расчёты_графики.py      # перестроить графики расчётов
-python scripts/чертёж_мидель.py        # перестроить чертёж мидель-шпангоута
+python scripts/расчёты_графики.py      # кривые, ДСО, прочность, ходкость
+python scripts/теоретический_чертёж.py # теоретический чертёж
+python scripts/корпус_и_ординаты.py    # корпус и таблица плазовых ординат
+python scripts/чертёж_мидель.py        # конструктивный мидель-шпангоут
+python scripts/чертёж_набора.py        # схема набора корпуса
+python scripts/чертёж_кницы.py         # чертёж детали и DXF
+python scripts/лист_расчётов.py        # сводный лист расчётов
 ```
