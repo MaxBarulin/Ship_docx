@@ -1,0 +1,653 @@
+# -*- coding: utf-8 -*-
+"""Теория корабля «Волжского Горизонта».
+
+Гидростатика, посадка, остойчивость, ходкость и качка. Считается всё от
+обводов, а не от коэффициентов: таблица шпангоутов в `gorizont.STATIONS`
+задаёт три полушироты и три аппликаты на каждом сечении, между ними обвод
+линейный, между шпангоутами — тоже. Это та же функция полушироты, по которой
+построена поверхность корпуса в Blender, поэтому расчёт и модель описывают
+одно судно.
+
+Методика — курс теории корабля СПбГМТУ:
+  * элементы теоретического чертежа — численным интегрированием по
+    шпангоутам (правило трапеций по сгущённой сетке);
+  * остойчивость на больших углах — пантокарены через отсечение сечения
+    наклонной ватерлинией, диаграммы статической и динамической
+    остойчивости, проверка по нормам РРР;
+  * ходкость — сопротивление трения по ITTC-57 с формфактором, остаточное
+    по аппроксимации серии полных обводов, поправка на мелководье по
+    Шлихтингу, контроль адмиралтейским коэффициентом;
+  * продольная прочность — в модуле gorizont_strength.
+
+Массы в тоннах, длины в метрах, углы в градусах. Вода пресная, ро = 1.000.
+"""
+import math
+from . import gorizont as G
+
+RHO = 1.000          # плотность пресной воды, т/м3
+NU = 1.14e-6         # кинематическая вязкость воды при 15 C, м2/с
+GRAV = 9.81
+
+_ST = G.STATIONS
+
+
+def _station(x):
+    """Интерполяция строки таблицы шпангоутов по длине."""
+    if x <= _ST[0][0]:
+        r = _ST[0]
+        return r[1], r[2], r[3], r[4], r[5], r[6]
+    if x >= _ST[-1][0]:
+        r = _ST[-1]
+        return r[1], r[2], r[3], r[4], r[5], r[6]
+    for i in range(len(_ST) - 1):
+        x0, x1 = _ST[i][0], _ST[i + 1][0]
+        if x0 <= x <= x1:
+            t = (x - x0) / (x1 - x0)
+            a, b = _ST[i], _ST[i + 1]
+            return tuple(a[k] + t * (b[k] - a[k]) for k in range(1, 7))
+    raise ValueError(x)
+
+
+def half_breadth(x, z):
+    """Полуширота обвода на шпангоуте x и высоте z от основной плоскости."""
+    b_dn, b_sk, b_pal, z_sk, z_kil, z_brt = _station(x)
+    if z < z_kil:
+        return 0.0
+    if z <= z_sk:
+        if z_sk - z_kil < 1e-9:
+            return b_sk
+        t = (z - z_kil) / (z_sk - z_kil)
+        return b_dn + t * (b_sk - b_dn)
+    if z <= z_brt:
+        if z_brt - z_sk < 1e-9:
+            return b_pal
+        t = (z - z_sk) / (z_brt - z_sk)
+        return b_sk + t * (b_pal - b_sk)
+    return b_pal
+
+
+def super_half_breadth(x):
+    """Полуширота надстройки — тот же обвод, по которому она построена."""
+    if x < G.SUPER_START or x > G.SUPER_END:
+        return 0.0
+    base = min(G.SUPER_HALF, half_breadth(x, G.DEPTH) - G.SIDE_WALK)
+    if x > 119.0:
+        base = min(base, G.SUPER_HALF * (1.0 - ((x - 119.0) / 13.0) ** 1.55))
+    if x < 15.0:
+        base = min(base, G.SUPER_HALF * (1.0 - ((15.0 - x) / 5.5) ** 1.8))
+    return max(0.0, base)
+
+
+def section_polygon(x, z_top=None):
+    """Полный контур шпангоута (оба борта), список (y, z).
+
+    При z_top выше высоты борта в контур добавляется закрытая надстройка:
+    она водонепроницаема на 86 % длины и на больших углах крена даёт
+    дополнительный запас плавучести.
+    """
+    b_dn, b_sk, b_pal, z_sk, z_kil, z_brt = _station(x)
+    if z_top is None:
+        z_top = z_brt
+    if z_top <= z_brt:
+        b_top = half_breadth(x, z_top)
+        right = [(0.0, z_kil), (b_dn, z_kil), (b_sk, z_sk), (b_top, z_top)]
+    else:
+        bs = super_half_breadth(x)
+        right = [(0.0, z_kil), (b_dn, z_kil), (b_sk, z_sk), (b_pal, z_brt)]
+        if bs > 0.05:
+            right += [(bs, z_brt), (bs, z_top)]
+        else:
+            right += [(b_pal, z_top)]
+    left = [(-y, z) for (y, z) in reversed(right)]
+    return left + right[1:]
+
+
+def _clip_below(poly, nz, ny, c):
+    """Отсечение многоугольника полуплоскостью nz*z + ny*y <= c."""
+    if not poly:
+        return []
+    out = []
+    n = len(poly)
+    for i in range(n):
+        y0, z0 = poly[i]
+        y1, z1 = poly[(i + 1) % n]
+        f0 = nz * z0 + ny * y0 - c
+        f1 = nz * z1 + ny * y1 - c
+        if f0 <= 0:
+            out.append((y0, z0))
+        if (f0 < 0 < f1) or (f1 < 0 < f0):
+            t = f0 / (f0 - f1)
+            out.append((y0 + t * (y1 - y0), z0 + t * (z1 - z0)))
+    return out
+
+
+def _poly_area_centroid(poly):
+    n = len(poly)
+    if n < 3:
+        return 0.0, 0.0, 0.0
+    a = cy = cz = 0.0
+    for i in range(n):
+        y0, z0 = poly[i]
+        y1, z1 = poly[(i + 1) % n]
+        cr = y0 * z1 - y1 * z0
+        a += cr
+        cy += (y0 + y1) * cr
+        cz += (z0 + z1) * cr
+    a *= 0.5
+    if abs(a) < 1e-12:
+        return 0.0, 0.0, 0.0
+    return abs(a), cy / (6 * a), cz / (6 * a)
+
+
+def _xs(step=0.5):
+    n = int(round(G.LOA / step))
+    return [i * G.LOA / n for i in range(n + 1)]
+
+
+def _trapz(ys, xs):
+    s = 0.0
+    for i in range(len(xs) - 1):
+        s += 0.5 * (ys[i] + ys[i + 1]) * (xs[i + 1] - xs[i])
+    return s
+
+
+def section_area(x, T):
+    """Погружённая площадь шпангоута при осадке T, оба борта."""
+    b_dn, b_sk, b_pal, z_sk, z_kil, z_brt = _station(x)
+    if T <= z_kil:
+        return 0.0
+    zs = set([z_kil, T])
+    for z in (z_sk, z_brt):
+        if z_kil < z < T:
+            zs.add(z)
+    zs = sorted(zs)
+    a = 0.0
+    for i in range(len(zs) - 1):
+        z0, z1 = zs[i], zs[i + 1]
+        a += 0.5 * (half_breadth(x, z0) + half_breadth(x, z1)) * (z1 - z0)
+    return 2.0 * a
+
+
+_HCACHE = {}
+
+
+def hydrostatics(T, step=0.5):
+    """Элементы теоретического чертежа на ровный киль при осадке T."""
+    key = (round(T, 6), step)
+    if key in _HCACHE:
+        return _HCACHE[key]
+    xs = _xs(step)
+    om = [section_area(x, T) for x in xs]
+    bw = [2.0 * half_breadth(x, T) for x in xs]
+
+    V = _trapz(om, xs)
+    if V <= 1e-6:
+        return None
+    xc = _trapz([o * x for o, x in zip(om, xs)], xs) / V
+
+    nz = 40
+    zs = [T * i / nz for i in range(nz + 1)]
+    Aw_z = [_trapz([2.0 * half_breadth(x, z) for x in xs], xs) for z in zs]
+    V_chk = _trapz(Aw_z, zs)
+    zc = _trapz([a * z for a, z in zip(Aw_z, zs)], zs) / max(V_chk, 1e-9)
+
+    Aw = _trapz(bw, xs)
+    xf = _trapz([b * x for b, x in zip(bw, xs)], xs) / max(Aw, 1e-9)
+    Ix = _trapz([(b ** 3) / 12.0 for b in bw], xs)
+    Iy = _trapz([b * (x - xf) ** 2 for b, x in zip(bw, xs)], xs)
+
+    def girth(x):
+        b_dn, b_sk, b_pal, z_sk, z_kil, z_brt = _station(x)
+        if T <= z_kil:
+            return 0.0
+        pts = [(0.0, z_kil), (b_dn, z_kil), (b_sk, z_sk), (b_pal, z_brt)]
+        g = 0.0
+        for i in range(len(pts) - 1):
+            y0, z0 = pts[i]
+            y1, z1 = pts[i + 1]
+            if z0 >= T:
+                break
+            if z1 > T:
+                t = (T - z0) / max(z1 - z0, 1e-9)
+                y1 = y0 + t * (y1 - y0)
+                z1 = T
+            g += math.hypot(y1 - y0, z1 - z0)
+            if z1 >= T:
+                break
+        return 2.0 * g
+
+    S = _trapz([girth(x) for x in xs], xs)
+
+    wet = [x for x, b in zip(xs, bw) if b > 1e-6]
+    Lw = max(wet) - min(wet)
+    Bw = max(bw)
+    Om_mid = max(om)
+    delta = V / (Lw * Bw * T)
+    alpha = Aw / (Lw * Bw)
+    beta = Om_mid / (Bw * T)
+    r = Ix / V
+    R = Iy / V
+    res = dict(T=T, V=V, D=RHO * V, Aw=Aw, S=S,
+                xc=xc, zc=zc, xf=xf, Ix=Ix, Iy=Iy, r=r, R=R,
+                zm=zc + r, zM=zc + R, Lw=Lw, Bw=Bw, Om=Om_mid,
+                delta=delta, alpha=alpha, beta=beta,
+                phi=delta / beta, chi=delta / alpha,
+                TPC=0.01 * RHO * Aw,
+                MCT=RHO * V * R / (100.0 * Lw))
+    _HCACHE[key] = res
+    return res
+
+
+def curves(T_from=1.0, T_to=3.6, n=13):
+    return [hydrostatics(T_from + (T_to - T_from) * i / n)
+            for i in range(n + 1)]
+
+
+# Нагрузка масс. Поля: имя, масса т, x0, x1 (границы распределения по длине),
+# аппликата ЦТ м, момент свободной поверхности т·м.
+# Масса корпуса и надстройки — не оценка, а результат gorizont_struct.steel_weight()
+# и superstructure_weight(): сумма листов и профилей по фактическим размерам связей.
+WEIGHT_GROUPS = [
+    ("Корпус металлический",              1095.6,   0.0, 139.0,  1.79,   0.0),
+    ("Надстройка и рубка",                 367.6,  11.0, 131.0,  8.84,   0.0),
+    ("Изоляция и зашивка, первая палуба",   55.0,  39.6, 114.2,  2.60,   0.0),
+    ("Изоляция и зашивка, главная",         70.0,  11.2, 129.6,  5.40,   0.0),
+    ("Изоляция и зашивка, верхняя",         70.0,  11.2, 129.6,  8.20,   0.0),
+    ("Изоляция и зашивка, шлюпочная",       55.0,  19.9, 115.3, 11.00,   0.0),
+    ("Оборудование помещений, первая",      95.0,  39.6, 114.2,  2.70,   0.0),
+    ("Оборудование помещений, главная",    165.0,  11.2, 129.6,  5.50,   0.0),
+    ("Оборудование помещений, верхняя",    160.0,  11.2, 129.6,  8.30,   0.0),
+    ("Оборудование помещений, шлюпочная",  120.0,  19.9, 115.3, 11.10,   0.0),
+    ("Якорно-швартовное устройство",        34.0, 118.0, 136.0,  5.40,   0.0),
+    ("Рулевое устройство и колонки",        18.0,   2.0,  12.0,  1.20,   0.0),
+    ("Спасательные средства",               62.0,  39.0,  99.0, 10.90,   0.0),
+    ("Системы и трубопроводы",             260.0,   5.0, 132.0,  5.20,   0.0),
+    ("Энергетическая установка",           262.0,   8.0,  34.0,  1.55,   0.0),
+    ("Электрооборудование и АСУ",          180.0,   8.0, 132.0,  5.60,   0.0),
+    ("Запас водоизмещения 3 %",             95.0,   0.0, 139.0,  5.00,   0.0),
+    ("Топливо 160 м3",                     136.0,  40.0,  52.0,  0.80, 210.0),
+    ("Масло и рабочие жидкости",            14.0,  24.0,  28.0,  0.80,  22.0),
+    ("Пресная вода 240 м3",                240.0,  48.0,  60.0,  0.85, 320.0),
+    ("Сточные и фекальные воды",            86.0,  54.0,  62.0,  0.80, 145.0),
+    ("Провизия и снабжение",                42.0,  44.0,  54.0,  1.90,   0.0),
+    ("Экипаж 57 чел. с багажом",             6.8,  60.0, 114.0,  6.50,   0.0),
+    ("Пассажиры 212 чел. с багажом",        31.8,  11.0, 131.0,  7.00,   0.0),
+]
+LIGHTSHIP_GROUPS = 17
+
+
+def group_xcg(g):
+    """Абсцисса ЦТ группы. Корпус распределяется по площади сечения обшивки."""
+    name, m, x0, x1, z, fs = g
+    if not name.startswith("Корпус"):
+        return 0.5 * (x0 + x1)
+    xs = _xs(1.0)
+    w = []
+    for x in xs:
+        b_dn, b_sk, b_pal, z_sk, z_kil, z_brt = _station(x)
+        w.append(2 * b_dn + 2 * math.hypot(b_sk - b_dn, z_sk - z_kil)
+                 + 2 * (z_brt - z_sk) + 2 * b_pal)
+    return _trapz([a * x for a, x in zip(w, xs)], xs) / _trapz(w, xs)
+
+
+def weight_summary():
+    tot = sum(g[1] for g in WEIGHT_GROUPS)
+    mx = sum(g[1] * group_xcg(g) for g in WEIGHT_GROUPS)
+    mz = sum(g[1] * g[4] for g in WEIGHT_GROUPS)
+    mfs = sum(g[5] for g in WEIGHT_GROUPS)
+    light = sum(g[1] for g in WEIGHT_GROUPS[:LIGHTSHIP_GROUPS])
+    zl = sum(g[1] * g[4] for g in WEIGHT_GROUPS[:LIGHTSHIP_GROUPS]) / light
+    return dict(D=tot, xg=mx / tot, zg=mz / tot, Mfs=mfs,
+                lightship=light, zg_light=zl, deadweight=tot - light,
+                dzg_fs=mfs / tot)
+
+
+def weight_distribution(xs):
+    """Строевая нагрузки масс w(x), т/м."""
+    w = [0.0] * len(xs)
+    for g in WEIGHT_GROUPS:
+        name, m, x0, x1, z, fs = g
+        if name.startswith("Корпус"):
+            sh = []
+            for x in xs:
+                b_dn, b_sk, b_pal, z_sk, z_kil, z_brt = _station(x)
+                sh.append(2 * b_dn + 2 * math.hypot(b_sk - b_dn, z_sk - z_kil)
+                          + 2 * (z_brt - z_sk) + 2 * b_pal)
+            k = m / _trapz(sh, xs)
+            for i in range(len(xs)):
+                w[i] += k * sh[i]
+        else:
+            q = m / max(x1 - x0, 1e-6)
+            for i, x in enumerate(xs):
+                if x0 <= x <= x1:
+                    w[i] += q
+    return w
+
+
+_ECACHE = {}
+
+
+def equilibrium(step=0.5):
+    """Осадка и дифферент из равенства водоизмещения и совпадения абсцисс."""
+    if step in _ECACHE:
+        return _ECACHE[step]
+    w = weight_summary()
+    D = w["D"]
+    lo, hi = 0.3, G.DEPTH
+    for _ in range(60):
+        T = 0.5 * (lo + hi)
+        h = hydrostatics(T, step)
+        if h is None or h["D"] < D:
+            lo = T
+        else:
+            hi = T
+    T = 0.5 * (lo + hi)
+    h = hydrostatics(T, step)
+    dx = w["xg"] - h["xc"]
+    trim_cm = D * dx / h["MCT"]
+    trim = trim_cm / 100.0
+    Ta = T - trim * h["xf"] / h["Lw"]
+    Tf = T + trim * (h["Lw"] - h["xf"]) / h["Lw"]
+    res = dict(T=T, trim=trim, Ta=Ta, Tf=Tf, D=D, xg=w["xg"], xc=h["xc"],
+               zg=w["zg"], zm=h["zm"], hydro=h, weight=w)
+    _ECACHE[step] = res
+    return res
+
+
+def initial_stability():
+    e = equilibrium()
+    h0 = e["zm"] - e["zg"]
+    dh = e["weight"]["Mfs"] / e["D"]
+    return dict(h0=h0, dh_fs=dh, h=h0 - dh, zg=e["zg"], zm=e["zm"],
+                zc=e["hydro"]["zc"], r=e["hydro"]["r"], T=e["T"],
+                D=e["D"], H=e["hydro"]["zM"] - e["zg"])
+
+
+def _heeled_volume(theta_deg, c, xs, z_top):
+    th = math.radians(theta_deg)
+    nz, ny = math.cos(th), -math.sin(th)
+    areas, ys, zs_ = [], [], []
+    for x in xs:
+        poly = section_polygon(x, z_top)
+        cp = _clip_below(poly, nz, ny, c)
+        a, cy, cz = _poly_area_centroid(cp)
+        areas.append(a)
+        ys.append(cy)
+        zs_.append(cz)
+    V = _trapz(areas, xs)
+    if V < 1e-9:
+        return 0.0, 0.0, 0.0
+    yc = _trapz([a * y for a, y in zip(areas, ys)], xs) / V
+    zc = _trapz([a * z for a, z in zip(areas, zs_)], xs) / V
+    return V, yc, zc
+
+
+def pantocarene(theta_deg, V_target, xs=None, z_top=None):
+    """Плечо остойчивости формы l_k при заданном объёмном водоизмещении."""
+    if xs is None:
+        xs = _xs(1.0)
+    if z_top is None:
+        z_top = G.DEPTH
+    lo, hi = -G.BEAM, G.DEPTH + G.BEAM
+    for _ in range(60):
+        c = 0.5 * (lo + hi)
+        V, yc, zc = _heeled_volume(theta_deg, c, xs, z_top)
+        if V < V_target:
+            lo = c
+        else:
+            hi = c
+    c = 0.5 * (lo + hi)
+    V, yc, zc = _heeled_volume(theta_deg, c, xs, z_top)
+    th = math.radians(theta_deg)
+    lk = yc * math.cos(th) + zc * math.sin(th)
+    return dict(theta=theta_deg, lk=lk, V=V, yc=yc, zc=zc, c=c)
+
+
+def gz_curve(thetas=(0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60,
+                     65, 70, 75, 80, 85, 90),
+             step=1.0, z_top=None):
+    st = initial_stability()
+    e = equilibrium()
+    V = e["hydro"]["V"]
+    zg = st["zg"] + st["dh_fs"]
+    xs = _xs(step)
+    out = []
+    for t in thetas:
+        p = pantocarene(t, V, xs, z_top)
+        gz = p["lk"] - zg * math.sin(math.radians(t))
+        out.append(dict(theta=t, lk=p["lk"], gz=gz))
+    return out, dict(zg=zg, V=V, D=e["D"], h=st["h"])
+
+
+def dynamic_arms(gz):
+    out = [0.0]
+    for i in range(1, len(gz)):
+        t0 = math.radians(gz[i - 1]["theta"])
+        t1 = math.radians(gz[i]["theta"])
+        out.append(out[-1] + 0.5 * (gz[i - 1]["gz"] + gz[i]["gz"]) * (t1 - t0))
+    return out
+
+
+def _interp(xs, ys, x):
+    for i in range(len(xs) - 1):
+        if xs[i] <= x <= xs[i + 1]:
+            t = (x - xs[i]) / (xs[i + 1] - xs[i])
+            return ys[i] + t * (ys[i + 1] - ys[i])
+    return ys[-1] if x > xs[-1] else ys[0]
+
+
+def stability_summary(z_top=None):
+    gz, meta = gz_curve(z_top=z_top)
+    th = [g["theta"] for g in gz]
+    arms = [g["gz"] for g in gz]
+    dyn = dynamic_arms(gz)
+    gz_max = max(arms)
+    th_max = th[arms.index(gz_max)]
+    th_zero = th[-1]
+    for i in range(arms.index(gz_max), len(arms) - 1):
+        if arms[i] > 0 >= arms[i + 1]:
+            t = arms[i] / (arms[i] - arms[i + 1])
+            th_zero = th[i] + t * (th[i + 1] - th[i])
+            break
+    res = dict(theta=th, gz=arms, lk=[g["lk"] for g in gz], dyn=dyn,
+               gz_max=gz_max, theta_max=th_max, theta_zero=th_zero,
+               gz30=_interp(th, arms, 30.0))
+    res.update(meta)
+    return res
+
+
+WIND_PRESSURE = {"О": 0.294, "М": 0.392, "М-СП": 0.490}
+WAVE_HEIGHT = {"О": 2.0, "М": 3.0, "М-СП": 3.5}
+WAVE_LENGTH = {"О": 20.0, "М": 30.0, "М-СП": 40.0}
+
+
+def windage(T):
+    """Площадь парусности и возвышение её центра над ватерлинией."""
+    parts = [
+        (G.LOA * 0.96, G.DEPTH - T, T),
+        (120.0, G.DECKS["главная"] + 2.8 - G.DEPTH, G.DEPTH),
+        (120.0, 2.8, G.DECKS["верхняя"]),
+        (96.0, 2.8, G.DECKS["солнечная"]),
+        (96.0, 1.1, 12.60),
+    ]
+    A = sum(l * h for l, h, z in parts)
+    z = sum(l * h * (z0 + h / 2) for l, h, z0 in parts) / A
+    return A, z - T
+
+
+def weather_criterion(cls="О", z_top=None):
+    """Критерий погоды K = M_опр / M_кр по нормам РРР."""
+    s = stability_summary(z_top)
+    e = equilibrium()
+    T = e["T"]
+    D = e["D"]
+    A, zw = windage(T)
+    p = WIND_PRESSURE[cls]
+    Mv = p * A * zw / GRAV
+    lw = Mv / D
+    h = s["h"]
+    # амплитуда качки: максимальный уклон волны класса при её длине,
+    # с поправкой на демпфирование скуловыми килями
+    hw = WAVE_HEIGHT[cls]
+    lam = WAVE_LENGTH[cls]
+    theta_r = math.degrees(1.10 * math.pi * hw / lam)
+    theta_r = max(8.0, min(theta_r, 25.0))
+    th = s["theta"]
+    dyn = s["dyn"]
+    th_lim = min(s["theta_zero"], 60.0)
+    d_r = _interp(th, dyn, theta_r)
+    best = 0.0
+    th_opr = theta_r
+    for i in range(1, 401):
+        t = theta_r + (th_lim - theta_r) * i / 400.0
+        d = _interp(th, dyn, t)
+        lo = (d - d_r) / (math.radians(t) + math.radians(theta_r))
+        if lo > best:
+            best = lo
+            th_opr = t
+    lopr = best
+    Mopr = lopr * D
+    return dict(K=Mopr / max(Mv, 1e-9), Mv=Mv, Mopr=Mopr, lw=lw, lopr=lopr,
+                A=A, zw=zw, theta_r=theta_r, theta_opr=th_opr, cls=cls, h=h,
+                theta_stat=math.degrees(math.atan(lw / max(h, 1e-6))))
+
+
+def rrr_checks(cls="О", z_top=None):
+    s = stability_summary(z_top)
+    w = weather_criterion(cls, z_top)
+    e = equilibrium()
+    ldyn30 = _interp(s["theta"], s["dyn"], 30.0)
+    ldyn40 = _interp(s["theta"], s["dyn"], min(40.0, s["theta_zero"]))
+    rows = [
+        ("Критерий погоды K", w["K"], 1.0, ">="),
+        ("Начальная метацентрическая высота h, м", s["h"], 0.20, ">="),
+        ("Максимальное плечо ДСО, м", s["gz_max"], 0.25, ">="),
+        ("Угол максимума ДСО, град", s["theta_max"], 25.0, ">="),
+        ("Угол заката ДСО, град", s["theta_zero"], 55.0, ">="),
+        ("Плечо ДСО при 30 град, м", s["gz30"], 0.20, ">="),
+        ("Работа ДДО до 30 град, м-рад", ldyn30, 0.055, ">="),
+        ("Работа ДДО до 40 град, м-рад", ldyn40, 0.090, ">="),
+        ("Статический крен от ветра, град", w["theta_stat"], 12.0, "<="),
+    ]
+    out = []
+    for name, val, lim, op in rows:
+        ok = val >= lim if op == ">=" else val <= lim
+        out.append(dict(name=name, value=val, limit=lim, op=op, ok=ok))
+    return out, s, w, e
+
+
+BULKHEADS = [0.0, 9.5, 12.0, 30.0, 34.0, 60.0, 92.0, 116.0, 127.0, G.LOA]
+COMPARTMENTS = [
+    "Ахтерпик и румпельное", "Отсек винторулевых колонок",
+    "Машинное отделение", "Электростанция и ГРЩ",
+    "Служебный блок и цистерны", "Каюты, отсек 1",
+    "Каюты, отсек 2", "Форпик и подруливающее", "Таранный отсек",
+]
+
+
+def flooding(i, perm=0.85, step=0.5):
+    """Осадка при затоплении отсека, метод постоянного водоизмещения."""
+    x0, x1 = BULKHEADS[i], BULKHEADS[i + 1]
+    e = equilibrium()
+    T0 = e["T"]
+    xs = _xs(step)
+    v = _trapz([section_area(x, T0) if x0 <= x <= x1 else 0.0 for x in xs], xs)
+    v *= perm
+    Aw_lost = _trapz([2.0 * half_breadth(x, T0) if x0 <= x <= x1 else 0.0
+                      for x in xs], xs) * perm
+    Aw = e["hydro"]["Aw"] - Aw_lost
+    dT = v / max(Aw, 1e-6)
+    T1 = T0 + dT
+    return dict(i=i, name=COMPARTMENTS[i], x0=x0, x1=x1, v=v, dT=dT, T=T1,
+                freeboard=G.DEPTH - T1, ok=T1 < G.DEPTH - 0.10)
+
+
+def resistance(v_kmh, T=None, depth=None):
+    """Буксировочное сопротивление, кН.
+
+    Трение — по линии ITTC-57 с формфактором Ватанабе и надбавкой на
+    шероховатость 0.0004. Остаточное сопротивление — по аппроксимации
+    для полных речных обводов: при Fr = 0.17 оно составляет около
+    четверти от трения и растёт как четвёртая степень числа Фруда.
+    Воздушное — 0.0002.
+
+    Если задана глубина фарватера, сопротивление умножается на поправку
+    мелководья; она действительна только до Fr_h = 0.7, выше судно
+    подходит к критической скорости и метод неприменим — такой режим
+    помечается флагом `valid`.
+    """
+    if T is None:
+        T = equilibrium()["T"]
+    h = hydrostatics(T)
+    v = v_kmh / 3.6
+    L, B, S = h["Lw"], h["Bw"], h["S"]
+    Re = v * L / NU
+    Cf = 0.075 / (math.log10(Re) - 2.0) ** 2
+    Cb = h["delta"]
+    k = -0.095 + 25.6 * Cb / ((L / B) ** 2 * math.sqrt(B / T))
+    dCf = 0.0004
+    Fn = v / math.sqrt(GRAV * L)
+    Cr = 1e-3 * (0.05 + 0.35 * (Fn / 0.17) ** 4 * (Cb / 0.80) ** 2
+                 * math.sqrt(B / T / 5.0))
+    Cair = 0.0002
+    Ct = Cf * (1 + k) + dCf + Cr + Cair
+    R = 0.5 * RHO * 1000.0 * S * v ** 2 * Ct / 1000.0
+    out = dict(v_kmh=v_kmh, v=v, Re=Re, Fn=Fn, Cf=Cf, k=k, Cr=Cr, Ct=Ct,
+               R_deep=R, R=R, S=S, T=T, kshallow=1.0, Fnh=0.0, valid=True,
+               depth=depth)
+    if depth:
+        Fnh = v / math.sqrt(GRAV * depth)
+        ks = 1.0 + 0.55 * Fnh ** 2 / max(1.0 - Fnh ** 2, 0.02)
+        out.update(Fnh=Fnh, kshallow=ks, R=R * ks, valid=Fnh <= 0.70)
+    return out
+
+
+def critical_speed(depth):
+    """Критическая скорость на мелководье, км/ч: корень из g*H."""
+    return math.sqrt(GRAV * depth) * 3.6
+
+
+def power(v_kmh, eta_d=0.62, eta_s=0.97, depth=None):
+    """Буксировочная, валовая и мощность на фланце ГД, кВт."""
+    r = resistance(v_kmh, depth=depth)
+    Pe = r["R"] * r["v"]
+    Pd = Pe / eta_d
+    Pb = Pd / eta_s
+    out = dict(Pe=Pe, Pd=Pd, Pb=Pb)
+    out.update(r)
+    return out
+
+
+PROP_POWER = G.AZIPOD_COUNT * G.AZIPOD_POWER      # 2 x 900 = 1800 кВт
+
+
+def max_speed(P_avail=None, depth=None, eta_d=0.62, eta_s=0.97):
+    """Скорость, на которую хватает мощности движителей, км/ч."""
+    if P_avail is None:
+        P_avail = PROP_POWER
+    lo, hi = 5.0, 40.0
+    for _ in range(50):
+        v = 0.5 * (lo + hi)
+        if power(v, eta_d, eta_s, depth)["Pb"] < P_avail:
+            lo = v
+        else:
+            hi = v
+    return 0.5 * (lo + hi)
+
+
+def admiralty(v_kmh, Pb):
+    """Адмиралтейский коэффициент: D^(2/3) * v[уз]^3 / P[кВт]."""
+    e = equilibrium()
+    return e["D"] ** (2.0 / 3.0) * (v_kmh / 1.852) ** 3 / max(Pb, 1e-6)
+
+
+def roll_period(h=None):
+    if h is None:
+        h = initial_stability()["h"]
+    return 0.80 * G.BEAM / math.sqrt(max(h, 1e-6))
+
+
+def pitch_period(T=None):
+    if T is None:
+        T = equilibrium()["T"]
+    return 2.4 * math.sqrt(T)
