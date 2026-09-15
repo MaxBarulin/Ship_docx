@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>План-график команды — УЖЦ 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1a1c1b;
+  --ink-2:#55605c;
+  --ink-3:#8a938f;
+  --paper:#f2f4f1;
+  --panel:#ffffff;
+  --rule:#d2d7d2;
+  --rule-strong:#9aa39d;
+  --s-kz:#4a5560;
+  --s-kd:#a8502a;
+  --s-teh:#8d6a12;
+  --s-rynok:#4a6b33;
+  --s-econ:#6b4a7a;
+  --s-zash:#2f5d8c;
+  --row-h:30px;
+  --name-w:104px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:"IBM Plex Sans Condensed","Roboto Condensed","Helvetica Neue",Arial,sans-serif;
+  font-size:15px;
+  line-height:1.45;
+  -webkit-text-size-adjust:100%;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 16px 60px}
+
+header{border-bottom:2px solid var(--ink);padding-bottom:12px;margin-bottom:16px}
+h1{font-size:26px;font-weight:600;margin:0;letter-spacing:-0.01em}
+.sub{color:var(--ink-2);font-size:15px;margin-top:2px}
+
+.controls{display:flex;flex-wrap:wrap;gap:14px 20px;align-items:flex-end;margin:16px 0 14px}
+.ctl label{display:block;font-size:13px;color:var(--ink-2);margin-bottom:3px}
+.ctl input[type=number]{
+  font-family:"IBM Plex Mono",monospace;font-size:15px;width:76px;padding:5px 7px;
+  border:1px solid var(--rule-strong);background:var(--panel);color:var(--ink);border-radius:2px;
+}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{
+  font:inherit;font-size:13px;padding:4px 9px;border:1px solid var(--rule-strong);
+  background:var(--panel);color:var(--ink-2);border-radius:2px;cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px;
+}
+.chip .dot{width:9px;height:9px;border-radius:2px;background:currentColor;flex:none}
+.chip[aria-pressed="true"]{color:#fff;border-color:transparent}
+.chip:focus-visible,.gate:focus-visible,.bar:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.chip.cp{border-style:dashed}
+.chip.cp[aria-pressed="true"]{background:var(--ink);color:#fff;border-style:solid}
+
+.scroller{overflow-x:auto;overflow-y:visible;border:1px solid var(--rule-strong);background:var(--panel)}
+.chart{min-width:760px;position:relative}
+
+.axis{display:flex;height:26px;border-bottom:1px solid var(--rule-strong);position:relative}
+.axis .spacer{width:var(--name-w);flex:none;border-right:1px solid var(--rule-strong);background:var(--panel);position:sticky;left:0;z-index:4}
+.axis .track{flex:1;position:relative}
+.tick{position:absolute;top:0;bottom:0;border-left:1px solid var(--rule);}
+.tick span{position:absolute;top:5px;left:4px;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-3);white-space:nowrap}
+
+.grid{position:absolute;top:26px;bottom:0;left:var(--name-w);right:0;pointer-events:none;z-index:0}
+.gline{position:absolute;top:0;bottom:0;border-left:1px solid var(--rule)}
+.gateline{position:absolute;top:0;bottom:0;border-left:2px solid var(--ink);opacity:.55}
+.gateline.soft{border-left:1px dashed var(--ink-2);opacity:.6}
+
+.row{display:flex;border-bottom:1px solid var(--rule);position:relative}
+.row:last-child{border-bottom:none}
+.row .who{
+  width:var(--name-w);flex:none;padding:6px 8px;border-right:1px solid var(--rule-strong);
+  background:var(--panel);position:sticky;left:0;z-index:3;
+}
+.who b{display:block;font-weight:600;font-size:14px;line-height:1.2}
+.who i{display:block;font-style:normal;font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--ink-3)}
+.lane{flex:1;position:relative;padding:5px 0}
+.lane .sub{position:relative;height:var(--row-h);margin-bottom:3px}
+.lane .sub:last-child{margin-bottom:0}
+
+.bar{
+  position:absolute;top:0;height:var(--row-h);border:none;border-radius:2px;
+  color:#fff;font:inherit;font-size:12px;line-height:var(--row-h);
+  padding:0 6px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  cursor:pointer;opacity:.94;
+}
+.bar:hover{opacity:1}
+.bar.crit{box-shadow:inset 0 0 0 2px rgba(0,0,0,.45)}
+.bar.dim{opacity:.16}
+.bar.hit{box-shadow:inset 0 0 0 2px #fff, 0 0 0 2px var(--ink)}
+.bar.pre{box-shadow:inset 0 0 0 2px #fff}
+.bar.post{box-shadow:inset 0 0 0 2px #fff}
+
+.gates{display:flex;margin-top:6px}
+.gates .spacer{width:var(--name-w);flex:none}
+.gates .track{flex:1;position:relative;height:46px}
+.gate{
+  position:absolute;transform:translateX(-50%);text-align:center;background:none;border:none;
+  font:inherit;cursor:pointer;padding:0;color:var(--ink);
+}
+.gate b{display:block;font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:500}
+.gate span{display:block;font-size:11px;color:var(--ink-3);font-family:"IBM Plex Mono",monospace}
+.gate.hard b{border-bottom:2px solid var(--ink)}
+.gate.soft b{border-bottom:1px dashed var(--ink-3)}
+
+.detail{
+  margin-top:18px;border:1px solid var(--rule-strong);background:var(--panel);
+  padding:14px 16px;min-height:96px;border-left:4px solid var(--rule-strong);
+}
+.detail h2{margin:0 0 2px;font-size:18px;font-weight:600}
+.detail .meta{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-3);margin-bottom:10px}
+.detail dl{display:grid;grid-template-columns:112px 1fr;gap:4px 14px;margin:0;font-size:14px}
+.detail dt{color:var(--ink-2)}
+.detail dd{margin:0}
+.detail .empty{color:var(--ink-3)}
+
+.notes{margin-top:26px;display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.note h3{margin:0 0 6px;font-size:16px;font-weight:600}
+.note p,.note li{font-size:14px;color:var(--ink-2);margin:0 0 6px}
+.note ul{margin:0;padding-left:18px}
+
+@media (max-width:640px){
+  .wrap{padding:14px 10px 40px}
+  h1{font-size:21px}
+  :root{--name-w:84px}
+}
+@media print{
+  body{background:#fff}
+  .controls,.detail{display:none}
+  .scroller{overflow:visible;border-color:#000}
+  .chart{min-width:0}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>План-график команды</h1>
+  <div class="sub">УЖЦ 2026 — восемь потоков, шесть точек синхронизации, шкала в долях от общего времени T</div>
+</header>
+
+<div class="controls">
+  <div class="ctl">
+    <label for="dur">Общее время T, часов</label>
+    <input id="dur" type="number" min="2" max="80" step="0.5" value="24">
+  </div>
+  <div class="ctl" style="flex:1;min-width:260px">
+    <label>Потоки — нажми, чтобы скрыть</label>
+    <div class="chips" id="chips"></div>
+  </div>
+</div>
+
+<div class="scroller">
+  <div class="chart" id="chart"></div>
+</div>
+
+<div class="gates"><div class="spacer"></div><div class="track" id="gates"></div></div>
+
+<div class="detail" id="detail">
+  <h2>Выбери задачу</h2>
+  <div class="meta">нажми на любую полосу — покажу, чего она ждёт и кто ждёт её</div>
+  <p style="margin:0;font-size:14px;color:var(--ink-2)">Полосы с тёмной рамкой лежат на критическом пути. Сдвиг любой из них сдвигает защиту.</p>
+</div>
+
+<div class="notes">
+  <div class="note">
+    <h3>Как читать</h3>
+    <ul>
+      <li>Строка — человек. Внутри строки задачи разложены по подстрокам, чтобы параллельная работа не слипалась.</li>
+      <li>Сплошная вертикаль — гейт: работа дальше не идёт, пока условие не выполнено.</li>
+      <li>Пунктир — чекпоинт: передача данных, не блокирует.</li>
+    </ul>
+  </div>
+  <div class="note">
+    <h3>Три опоры</h3>
+    <ul>
+      <li>Деталь фиксируется на G2 и больше не меняется.</li>
+      <li>Экономика заполняется тремя волнами, а не в конце.</li>
+      <li>После G3 правки только в текст и слайды.</li>
+    </ul>
+  </div>
+  <div class="note">
+    <h3>Где рвётся первым</h3>
+    <p>Лена стоит в конце всех цепочек и держит 17.5 балла. Если к C1 у неё нет черновых цифр, дальше сыпется всё, включая презентацию.</p>
+  </div>
+</div>
+
+</div>
+
+<script>
+const STREAMS = {
+  kz:    {name:"Интеграция и КЗ", color:"var(--s-kz)",    hex:"#4a5560"},
+  kd:    {name:"Конструкция",      color:"var(--s-kd)",    hex:"#a8502a"},
+  teh:   {name:"Технология",       color:"var(--s-teh)",   hex:"#8d6a12"},
+  rynok: {name:"Рынок",            color:"var(--s-rynok)", hex:"#4a6b33"},
+  econ:  {name:"Экономика",        color:"var(--s-econ)",  hex:"#6b4a7a"},
+  zash:  {name:"Защита",           color:"var(--s-zash)",  hex:"#2f5d8c"}
+};
+
+const PEOPLE = [
+  {id:"vlad",  name:"Владимир", role:"докладчик"},
+  {id:"alex",  name:"Алексей",  role:"14.5 б"},
+  {id:"maks",  name:"Макс",     role:"11.5 б"},
+  {id:"gleb",  name:"Глеб",     role:"11.5 б"},
+  {id:"andr",  name:"Андрей",   role:"5.5 б"},
+  {id:"ivan",  name:"Иван",     role:"7.5 б"},
+  {id:"lena",  name:"Лена",     role:"17.5 б"},
+  {id:"masha", name:"Маша",     role:"19 б"}
+];
+
+const GATES = [
+  {at:8,  id:"G1", hard:true,  t:"каждое требование КЗ имеет фамилию"},
+  {at:20, id:"G2", hard:true,  t:"деталь зафиксирована, конструктив закрыт"},
+  {at:40, id:"C1", hard:false, t:"черновые цифры ушли Лене, ±30% нормально"},
+  {at:60, id:"C2", hard:false, t:"уточнённые цифры"},
+  {at:72, id:"G3", hard:true,  t:"заморозка финмодели и конструктива"},
+  {at:82, id:"G4", hard:true,  t:"целостность проверена, чек-лист КЗ закрыт"}
+];
+
+const T = [
+  {id:"kz1",   p:"vlad",  s:0,  e:8,  st:"kz",   n:"Разбор КЗ, чек-лист требований", out:"Пронумерованный список требований", dep:[], cp:true},
+  {id:"karta", p:"masha", s:0,  e:8,  st:"kz",   n:"Карта блоков: входы и выходы", out:"Схема связей проекта", dep:[]},
+  {id:"rmap1", p:"masha", s:8,  e:16, st:"kz",   n:"Дорожная карта под КЗ", out:"Роадмап с вехами", dep:["kz1"]},
+  {id:"risk",  p:"masha", s:14, e:26, st:"kz",   n:"Реестр рисков, ранжирование", out:"Риски с оценкой и мерами", dep:["kz1"]},
+  {id:"koop",  p:"masha", s:26, e:34, st:"kz",   n:"Схема кооперации", out:"Поставщики и смежники", dep:["mat"]},
+
+  {id:"konc",  p:"alex",  s:8,  e:16, st:"kd",   n:"Концепт, уникальность и новизна", out:"Выбранный концепт изделия", dep:["kz1"], cp:true},
+  {id:"komp",  p:"maks",  s:12, e:20, st:"kd",   n:"Компоновка, взрыв-модель", out:"Состав изделия", dep:["konc"], cp:true},
+  {id:"detal", p:"alex",  s:16, e:20, st:"kd",   n:"Выбор детали или узла", out:"Зафиксированный объект проработки", dep:["komp"], cp:true},
+  {id:"mat",   p:"gleb",  s:14, e:22, st:"kd",   n:"Материалы и заменители", out:"Обоснованный выбор материала", dep:["konc"]},
+  {id:"chert", p:"alex",  s:20, e:33, st:"kd",   n:"Чертёж детали", out:"Рабочий чертёж", dep:["detal"], cp:true},
+  {id:"m3d",   p:"maks",  s:22, e:34, st:"kd",   n:"3D-модель детали", out:"Модель детали", dep:["chert"], cp:true},
+  {id:"spec",  p:"alex",  s:30, e:38, st:"kd",   n:"Спецификация", out:"Перечень ДСЕ и материалов", dep:["chert"]},
+  {id:"m3di",  p:"maks",  s:30, e:44, st:"kd",   n:"3D-модель изделия", out:"Сборка изделия", dep:["komp","m3d"]},
+  {id:"sver",  p:"alex",  s:36, e:42, st:"kd",   n:"Сверка чертежа и 3D", out:"Подтверждённое соответствие", dep:["m3d","chert"]},
+  {id:"proch", p:"andr",  s:30, e:40, st:"kd",   n:"Расчёт на прочность", out:"Подтверждение работоспособности", dep:["m3d"]},
+
+  {id:"tp",    p:"gleb",  s:22, e:38, st:"teh",  n:"Техпроцесс изготовления", out:"Маршрут и трудоёмкость", dep:["chert","mat"], cp:true},
+  {id:"osn",   p:"alex",  s:38, e:48, st:"kd",   n:"Оснастка: чертёж и обоснование", out:"Чертёж приспособления", dep:["tp"]},
+  {id:"osng",  p:"gleb",  s:36, e:46, st:"teh",  n:"Выбор и обоснование оснастки", out:"Обоснование оснастки", dep:["tp"]},
+  {id:"shema", p:"andr",  s:32, e:42, st:"teh",  n:"Укрупнённая схема производства", out:"Схема цепочки переделов", dep:["tp"], cp:true},
+  {id:"moshn", p:"masha", s:30, e:42, st:"teh",  n:"Анализ мощностей предприятия", out:"Дефицит или запас мощности", dep:["tp"], cp:true},
+  {id:"plan",  p:"andr",  s:40, e:52, st:"teh",  n:"Планировка участка", out:"Планировка с оборудованием", dep:["shema","moshn"], cp:true},
+  {id:"tth",   p:"gleb",  s:44, e:52, st:"teh",  n:"Технические характеристики", out:"ТТХ изделия", dep:["proch","m3di"]},
+  {id:"ppo",   p:"gleb",  s:50, e:60, st:"teh",  n:"ППО и порядок эксплуатации", out:"Программа обслуживания", dep:["m3di"]},
+  {id:"expl",  p:"alex",  s:50, e:58, st:"teh",  n:"Эксплуатация, принцип работы", out:"Описание работы изделия", dep:["m3di"]},
+
+  {id:"ca",    p:"ivan",  s:8,  e:22, st:"rynok",n:"ЦА и сегментация", out:"Сегменты и профиль клиента", dep:["kz1"]},
+  {id:"rynok", p:"ivan",  s:20, e:32, st:"rynok",n:"Объём рынка, конкуренты", out:"Ёмкость рынка, аналоги", dep:["ca"]},
+  {id:"prod",  p:"ivan",  s:30, e:40, st:"rynok",n:"Объём продаж, цена рынка", out:"Прогноз сбыта", dep:["rynok"], cp:true},
+  {id:"mktg",  p:"maks",  s:30, e:45, st:"rynok",n:"Маркетинговая стратегия", out:"План продвижения", dep:["rynok"]},
+  {id:"persp", p:"alex",  s:62, e:72, st:"rynok",n:"Перспективность проекта", out:"Тренды и потенциал", dep:["rynok"]},
+  {id:"perspi",p:"ivan",  s:62, e:72, st:"rynok",n:"Тренды науки и общества", out:"Обоснование перспективности", dep:["rynok"]},
+
+  {id:"fmod",  p:"lena",  s:8,  e:20, st:"econ", n:"Настройка финмодели под КЗ", out:"Модель с плейсхолдерами", dep:["kz1"], cp:true},
+  {id:"zmat",  p:"lena",  s:33, e:42, st:"econ", n:"Затраты на материалы", out:"Смета материалов", dep:["spec","mat"], cp:true},
+  {id:"zpers", p:"lena",  s:44, e:52, st:"econ", n:"Затраты на персонал", out:"ФОТ и отчисления", dep:["chisl"], cp:true},
+  {id:"kapz",  p:"lena",  s:48, e:58, st:"econ", n:"Капзатраты на оборудование", out:"CAPEX", dep:["plan"], cp:true},
+  {id:"zprod", p:"lena",  s:50, e:58, st:"econ", n:"Затраты на продвижение", out:"Бюджет маркетинга", dep:["mktg"]},
+  {id:"niokr", p:"lena",  s:54, e:62, st:"econ", n:"НИОКР и финпотоки ППО", out:"Затраты на разработку и сервис", dep:["ppo"]},
+  {id:"sebes", p:"lena",  s:58, e:66, st:"econ", n:"Себестоимость", out:"Себестоимость единицы", dep:["zmat","zpers","kapz"], cp:true},
+  {id:"cena",  p:"lena",  s:60, e:66, st:"econ", n:"Цена и выручка", out:"Цена, выручка по годам", dep:["sebes","prod"], cp:true},
+  {id:"npv",   p:"lena",  s:64, e:72, st:"econ", n:"BEP, PBP, NPV, IRR", out:"Финансовые показатели", dep:["cena"], cp:true},
+  {id:"finsh", p:"lena",  s:68, e:74, st:"econ", n:"Схема финансирования и возврата", out:"Источники и график возврата", dep:["npv"]},
+
+  {id:"orgs",  p:"masha", s:42, e:52, st:"econ", n:"Орг. структура", out:"Структура управления", dep:["plan"], cp:true},
+  {id:"chisl", p:"masha", s:44, e:52, st:"econ", n:"Численность персонала", out:"Штатное расписание", dep:["plan"], cp:true},
+  {id:"motiv", p:"masha", s:52, e:62, st:"econ", n:"Оплата, подбор, обучение", out:"Система мотивации и подбора", dep:["chisl"]},
+
+  {id:"tvorch",p:"andr",  s:33, e:65, st:"kz",   n:"Творческое задание", out:"Готовый творческий блок", dep:["konc"]},
+  {id:"tvorv", p:"vlad",  s:33, e:65, st:"kz",   n:"Творческое задание", out:"Готовый творческий блок", dep:["konc"]},
+
+  {id:"vizu",  p:"maks",  s:68, e:80, st:"zash", n:"Визуализация продукта", out:"Рендеры и дизайн", dep:["m3di"]},
+  {id:"modr",  p:"maks",  s:70, e:78, st:"zash", n:"Модельный ряд", out:"Линейка исполнений", dep:["m3di","cena"]},
+  {id:"modra", p:"alex",  s:70, e:78, st:"zash", n:"Модельный ряд: функционал", out:"Различия по функциям", dep:["m3di"]},
+  {id:"skvoz", p:"masha", s:62, e:74, st:"kz",   n:"Сквозная проверка входов и выходов", out:"Согласованные данные во всех блоках", dep:["npv","plan","mktg"], cp:true},
+  {id:"chek",  p:"vlad",  s:62, e:82, st:"kz",   n:"Проход по чек-листу КЗ", out:"Каждое требование имеет адрес", dep:["skvoz"], cp:true},
+  {id:"rmap2", p:"masha", s:68, e:78, st:"kz",   n:"Финал дорожной карты и рисков", out:"Итоговые риски и вехи", dep:["npv"]},
+  {id:"pz",    p:"masha", s:74, e:88, st:"zash", n:"Пояснительная записка", out:"ПЗ со всеми разделами", dep:["skvoz"], cp:true},
+  {id:"prez",  p:"masha", s:80, e:92, st:"zash", n:"Презентация: логика и оформление", out:"Готовые слайды", dep:["chek"], cp:true},
+  {id:"rep",   p:"vlad",  s:88, e:97, st:"zash", n:"Репетиции с секундомером", out:"Доклад в регламент", dep:["prez"], cp:true},
+  {id:"vopr",  p:"vlad",  s:97, e:100,st:"zash", n:"Защита и вопросы", out:"Ответы по всем блокам", dep:["rep"], cp:true}
+];
+
+const byId = Object.fromEntries(T.map(t=>[t.id,t]));
+const hidden = new Set();
+let critOnly = false;
+let selected = null;
+
+const chipsEl = document.getElementById("chips");
+Object.entries(STREAMS).forEach(([k,v])=>{
+  const b=document.createElement("button");
+  b.className="chip"; b.type="button"; b.setAttribute("aria-pressed","true");
+  b.style.color=v.hex;
+  b.innerHTML='<span class="dot"></span>'+v.name;
+  b.onclick=()=>{
+    if(hidden.has(k)){hidden.delete(k); b.setAttribute("aria-pressed","true"); b.style.background=""; b.style.color=v.hex;}
+    else{hidden.add(k); b.setAttribute("aria-pressed","false"); b.style.background=""; b.style.color="var(--ink-3)";}
+    render();
+  };
+  b.style.background="";
+  chipsEl.appendChild(b);
+});
+Object.entries(STREAMS).forEach(([k,v])=>{});
+const cb=document.createElement("button");
+cb.className="chip cp"; cb.type="button"; cb.setAttribute("aria-pressed","false");
+cb.textContent="только критический путь";
+cb.onclick=()=>{critOnly=!critOnly; cb.setAttribute("aria-pressed",String(critOnly)); render();};
+chipsEl.appendChild(cb);
+
+function fmt(p){
+  const h=Number(document.getElementById("dur").value)||24;
+  const m=Math.round(p/100*h*60);
+  return String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0");
+}
+function pack(tasks){
+  const lanes=[];
+  tasks.slice().sort((a,b)=>a.s-b.s||a.e-b.e).forEach(t=>{
+    let put=false;
+    for(const l of lanes){ if(l[l.length-1].e+1.5<=t.s){l.push(t);put=true;break;} }
+    if(!put) lanes.push([t]);
+  });
+  return lanes;
+}
+
+function render(){
+  const chart=document.getElementById("chart");
+  chart.innerHTML="";
+
+  const axis=document.createElement("div");
+  axis.className="axis";
+  axis.innerHTML='<div class="spacer"></div><div class="track"></div>';
+  const track=axis.querySelector(".track");
+  for(let p=0;p<=100;p+=10){
+    const d=document.createElement("div");
+    d.className="tick"; d.style.left=p+"%";
+    d.innerHTML='<span>'+(p===100?"T":p+"%")+'</span>';
+    track.appendChild(d);
+  }
+  chart.appendChild(axis);
+
+  const grid=document.createElement("div");
+  grid.className="grid";
+  for(let p=10;p<100;p+=10){
+    const g=document.createElement("div"); g.className="gline"; g.style.left=p+"%"; grid.appendChild(g);
+  }
+  GATES.forEach(g=>{
+    const d=document.createElement("div");
+    d.className="gateline"+(g.hard?"":" soft"); d.style.left=g.at+"%";
+    grid.appendChild(d);
+  });
+  chart.appendChild(grid);
+
+  PEOPLE.forEach(pp=>{
+    let list=T.filter(t=>t.p===pp.id && !hidden.has(t.st));
+    if(critOnly) list=list.filter(t=>t.cp);
+    const row=document.createElement("div"); row.className="row";
+    const who=document.createElement("div"); who.className="who";
+    who.innerHTML='<b>'+pp.name+'</b><i>'+pp.role+'</i>';
+    row.appendChild(who);
+    const lane=document.createElement("div"); lane.className="lane";
+    const lanes=pack(list);
+    if(lanes.length===0){const s=document.createElement("div");s.className="sub";lane.appendChild(s);}
+    lanes.forEach(ln=>{
+      const sub=document.createElement("div"); sub.className="sub";
+      ln.forEach(t=>{
+        const b=document.createElement("button");
+        b.type="button";
+        b.className="bar"+(t.cp?" crit":"");
+        b.style.left=t.s+"%";
+        b.style.width=(t.e-t.s)+"%";
+        b.style.background=STREAMS[t.st].hex;
+        b.textContent=t.n;
+        b.title=t.n+" — "+fmt(t.s)+"–"+fmt(t.e);
+        b.dataset.id=t.id;
+        b.onclick=()=>select(t.id);
+        sub.appendChild(b);
+      });
+      lane.appendChild(sub);
+    });
+    row.appendChild(lane);
+    chart.appendChild(row);
+  });
+
+  const gt=document.getElementById("gates");
+  gt.innerHTML="";
+  GATES.forEach(g=>{
+    const b=document.createElement("button");
+    b.type="button";
+    b.className="gate "+(g.hard?"hard":"soft");
+    b.style.left=g.at+"%";
+    b.innerHTML='<b>'+g.id+'</b><span>'+fmt(g.at)+'</span>';
+    b.onclick=()=>showGate(g);
+    gt.appendChild(b);
+  });
+
+  if(selected) paint(selected);
+}
+
+function select(id){ selected=id; paint(id); showTask(byId[id]); }
+
+function paint(id){
+  const t=byId[id];
+  const pre=new Set(t.dep);
+  const post=new Set(T.filter(x=>x.dep.includes(id)).map(x=>x.id));
+  document.querySelectorAll(".bar").forEach(b=>{
+    const k=b.dataset.id;
+    b.classList.remove("dim","hit","pre","post");
+    if(k===id) b.classList.add("hit");
+    else if(pre.has(k)) b.classList.add("pre");
+    else if(post.has(k)) b.classList.add("post");
+    else b.classList.add("dim");
+  });
+}
+
+function nameOf(id){
+  const t=byId[id]; if(!t) return id;
+  const p=PEOPLE.find(x=>x.id===t.p);
+  return t.n+" ("+p.name+")";
+}
+
+function showTask(t){
+  const p=PEOPLE.find(x=>x.id===t.p);
+  const pre=t.dep.map(nameOf);
+  const post=T.filter(x=>x.dep.includes(t.id)).map(x=>nameOf(x.id));
+  const d=document.getElementById("detail");
+  d.style.borderLeftColor=STREAMS[t.st].hex;
+  d.innerHTML=
+    '<h2>'+t.n+'</h2>'+
+    '<div class="meta">'+p.name+' · '+STREAMS[t.st].name+' · '+t.s+'–'+t.e+'% T · '+fmt(t.s)+'–'+fmt(t.e)+(t.cp?' · критический путь':'')+'</div>'+
+    '<dl>'+
+      '<dt>На выходе</dt><dd>'+t.out+'</dd>'+
+      '<dt>Ждёт</dt><dd>'+(pre.length?pre.join('<br>'):'<span class="empty">ничего, можно начинать сразу</span>')+'</dd>'+
+      '<dt>Ждут её</dt><dd>'+(post.length?post.join('<br>'):'<span class="empty">никто</span>')+'</dd>'+
+    '</dl>';
+}
+
+function showGate(g){
+  const d=document.getElementById("detail");
+  d.style.borderLeftColor="var(--ink)";
+  selected=null;
+  document.querySelectorAll(".bar").forEach(b=>b.classList.remove("dim","hit","pre","post"));
+  d.innerHTML=
+    '<h2>'+g.id+' — '+(g.hard?'гейт':'чекпоинт')+'</h2>'+
+    '<div class="meta">'+g.at+'% T · '+fmt(g.at)+'</div>'+
+    '<dl><dt>Условие</dt><dd>'+g.t+'</dd>'+
+    '<dt>Если не готово</dt><dd>'+(g.hard
+      ? 'Дальше не идём. Фиксируем состояние как есть и работаем с ним — не растягиваем окно.'
+      : 'Работаем дальше на плейсхолдерах. Красный флаг на ближайшем синке.')+'</dd></dl>';
+}
+
+document.getElementById("dur").addEventListener("input",render);
+render();
+</script>
+</body>
+</html>
