@@ -181,19 +181,20 @@ def resistance_plots():
 
     axs[1].plot(vs, [p["Pb"] for p in deep], color=SEA, lw=2, label="потребная мощность")
     axs[1].axhline(H.PROP_POWER, color=ACC, lw=1.6)
-    axs[1].annotate("установлено 2x900 = 1800 кВт", (10.4, H.PROP_POWER + 80),
-                    color=ACC, fontsize=9)
-    axs[1].axhline(2600, color="#8a93a5", lw=1.2, ls="--")
-    axs[1].annotate("предлагается 2x1300 = 2600 кВт", (10.4, 2680),
-                    color="#56627a", fontsize=9)
+    axs[1].annotate("установлено 2 x %d = %d кВт на ГЭД"
+                    % (G.PROP_MOTOR_POWER, H.PROP_POWER),
+                    (10.4, H.PROP_POWER - 220), color=ACC, fontsize=9)
+    P24 = H.power(24)["Pb"]
+    axs[1].axhline(P24, color="#8a93a5", lw=1.2, ls="--")
+    axs[1].annotate("на 24 км/ч нужно %.0f кВт — 48 %% от установленной" % P24,
+                    (10.4, P24 + 90), color="#56627a", fontsize=9)
     vmax = H.max_speed()
-    vmax2 = H.max_speed(2600)
-    for v, c in ((vmax, ACC), (vmax2, "#8a93a5")):
-        axs[1].plot([v, v], [0, H.power(v)["Pb"]], color=c, lw=1.0, ls=":")
-        axs[1].annotate("%.1f км/ч" % v, (v - 0.45, 250), color=c, fontsize=9, rotation=90)
-    axs[1].axvline(22, color=GRN, lw=1.2, ls=":")
-    axs[1].annotate("эксплуатационная 22", (22.2, 2950), color=GRN, fontsize=9, rotation=90)
-    axs[1].set_ylim(0, 3600)
+    axs[1].plot([vmax, vmax], [0, H.power(vmax)["Pb"]], color=ACC, lw=1.0, ls=":")
+    axs[1].annotate("%.1f км/ч" % vmax, (vmax - 0.45, 250), color=ACC, fontsize=9, rotation=90)
+    for v, c, lab in ((22, GRN, "эксплуатационная 22"), (24, GRN, "по описанию 24")):
+        axs[1].axvline(v, color=c, lw=1.2, ls=":")
+        axs[1].annotate(lab, (v + 0.2, 2450), color=c, fontsize=9, rotation=90)
+    axs[1].set_ylim(0, 4000)
     axs[1].set_xlabel("скорость, км/ч")
     axs[1].set_ylabel("мощность на движителях, кВт")
     axs[1].legend(fontsize=8, loc="upper left")
