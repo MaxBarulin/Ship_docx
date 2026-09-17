@@ -70,7 +70,7 @@ for z in WL:
     ax.plot([0, G.LOA], [Z_PROF + z, Z_PROF + z], color="#dde2e9", lw=0.5)
 ax.plot([0, G.LOA], [Z_PROF + T, Z_PROF + T], color=SEA, lw=1.2)
 ax.text(1.0, Z_PROF + T + 0.18, "ВЛ %.2f м" % T, fontsize=7.5, color=SEA)
-ax.text(0, Z_PROF + 5.6, "БОК — батоксы 1.0 / 2.5 / 4.0 / 5.5 / 7.0 / 8.0 м от ДП",
+ax.text(0, Z_PROF + 5.15, "БОК — батоксы 1.0 / 2.5 / 4.0 / 5.5 / 7.0 / 8.0 м от ДП",
         fontsize=9.5, color=INK, fontweight="bold")
 
 # ---- полуширота
@@ -122,15 +122,15 @@ ax.plot([tx - 0.3, tx + 15.8], [ty - len(rows) * 0.95 + 0.5,
                                 ty - len(rows) * 0.95 + 0.5],
         color="#c3cad5", lw=0.8)
 
-ax.text(0, 19.8, "ТЕОРЕТИЧЕСКИЙ ЧЕРТЁЖ  «ВОЛЖСКИЙ ГОРИЗОНТ»",
+ax.text(0, 20.3, "ТЕОРЕТИЧЕСКИЙ ЧЕРТЁЖ  «ВОЛЖСКИЙ ГОРИЗОНТ»",
         fontsize=15, fontweight="bold", color=INK)
-ax.text(0, 19.0, "Единый масштаб по всем трём проекциям. "
+ax.text(0, 19.45, "Единый масштаб по всем трём проекциям. "
         "Обводы заданы таблицей шпангоутов src/lib/gorizont.py",
         fontsize=9, color="#56627a")
-ax.text(X_BODY + 8.6, 19.8, "проект 2026 · УЖЦ ОСК", fontsize=9,
+ax.text(X_BODY + 8.6, 20.3, "проект 2026 · УЖЦ ОСК", fontsize=9,
         color="#56627a", ha="right")
 ax.set_xlim(-6, X_BODY + 10)
-ax.set_ylim(-2.4, 20.6)
+ax.set_ylim(-2.4, 21.2)
 fig.savefig(os.path.join(OUT, "01_теоретический_чертёж.png"), dpi=200,
             bbox_inches="tight")
 print("готово")
