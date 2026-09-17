@@ -8,7 +8,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from lib import gorizont as G, gorizont_hydro as H
 
-OUT = r"E:\Ship_docx\renders\горизонт_2026\расчёты"
+OUT = os.path.join(ROOT, "renders", "горизонт_2026", "расчёты")
 plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 9,
                      "figure.facecolor": "white", "savefig.facecolor": "white"})
 os.makedirs(OUT, exist_ok=True)

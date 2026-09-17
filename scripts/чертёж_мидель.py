@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon as MPoly, Rectangle
 from lib import gorizont as G, gorizont_hydro as H, gorizont_struct as S, gorizont_strength as St
 
-OUT = r"E:\Ship_docx\renders\горизонт_2026\чертежи"
+OUT = os.path.join(ROOT, "renders", "горизонт_2026", "чертежи")
 plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 9,
                      "figure.facecolor": "white", "savefig.facecolor": "white"})
 os.makedirs(OUT, exist_ok=True)

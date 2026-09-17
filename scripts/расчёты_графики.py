@@ -7,8 +7,9 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MultipleLocator
 from lib import gorizont as G, gorizont_hydro as H, gorizont_struct as S, gorizont_strength as St
+from lib import gorizont_power as P
 
-OUT = r"E:\Ship_docx\renders\горизонт_2026\расчёты"
+OUT = os.path.join(ROOT, "renders", "горизонт_2026", "расчёты")
 plt.rcParams.update({
     "font.family": "DejaVu Sans", "font.size": 9,
     "axes.grid": True, "grid.color": "#d8dde5", "grid.linewidth": 0.6,
@@ -209,6 +210,65 @@ def resistance_plots():
     save(fig, "06_ходкость.png")
 
 
+def power_balance():
+    """Электробаланс по режимам: из чего складывается нагрузка на шинах."""
+    rows = P.table()
+    names = [P.MODE_SHORT[r["key"]] for r in rows]
+    hotel = [r["hotel"] for r in rows]
+    prop = [r["propulsion"] for r in rows]
+    total = [r["total"] for r in rows]
+
+    fig, axs = plt.subplots(1, 2, figsize=(14.6, 4.6),
+                            gridspec_kw={"width_ratios": [1.45, 1]})
+    head(fig, "Электробаланс по режимам и выбор единичной мощности ГДГ",
+         "Слева — потребность на шинах ГРЩ; справа — проверка n−1 на "
+         "восьмиметровом фарватере, она и назначает мощность машины")
+    fig.subplots_adjust(top=0.76, bottom=0.22, wspace=0.24)
+
+    x = range(len(rows))
+    ax = axs[0]
+    ax.bar(x, hotel, color=SEA, label="судовые и бытовые")
+    ax.bar(x, prop, bottom=hotel, color=ACC, label="гребные электродвигатели")
+    for i, v in enumerate(total):
+        ax.text(i, v + 60, "%.0f" % v, ha="center", fontsize=8.5, color=INK)
+    # уровни мощности станции
+    for n in (1, 2, 3):
+        ax.axhline(n * G.DG_POWER, color="#8892a4", lw=0.9, ls="--")
+        ax.text(len(rows) - 0.45, n * G.DG_POWER + 50, "%d ГДГ" % n,
+                fontsize=8, color="#56627a", ha="right")
+    ax.set_xticks(list(x))
+    ax.set_xticklabels(names, fontsize=8)
+    ax.set_ylabel("мощность на шинах ГРЩ, кВт")
+    ax.set_ylim(0, G.DG_TOTAL + 300)
+    ax.legend(fontsize=8, loc="upper center")
+    ax.set_title("Потребность по режимам", fontsize=10, loc="left")
+
+    ax = axs[1]
+    units = (1200, 1400, 1600, 1800)
+    speeds = [P.redundancy("мелководье", unit=u, count=3)["speed"] for u in units]
+    colors = [GRN if s >= G.SPEED_KMH else ACC for s in speeds]
+    ax.bar([str(u) for u in units], speeds, color=colors, width=0.55)
+    ax.axhline(G.SPEED_KMH, color=INK, lw=1.4)
+    ax.text(-0.42, G.SPEED_KMH + 0.12, "служебная %d км/ч" % G.SPEED_KMH,
+            fontsize=8.5, color=INK, ha="left")
+    for i, s in enumerate(speeds):
+        ax.text(i, s + 0.12, "%.1f" % s, ha="center", fontsize=9, color=INK)
+    ax.set_ylim(18, max(speeds) + 1.2)
+    ax.set_xlabel("единичная мощность ГДГ, кВт (три машины)")
+    ax.set_ylabel("достижимая скорость при отказе одного ГДГ, км/ч")
+    ax.set_title("Проверка n−1, фарватер 8 м", fontsize=10, loc="left")
+
+    sh = P.single_shaft_comparison(22)
+    fig.text(0.01, 0.012,
+             "Один вал при этой осадке невозможен: винт равной площади диска "
+             "D = %.2f м встал бы кромкой на %.2f м выше ватерлинии; "
+             "с винтом %.2f м потеря КПД %.0f %%."
+             % (sh["equal_diameter"], abs(sh["immersion"]),
+                G.PROP_DIAMETER, sh["power_penalty"]),
+             fontsize=8.5, color="#56627a")
+    save(fig, "07_электробаланс.png")
+
+
 if __name__ == "__main__":
     print("строю графики:")
     hydro_curves()
@@ -216,3 +276,4 @@ if __name__ == "__main__":
     stability_plots()
     strength_plots()
     resistance_plots()
+    power_balance()

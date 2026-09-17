@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle, Circle
 from lib import gorizont_struct as S, gorizont_strength as St
 
-OUT = r"E:\Ship_docx\renders\горизонт_2026\чертежи"
+OUT = os.path.join(ROOT, "renders", "горизонт_2026", "чертежи")
 CAD = os.path.join(ROOT, "CAD")
 os.makedirs(CAD, exist_ok=True)
 plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 9,
