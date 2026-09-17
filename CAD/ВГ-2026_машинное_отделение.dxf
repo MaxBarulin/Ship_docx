@@ -493,7 +493,7 @@ $SKPOLY
   9
 $TDCREATE
  40
-2461301.0532060186
+2461301.1983449073
   9
 $TDUCREATE
  40
@@ -501,7 +501,7 @@ $TDUCREATE
   9
 $TDUPDATE
  40
-2461301.0532060186
+2461301.1983449073
   9
 $TDUUPDATE
  40
@@ -933,11 +933,11 @@ $PSTYLEMODE
   9
 $FINGERPRINTGUID
   2
-{0043112C-7846-40EC-BD07-CE2E4BD9D945}
+{20833454-CF30-41E5-802A-C67123EAFB48}
   9
 $VERSIONGUID
   2
-{D302A667-6423-445A-B0F7-2104D6DBEDEF}
+{1BC3DF2D-2B24-4346-B253-14A9D2967E07}
   9
 $EXTNAMES
 290
@@ -1327,9 +1327,9 @@ ISM
   0
 CLASS
   1
-ACDBPLACEHOLDER
+LAYOUT
   2
-AcDbPlaceHolder
+AcDbLayout
   3
 ObjectDBX Classes
  90
@@ -1343,9 +1343,9 @@ ObjectDBX Classes
   0
 CLASS
   1
-LAYOUT
+ACDBPLACEHOLDER
   2
-AcDbLayout
+AcDbPlaceHolder
   3
 ObjectDBX Classes
  90
@@ -11811,7 +11811,7 @@ AcDbText
  40
 250.0
   1
-Котёл комбинированный, 7...10 бар, 1.2 т/ч
+Котёл комбинированный, 7…10 бар, 1.2 т/ч
   7
 ГОСТ
  11
@@ -12525,7 +12525,7 @@ AcDbText
  40
 250.0
   1
-конденсат -> деаэратор -> питательный насос -> котёл
+конденсат → деаэратор → питательный насос → котёл
   7
 ГОСТ
  11
@@ -13715,7 +13715,7 @@ AcDbText
  40
 250.0
   1
-Сепаратор льяльных вод 15 -> 5 ppm
+Сепаратор льяльных вод 15 → 5 ppm
   7
 ГОСТ
  11
@@ -16451,7 +16451,7 @@ DictionaryVariables
 280
 0
   1
-1.4.4 @ 2026-09-16T22:16:37.922054+00:00
+1.4.4 @ 2026-09-17T01:45:37.542644+00:00
   0
 VISUALSTYLE
   5
@@ -23013,7 +23013,7 @@ DictionaryVariables
 280
 0
   1
-1.4.4 @ 2026-09-16T22:16:37.935299+00:00
+1.4.4 @ 2026-09-17T01:45:37.555835+00:00
   0
 ENDSEC
   0

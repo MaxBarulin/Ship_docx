@@ -565,7 +565,7 @@ def profile():
         keel.append((x * K, z_kil * K)); deck.append((x * K, z_brt * K))
         x += step
     T = H.equilibrium()["T"]
-    bbox = (-3 * K, -7 * K, (G.LOA + 34) * K, 18 * K)
+    bbox = (-3 * K, -20 * K, (G.LOA + 34) * K, 18 * K)
     sheet, sc = pick_sheet(bbox[2] - bbox[0], bbox[3] - bbox[1])
     doc = newdoc(); msp = doc.modelspace()
     poly(msp, keel, "01_ОБШИВКА"); poly(msp, deck, "01_ОБШИВКА")
@@ -598,6 +598,24 @@ def profile():
                          dxfattribs={"layer": "09_РАЗМЕРЫ"})
         text(msp, xr + 1.0 * K, 0.5 * (z0 + z1) * K, name, 3.0, sc, "09_РАЗМЕРЫ", TA.MIDDLE_LEFT)
     frames_ruler(msp, 0, G.LOA, -2.2 * K, sc)
+    trows = []
+    KEY = {0: None, 1: "первая", 2: "главная", 3: "верхняя", 4: "шлюпочная", 5: "солнечная"}
+    for i, (z0, z1, name) in enumerate(TIERS):
+        zones = GA.DECKS.get(KEY.get(i) or "", [])
+        area = sum(z[5] for z in zones if z[5])
+        seats = sum(z[4] for z in zones if z[4])
+        main = ", ".join(z[3].split(",")[0] for z in
+                         sorted(zones, key=lambda q: q[1] - q[0], reverse=True)[:3]) or             "цистерны, машинное отделение, электростанция"
+        if len(main) > 74:
+            main = main[:71] + "…"
+        trows.append([i, name.split("·")[1].strip() if "·" in name else name,
+                      "%.2f…%.2f" % (z0, z1), "%.1f" % (z1 - z0),
+                      ("%.0f" % area) if area else "—",
+                      ("%d" % seats) if seats else "—", main])
+    table(msp, 0.0, -6.0 * K, sc,
+          ["Ярус", "Наименование", "z, м", "Высота, м", "Площадь, м2", "Мест",
+           "Основные помещения"],
+          trows, [14, 62, 30, 24, 26, 16, 150], h_row=6.0)
     notes = ("Продольный разрез по ДП — только обозначение ярусов.",
              "Высоты от основной плоскости, м. Габаритная высота от ВЛ — 13,2 м.",
              "Красные линии — водонепроницаемые переборки (8 шт.).")
