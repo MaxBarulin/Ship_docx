@@ -405,6 +405,11 @@ def support(gap=SUP_GAP, verbose=True):
                     ok = True
                     break
         if not ok:
+            # подвес к подволоку: вытяжной зонт камбуза висит именно так
+            ok = bvh.ray_cast(Vector(((x0 + x1) / 2, (y0 + y1) / 2,
+                                      z1 + 0.002)),
+                              Vector((0, 0, 1)), 0.12)[0] is not None
+        if not ok:
             deck = min(DECK_LEVELS, key=lambda d: abs(d - z0))
             bad.append((name, cname, round(z0 - deck, 3),
                         round((x0 + x1) / 2, 1), round((y0 + y1) / 2, 1),

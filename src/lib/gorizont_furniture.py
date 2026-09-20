@@ -155,7 +155,7 @@ def chair(n, x, y, z, facing, seat=FAB, frame=W_DARK, w=SEAT_W):
     return p
 
 
-def armchair(n, x, y, z, facing, seat=LEATHER, frame=W_DARK, w=0.78, d=0.80):
+def armchair(n, x, y, z, facing, seat=LEATHER, frame=MET, w=0.78, d=0.80):
     """Кресло с подлокотниками: цоколь, подушка, спинка, два подлокотника."""
     fx, fy = facing
     if fx:
@@ -190,7 +190,7 @@ def armchair(n, x, y, z, facing, seat=LEATHER, frame=W_DARK, w=0.78, d=0.80):
     return p
 
 
-def sofa(n, x0, x1, y0, y1, z, facing, seat=FAB_WARM, frame=W_DARK):
+def sofa(n, x0, x1, y0, y1, z, facing, seat=FAB_WARM, frame=MET):
     """Диван по габариту: спинка со стороны, обратной `facing`."""
     fx, fy = facing
     p = [box("%s_цоколь" % n, x0 + 0.06, x1 - 0.06, y0 + 0.06, y1 - 0.06,
@@ -240,7 +240,7 @@ def stool(n, x, y, z, top=LEATHER, frame=MET, h=STOOL_H, r=0.19):
             cyl("%s_сиденье" % n, x, y, r, z + h - 0.06, z + h, top, 20)]
 
 
-def bench(n, x0, x1, y0, y1, z, mat=FAB_WARM, frame=W_DARK, h=SEAT_H):
+def bench(n, x0, x1, y0, y1, z, mat=FAB_WARM, frame=MET, h=SEAT_H):
     """Банкетка или пуф без спинки."""
     return [box("%s_цоколь" % n, x0 + 0.06, x1 - 0.06, y0 + 0.06, y1 - 0.06,
                 z, z + 0.12, frame),
@@ -347,14 +347,22 @@ def shelf(n, x0, x1, y0, y1, z, h=2.00, shelves=5, body=W_LIGHT, fill=True):
 
 
 def planter(n, x, y, z, r=0.34, h=0.55, pot=STONE):
-    """Кадка с деревом: ствол стоит в кадке, крона на стволе."""
+    """Кадка с деревом: ствол стоит в кадке, крона на стволе.
+
+    Крона набирается тремя ярусами разного радиуса: один цилиндр читается
+    как зелёный барабан на палке.
+    """
+    zb = z + h + 0.52
     return [cyl("%s_кадка" % n, x, y, r, z, z + h, pot, 20),
             cyl("%s_грунт" % n, x, y, r - 0.04, z + h - 0.03, z + h, BARK,
                 20),
-            cyl("%s_ствол" % n, x, y, 0.045, z + h - 0.03, z + h + 0.62,
+            cyl("%s_ствол" % n, x, y, 0.045, z + h - 0.03, zb + 0.10,
                 BARK, 10),
-            cyl("%s_крона" % n, x, y, 0.42, z + h + 0.52, z + h + 1.28,
-                GREEN, 16)]
+            cyl("%s_крона_0" % n, x, y, 0.30, zb, zb + 0.26, GREEN, 20),
+            cyl("%s_крона_1" % n, x, y, 0.44, zb + 0.22, zb + 0.62, GREEN,
+                24),
+            cyl("%s_крона_2" % n, x, y, 0.28, zb + 0.58, zb + 0.84, GREEN,
+                20)]
 
 
 def vase(n, x, y, z, r=0.10, h=0.26):

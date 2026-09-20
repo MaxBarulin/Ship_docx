@@ -163,12 +163,19 @@ def theatre(x0, x1, z, hw, n="театр", tiers=2, rise=0.12, depth=2.00,
 
 def bistro(x0, x1, z, hw, n="бистро"):
     """Бистро: стойка выдачи, столики на двоих, высокие места у остекления."""
+    # линия выдачи идёт вдоль правого борта, а не поперёк у входа: поперёк
+    # она перегораживала вход в зал и первый же кадр упирался в её торец
+    wy = hw(x0 + 3.0) - 0.40
     out = [("%s_стойка" % n,
-            F.counter("%s_стойка" % n, x0 + 0.30, x0 + 1.05, -2.4, 2.4, z,
-                      h=1.05), True),
+            F.counter("%s_стойка" % n, x0 + 0.70, x0 + 4.60,
+                      wy - 0.72, wy, z, h=1.05), True),
            ("%s_витрина" % n,
-            F.cabinet("%s_витрина" % n, x0 + 1.25, x0 + 1.85, -2.4, 2.4, z,
-                      h=1.35, top=F.STONE, body=F.W_LIGHT), False)]
+            F.cabinet("%s_витрина" % n, x0 + 0.70, x0 + 4.60,
+                      wy - 1.34, wy - 0.78, z, h=1.25, top=F.STONE,
+                      body=F.W_LIGHT), False),
+           ("%s_полка" % n,
+            F.shelf("%s_полка" % n, x0 + 0.90, x0 + 4.40, wy, wy + 0.32, z,
+                    h=1.95, shelves=4, body=F.W_LIGHT, fill=True), False)]
     k = 0
     for x in F.rows(x0 + 2.4, x1 - 0.9, 1.90):
         y0, y1 = _band(hw, x, 1.60, margin=0.75)
@@ -209,7 +216,7 @@ def lobby(x0, x1, z, hw, n="лобби"):
             [F.box("%s_панно" % n, x0 + 0.01, x0 + 0.07, -2.6, 0.4,
                    z + 1.10, z + 2.05, F.ART)], False)]
     k = 0
-    for x in F.rows(x0 + 3.4, x1 - 2.6, 4.20):
+    for x in F.rows(x0 + 3.2, x1 - 2.6, 3.95):
         wy = hw(x) - 0.70
         if wy < 2.2:
             continue
