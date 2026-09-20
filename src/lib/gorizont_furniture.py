@@ -406,7 +406,7 @@ def lamp(n, x, y, z, h=1.55):
 # --- расстановка -----------------------------------------------------------
 
 def table_set(n, x, y, z, seats=4, w=0.90, round_top=False, reach=None,
-              top=W_DARK, seat=FAB, along="y"):
+              top=W_DARK, seat=FAB, along="y", frame=W_DARK):
     """Стол со стульями: каждый стул повёрнут к центру стола.
 
     `along` задаёт, вдоль какой оси сажают пары при `seats == 2`.
@@ -427,7 +427,7 @@ def table_set(n, x, y, z, seats=4, w=0.90, round_top=False, reach=None,
         dirs = [(0, 1)]
     for k, d in enumerate(dirs[:seats]):
         p += chair("%s_стул_%d" % (n, k), x - d[0] * reach, y - d[1] * reach,
-                   z, d, seat=seat)
+                   z, d, seat=seat, frame=frame)
     return p, group_bounds(p)
 
 

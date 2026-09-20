@@ -272,7 +272,10 @@ def zone_labels(msp, zones, z, scale, seats=True):
         if kind != "cabins" and room > len(name) * 1.85 + 6:
             text(msp, cx, -1.0 * K, name, 3.2, scale, "06_ПОМЕЩЕНИЯ")
             if area:
-                d = "%.0f м2" % area + ((" · %d мест" % cap) if (cap and seats) else "")
+                # cap — площадь по описанию задания, а не посадка
+                d = "%.0f м2" % area
+                if cap and abs(cap - area) > 1.0:
+                    d += " (задание %.0f м2)" % cap
                 text(msp, cx, -2.6 * K, d, 2.8, scale, "06_ПОМЕЩЕНИЯ")
 
 

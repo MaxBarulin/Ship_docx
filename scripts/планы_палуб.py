@@ -7,7 +7,7 @@
 
     python scripts/планы_палуб.py [папка_с_сырыми_рендерами]
 """
-import os, sys
+import os, sys, io, json
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, os.path.join(ROOT, "src"))
 from PIL import Image, ImageDraw, ImageFont
@@ -73,12 +73,18 @@ def build(name, title, sub, key):
 
     zones = GA.DECKS.get(key, []) if key else []
     items = []
-    for x0, x1, kind, zname, cap, area in zones:
+    for x0, x1, kind, zname, want, area in zones:
         lab = zname
         if area:
             lab += " · %.0f м²" % area
-        if cap:
-            lab += " · %d мест" % cap
+        # пятое поле таблицы зон — площадь по описанию задания, а не места.
+        # Раньше её печатали как «мест», и на плане стояло «Провизионные
+        # склады · 87 м² · 110 мест».
+        if want and area and abs(want - area) > 1.0:
+            lab += " (по заданию %.0f м²)" % want
+        n = _seats(x0, x1, key)
+        if n:
+            lab += " · %d мест" % n
         items.append([px(0.5 * (x0 + x1)), lab])
     items.sort()
     fnt = F(REG, 21)

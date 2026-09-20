@@ -19,7 +19,7 @@ r"""Аудит сцены: пересечения объектов и выход
     exec(open(r"E:\Ship_docx\scripts\blender_аудит.py", encoding="utf-8").read())
     audit()
 """
-import bpy, sys, math
+import bpy, sys, math, os
 from mathutils import Vector
 from mathutils.bvhtree import BVHTree
 
@@ -531,7 +531,7 @@ def seating(reach=SEAT_REACH, verbose=True):
     return bad
 
 
-def seats(verbose=True):
+def seats(verbose=True, save=True):
     """Сколько посадочных мест реально стоит в каждом помещении.
 
     Считаются сиденья: плоские куски со стороной 0,35…0,62 м на высоте
@@ -544,12 +544,19 @@ def seats(verbose=True):
         x0, x1, y0, y1, z0, z1 = b
         dx, dy, dz = x1 - x0, y1 - y0, z1 - z0
         h = z0 - min(DECK_LEVELS, key=lambda d: abs(d - z0))
-        if dz > 0.14:
+        if dz > 0.10:
             continue
-        if SEAT_SIDE[0] <= dx <= SEAT_SIDE[1]                 and SEAT_SIDE[0] <= dy <= SEAT_SIDE[1]                 and 0.30 <= h <= 0.60:
+        # сиденье стула — 0,46 м в стороне; царга под ним 0,42 м и той же
+        # толщины, поэтому нижняя граница жёсткая, иначе стул считается дважды
+        if 0.44 <= dx <= 0.62 and 0.44 <= dy <= 0.62 and 0.20 <= h <= 1.20:
             cnt[name] = cnt.get(name, 0) + 1
         elif 0.30 <= dx <= 0.42 and 0.30 <= dy <= 0.42 and 0.62 <= h <= 0.95:
             cnt[name] = cnt.get(name, 0) + 1
+    if save:
+        import json
+        with open(os.path.join(ROOT_SRC, "lib", "gorizont_seats.json"),
+                  "w", encoding="utf-8") as f:
+            json.dump(cnt, f, ensure_ascii=False, indent=1, sort_keys=True)
     if verbose:
         for n, c in sorted(cnt.items(), key=lambda kv: -kv[1]):
             print("  %-34s %4d мест" % (n, c))

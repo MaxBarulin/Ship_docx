@@ -36,7 +36,7 @@ def restaurant(x0, x1, z, hw, n="рест"):
     """
     out = []
     aisle = 1.70
-    step = 2.30
+    step = 2.40
     out.append(("%s_ковёр" % n, F.rug("%s_ковёр" % n, x0 + 0.6, x1 - 0.6,
                                       -aisle / 2, aisle / 2, z,
                                       F.CARPET2), False))
@@ -46,19 +46,21 @@ def restaurant(x0, x1, z, hw, n="рест"):
         if y1 - y0 < 1.0:
             continue
         # сколько столов встаёт в полосу шириной y1-y0 с шагом 2.30
-        n_t = int((y1 - y0 + 0.4) // 2.30)
+        n_t = int((y1 - y0 + 0.4) // 2.40)
         for s in (-1, 1):
             for j in range(max(1, n_t)):
-                cy = y0 + 1.05 + j * 2.30
-                if cy + 0.97 > y1:
-                    cy = y1 - 0.97
-                if cy - 0.97 < y0:
+                cy = y0 + 1.12 + j * 2.40
+                if cy + 0.95 > y1:
+                    cy = y1 - 0.95
+                if cy - 0.95 < y0:
                     continue
                 seats = 4 if y1 - y0 > 2.2 or j else 2
                 p, b = F.table_set("%s_стол_%d" % (n, k), x, s * cy, z,
                                    seats=seats, w=0.90,
-                                   round_top=(k % 3 == 0), top=F.W_DARK,
-                                   seat=F.LEATHER if k % 3 == 0 else F.FAB)
+                                   round_top=(k % 3 == 0),
+                                   top=F.STONE if k % 3 == 0 else F.W_DARK,
+                                   seat=F.LEATHER if k % 3 == 0 else F.FAB,
+                                   frame=F.MET)
                 out.append(("%s_стол_%d" % (n, k), p, True))
                 k += 1
     # раздаточная стойка и винный шкаф у кормовой переборки
@@ -78,8 +80,8 @@ def restaurant(x0, x1, z, hw, n="рест"):
 
 # --- театр-лаунж -----------------------------------------------------------
 
-def theatre(x0, x1, z, hw, n="театр", tiers=2, rise=0.12, depth=1.90,
-            pitch=0.95):
+def theatre(x0, x1, z, hw, n="театр", tiers=2, rise=0.12, depth=2.00,
+            pitch=1.00):
     """Театр-лаунж: сцена в носу, плоский партер, ступени помоста в корме.
 
     Подъём рядов даёт помост, а не удлинённые ножки кресел: раньше кресла
@@ -114,6 +116,10 @@ def theatre(x0, x1, z, hw, n="театр", tiers=2, rise=0.12, depth=1.90,
                            z, z + h, F.CARPET2)], False))
     for x in F.rows(flat_x, stage_x - 1.2, pitch):
         levels.append((x, 0.0))
+    out.append(("%s_ковёр" % n,
+                F.rug("%s_ковёр" % n, x0 + 0.2, stage_x - 0.2,
+                      -(hw((x0 + stage_x) / 2) - 0.55),
+                      hw((x0 + stage_x) / 2) - 0.55, z, F.CARPET), False))
     k = 0
     for x, h in levels:
         y0, y1 = 0.70, hw(x) - 0.85
@@ -126,7 +132,7 @@ def theatre(x0, x1, z, hw, n="театр", tiers=2, rise=0.12, depth=1.90,
                 out.append(("%s_кресло_%d" % (n, k),
                             F.chair("%s_кресло_%d" % (n, k), x, cy, z + h,
                                     (1, 0), seat=F.FAB_WARM,
-                                    frame=F.W_DARK), True))
+                                    frame=F.MET), True))
                 k += 1
     # сцена, портал и экран у носовой переборки
     wy = min(hw(stage_x), hw(x1 - 0.2)) - 0.70
@@ -164,14 +170,14 @@ def bistro(x0, x1, z, hw, n="бистро"):
             F.cabinet("%s_витрина" % n, x0 + 1.25, x0 + 1.85, -2.4, 2.4, z,
                       h=1.35, top=F.STONE, body=F.W_LIGHT), False)]
     k = 0
-    for x in F.rows(x0 + 2.6, x1 - 0.9, 1.75):
-        y0, y1 = _band(hw, x, 1.50, margin=0.80)
+    for x in F.rows(x0 + 2.4, x1 - 0.9, 1.90):
+        y0, y1 = _band(hw, x, 1.60, margin=0.75)
         if y1 - y0 < 0.9:
             continue
-        n_t = max(1, int((y1 - y0 + 0.3) // 1.65))
+        n_t = max(1, int((y1 - y0 + 0.3) // 1.60))
         for s in (-1, 1):
             for j in range(n_t):
-                cy = min(y0 + 0.80 + j * 1.65, y1 - 0.80)
+                cy = min(y0 + 0.80 + j * 1.60, y1 - 0.80)
                 p, _ = F.table_set("%s_стол_%d" % (n, k), x, s * cy, z,
                                    seats=2, w=0.72, round_top=True,
                                    top=F.STONE, seat=F.LEATHER, along="x")
@@ -368,7 +374,7 @@ def library_shops(x0, x1, z, hw, split=None, n="биб"):
                             split - 0.90, s * wy, s * (wy - 0.34), z,
                             h=2.05, shelves=5), True))
     k = 0
-    for x in F.rows(x0 + 1.0, split - 0.7, 2.1):
+    for x in F.rows(x0 + 1.0, split - 0.7, 1.75):
         p, _ = F.table_set("%s_стол_%d" % (n, k), x, 0.0, z, seats=4,
                            w=1.05, top=F.W_DARK, seat=F.LEATHER)
         p += [F.cyl("%s_лампа_%d" % (n, k), x, 0.0, 0.10,
@@ -683,3 +689,102 @@ ROOMS = {
     "мебель_детский_клуб": ("шлюпочная", 90.40, 97.80, kids, "клуб"),
     "мебель_служебный_блок": ("первая", 39.70, 59.80, galley_block, "служ"),
 }
+
+
+# --- проверка проходов ------------------------------------------------------
+
+def circulation(groups, x0, x1, z, hw, cell=0.10, main=1.20, access=0.50,
+                seat_reach=0.75, h_block=1.10, h_floor=0.30):
+    """Проходы в зале: магистраль и подход к каждому месту.
+
+    Зал растрируется сеткой 100 мм. Занятая клетка — деталь, стоящая на полу
+    и выше `h_floor`: помост, ступень, ковёр и танцпол проход не
+    перекрывают, по ним ходят; подвес, экран и полка над головой — тоже нет.
+
+    Два просвета, а не один. Магистраль зала меряется по `main` = 1,20 м:
+    по ней расходятся на посадку и уходят по тревоге. Подход к своему месту
+    меряется по `access` = 0,50 м — между спинками соседних стульев
+    протискиваются, и требовать там 1,20 м значит выкинуть половину посадки.
+    """
+    nx = int((x1 - x0) / cell) + 1
+    ny = int(2 * max(hw(x0 + (x1 - x0) * k / 20.0) for k in range(21))
+             / cell) + 1
+    y0 = -(ny - 1) * cell / 2.0
+
+    def ij(x, y):
+        return int(round((x - x0) / cell)), int(round((y - y0) / cell))
+
+    free = [[False] * ny for _ in range(nx)]
+    for i in range(nx):
+        w = hw(x0 + i * cell)
+        for j in range(ny):
+            free[i][j] = abs(y0 + j * cell) <= w - 0.05
+    seats = []
+    for _, parts, _ in groups:
+        for q in parts:
+            a0, a1, b0, b1, c0, c1 = F.bounds(q)
+            if q[1].endswith("_сиденье"):
+                seats.append(((a0 + a1) / 2, (b0 + b1) / 2))
+            if c0 - z > h_block or c1 - z <= h_floor:
+                continue
+            i0, j0 = ij(a0, b0)
+            i1, j1 = ij(a1, b1)
+            for i in range(max(0, i0), min(nx, i1 + 1)):
+                for j in range(max(0, j0), min(ny, j1 + 1)):
+                    free[i][j] = False
+    INF = 10 ** 6
+    d = [[0 if not free[i][j] else INF for j in range(ny)] for i in range(nx)]
+    q = [(i, j) for i in range(nx) for j in range(ny) if d[i][j] == 0]
+    head = 0
+    while head < len(q):
+        i, j = q[head]
+        head += 1
+        for di, dj in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            a, b = i + di, j + dj
+            if 0 <= a < nx and 0 <= b < ny and d[a][b] > d[i][j] + 1:
+                d[a][b] = d[i][j] + 1
+                q.append((a, b))
+
+    def fill(need, seeds):
+        seen = set()
+        st = [c for c in seeds if d[c[0]][c[1]] >= need]
+        seen.update(st)
+        while st:
+            i, j = st.pop()
+            for di, dj in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                a, b = i + di, j + dj
+                if 0 <= a < nx and 0 <= b < ny and (a, b) not in seen                         and d[a][b] >= need:
+                    seen.add((a, b))
+                    st.append((a, b))
+        return seen
+
+    n_main = int(round(main / 2 / cell))
+    wide = [(i, j) for i in range(nx) for j in range(ny)
+            if d[i][j] >= n_main]
+    best = set()
+    left = set(wide)
+    while left:
+        comp = fill(n_main, [next(iter(left))])
+        left -= comp
+        if len(comp) > len(best):
+            best = comp
+    xs = [x0 + i * cell for (i, _) in best]
+    reach = fill(int(round(access / 2 / cell)), list(best))
+    r = int(round(seat_reach / cell))
+    far = []
+    for sx, sy in seats:
+        si, sj = ij(sx, sy)
+        ok = False
+        for i in range(si - r, si + r + 1):
+            for j in range(sj - r, sj + r + 1):
+                if (i, j) in reach:
+                    ok = True
+                    break
+            if ok:
+                break
+        if not ok:
+            far.append((round(sx, 1), round(sy, 1)))
+    span = round(max(xs) - min(xs), 1) if xs else 0.0
+    rep = {"магистраль": span, "мест": len(seats), "без подхода": len(far),
+           "примеры": far[:6]}
+    return (not far and span > (x1 - x0) * 0.6), rep

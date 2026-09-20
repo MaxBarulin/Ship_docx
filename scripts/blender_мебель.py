@@ -269,9 +269,12 @@ def build_room(name, deck, x0, x1, fn, pref, bvh, report, edge=None):
         coll = bpy.data.collections.get("31_Мебель") or bpy.context.scene.collection
         coll.objects.link(obj)
     me = obj.data
+    # слоты материалов ставим до записи сетки: `materials.clear()` на сетке
+    # с гранями обнуляет их material_index, и вся обстановка уезжает на
+    # первый материал — именно так зал становился одноцветным
+    _mat_slots(me, mats)
     bm.to_mesh(me)
     bm.free()
-    _mat_slots(me, mats)
     me.update()
     obj.matrix_world.identity()
     report.append((name, len(parts), len(kept), dropped, len(forced),

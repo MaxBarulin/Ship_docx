@@ -81,7 +81,7 @@ def render_rooms(only=None, verbose=True):
     suns = [(o, o.data.energy) for o in bpy.data.objects
             if o.type == "LIGHT" and o.data.type == "SUN"]
     for o, e in suns:
-        o.data.energy = e * 0.42
+        o.data.energy = e * 0.30
     try:
         sc.render.engine = "CYCLES"
         sc.cycles.device = "GPU"
@@ -92,7 +92,7 @@ def render_rooms(only=None, verbose=True):
         sc.render.image_settings.file_format = "JPEG"
         sc.render.image_settings.quality = 92
         sc.view_settings.view_transform = "AgX"
-        sc.view_settings.exposure = -0.55
+        sc.view_settings.exposure = -1.05
         for look in ("AgX - Medium High Contrast", "AgX - Base Contrast"):
             try:
                 sc.view_settings.look = look
@@ -128,9 +128,9 @@ def render_rooms(only=None, verbose=True):
             for i in range(n_l):
                 xx = x0 + L * (i + 0.5) / n_l
                 for y in (-3.4, 0.0, 3.4):
-                    lights.append(_light((xx, y, zd + 1.98), 130.0, 2.6))
+                    lights.append(_light((xx, y, zd + 1.98), 58.0, 2.6))
                 # слабая подсветка подволока: иначе он уходит в грязь
-                lights.append(_light((xx, 0.0, zd + 1.55), 26.0, 3.0,
+                lights.append(_light((xx, 0.0, zd + 1.55), 16.0, 3.0,
                                      col=(1.0, 0.95, 0.9), up=True))
             p = os.path.join(OUT, name + ".jpg")
             sc.render.filepath = p
