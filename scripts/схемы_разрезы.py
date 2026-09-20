@@ -12,7 +12,8 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, os.path.join(ROOT, "src"))
 from PIL import Image, ImageDraw, ImageFont
 import matplotlib
-from lib import gorizont as G, gorizont_ga as GA, gorizont_hydro as H, gorizont_mach as M
+from lib import gorizont as G
+from lib import gorizont_roll as _roll, gorizont_ga as GA, gorizont_hydro as H, gorizont_mach as M
 
 RAW = sys.argv[1] if len(sys.argv) > 1 else r"F:\Temp\claude\gor\схемы_raw"
 OUT = os.path.join(ROOT, "renders", "горизонт_2026", "схемы")
@@ -26,6 +27,7 @@ INK, INK2 = (24, 34, 52), (86, 98, 120)
 ACC, SEA, GREEN, LINE = (176, 38, 52), (28, 92, 138), (24, 116, 84), (150, 160, 176)
 EL, VENT, WAT, SEW, FIRE, STEAM = ((198, 124, 12), (52, 140, 196), (32, 150, 140),
                                    (126, 96, 168), (198, 54, 54), (206, 76, 24))
+ROLL = (18, 108, 92)          # успокоение качки и её раннее предупреждение
 PPM = 2400 / 146.0
 # Поле слева под отметками палуб: раньше подписи ярусов ложились прямо на
 # модель и мешались с выносками. Схемы выставляют PADX перед отрисовкой.
@@ -242,11 +244,15 @@ def systems():
          % (G.BOILER["pressure_bar"][0], G.BOILER["pressure_bar"][1]), "up", STEAM),
         (G.THRUSTERS["носовое"]["x"], 0.8, "Носовое ПУ %d кВт" % G.THRUSTER_POWER, "dn", EL),
         (G.THRUSTERS["кормовое"]["x"], 1.2, "Кормовое ПУ %d кВт" % G.THRUSTER_POWER, "dn", EL),
+        (52.0, 0.25, "Успокоительная цистерна, кормовая пара", "dn", ROLL),
+        (90.0, 0.25, "Успокоительная цистерна, носовая пара", "dn", ROLL),
+        (121.0, 15.6, "Волномерный радар и метеостанция", "up", ROLL),
+        (121.0, 12.6, "MRU, гирокомпас, вычислитель качки", "up", ROLL),
     ]
     probe = ImageDraw.Draw(Image.new("RGB", (10, 10)))
     nu, nd = place(probe, items, font(19), 0, HI)
     BOXES[:] = []
-    HDR, BOT = 86, 60 + nd * 30 + 6 * 32 + 70
+    HDR, BOT = 86, 60 + nd * 30 + 7 * 32 + 70
     TOP = 40 + nu * 30
     img = Image.new("RGB", (W + GUT + RGUT, HDR + TOP + HI + BOT), "white")
     img.paste(im, (GUT, HDR + TOP))
@@ -285,11 +291,19 @@ def systems():
     run([(28.0, 2.6), (12.5, 2.6)], STEAM, 4)
     run([(28.0, 2.6), (28.0, 1.2)], STEAM, 4)
     run([(28.0, 2.6), (44.0, 2.6)], STEAM, 4)
+    # успокоение качки: ветви цистерн у бортов и перепускные каналы
+    for a, b in ((46.0, 58.0), (84.0, 96.0)):
+        run([(a, 0.25), (b, 0.25)], ROLL, 6)
+    run([(52.0, 0.25), (52.0, 1.9)], ROLL, 3)
+    run([(90.0, 0.25), (90.0, 1.9)], ROLL, 3)
+    run([(52.0, 1.9), (90.0, 1.9)], ROLL, 3)
+    run([(90.0, 1.9), (121.0, 1.9)], ROLL, 3)
+    run([(121.0, 1.9), (121.0, 12.6)], ROLL, 3)
     for x in (34.0, 60.0, 92.0, 116.0):
         d.line([px(x), szz(0.2) + off, px(x), szz(12.9) + off], fill=FIRE, width=3)
         d.text((px(x), szz(13.6) + off), "ГВПЗ", font=font(15, b=True), fill=FIRE, anchor="ms")
     place(d, items, font(19), off, HI)
-    ly = HDR + TOP + HI + BOT - 6 * 32 - 40
+    ly = HDR + TOP + HI + BOT - 7 * 32 - 40
     LEG = [(EL, "электроэнергия: %d × %d кВт ГДГ, ГРЩ %d В, %d × %d кВт ГЭД, батарея %d кВт·ч, солнечные модули"
             % (G.DG_COUNT, G.DG_POWER, G.SWITCHBOARD_V, G.PROP_MOTOR_COUNT,
                G.PROP_MOTOR_POWER, G.BATTERY_KWH)),
@@ -297,7 +311,10 @@ def systems():
            (WAT, "пресная вода: %.0f м³ запаса, станция подготовки, стояки в трап-холлах" % G.FRESH_WATER_M3),
            (SEW, "сточные воды: вакуумная система, AWTS с МБР и УФ, нулевой сброс в акваторию"),
            (STEAM, "пар и тепло: утилизация ВТ-контура ГДГ, один центральный пластинчатый теплообменник"),
-           (FIRE, "главные вертикальные противопожарные зоны — 5 зон, шпации 34 / 60 / 92 / 116")]
+           (FIRE, "главные вертикальные противопожарные зоны — 5 зон, шпации 34 / 60 / 92 / 116"),
+           (ROLL, "качка: волномерный радар, MRU и гирокомпас, две пассивные "
+                  "успокоительные цистерны %.1f т, настройка на период %.2f с"
+                  % (_roll.water()["mass"], _roll.tank_period()))]
     for i, (c, t) in enumerate(LEG):
         y = ly + i * 32
         d.line([60, y, 110, y], fill=c, width=5)
