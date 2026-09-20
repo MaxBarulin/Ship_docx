@@ -21,10 +21,14 @@ from lib import gorizont_cabins as C
 
 
 def _box(bm, b):
+    """Параллелепипед. Возвращает созданные грани, а не полагается на их
+    порядковые номера: bm.to_mesh() грани переставляет, и назначение
+    материала по индексам уезжает на соседнюю деталь."""
     x0, x1, y0, y1, z0, z1 = b
-    bmesh.ops.create_cube(bm, size=1.0,
+    r = bmesh.ops.create_cube(bm, size=1.0,
         matrix=M.Translation(((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2))
         @ M.Diagonal((max(x1 - x0, 1e-4), max(y1 - y0, 1e-4), max(z1 - z0, 1e-4), 1.0)))
+    return {f for v in r["verts"] for f in v.link_faces}
 
 
 def _cyl(bm, b, seg=16, axis="Z"):
@@ -39,9 +43,10 @@ def _cyl(bm, b, seg=16, axis="Z"):
     else:
         r = min(x1 - x0, z1 - z0) / 2
         rot = M.Rotation(math.radians(90), 4, 'X'); d = y1 - y0
-    bmesh.ops.create_cone(bm, cap_ends=True, cap_tris=False, segments=seg,
-                          radius1=r, radius2=r, depth=d,
-                          matrix=M.Translation((cx, cy, cz)) @ rot)
+    res = bmesh.ops.create_cone(bm, cap_ends=True, cap_tris=False,
+                                segments=seg, radius1=r, radius2=r, depth=d,
+                                matrix=M.Translation((cx, cy, cz)) @ rot)
+    return {f for v in res["verts"] for f in v.link_faces}
 
 
 def build(name, parts, collection="20_Эталоны_кают", origin=(0, 0, 0)):
@@ -53,19 +58,18 @@ def build(name, parts, collection="20_Эталоны_кают", origin=(0, 0, 0)
             idx[p.mat] = len(mats)
             mats.append(p.mat)
     bm = bmesh.new()
-    faces_from = []
+    # материал назначается сразу после создания граней детали: если
+    # копить индексы и раздавать их в конце, любая перенумерация граней
+    # внутри bmesh сдвигает всё на одну деталь — ковёр получает материал
+    # светильника и начинает светиться
     for p in parts:
-        n0 = len(bm.faces)
         if p.kind == "cyl":
-            _cyl(bm, p.box, p.meta.get("seg", 16), p.meta.get("axis", "Z"))
+            new = _cyl(bm, p.box, p.meta.get("seg", 16), p.meta.get("axis", "Z"))
         else:
-            _box(bm, p.box)
-        bm.faces.ensure_lookup_table()
-        faces_from.append((n0, len(bm.faces), idx[p.mat]))
-    bm.faces.ensure_lookup_table()
-    for (a, b, mi) in faces_from:
-        for k in range(a, b):
-            bm.faces[k].material_index = mi
+            new = _box(bm, p.box)
+        mi = idx[p.mat]
+        for f in new:
+            f.material_index = mi
     me = bpy.data.meshes.new(name)
     bm.normal_update()
     bm.to_mesh(me)
