@@ -29,7 +29,7 @@ DK = G.DECKS
 # ("орто", ширина кадра в метрах), [разрешение], [показывать ли окружение]
 VIEWS = [
     ("01_общий_вид",
-     (L * 1.34, -B * 5.6, 48.0), (L * 0.45, 0.0, 7.0), 42.0),
+     (L * 1.34, -B * 5.6, 48.0), (L * 0.50, 0.0, 9.0), 40.0),
     ("02_борт",
      (L * 0.50, -B * 14.0, 8.2), (L * 0.50, 0.0, 8.2), ("орто", 150.0),
      (2600, 620), False),
@@ -49,9 +49,16 @@ VIEWS = [
     ("08_вид_сверху",
      (L * 0.50, 0.0, 120.0), (L * 0.50, 0.0, 6.0), ("орто", 150.0),
      (2600, 420), False),
+    # камера отходит на воду и поднимается: с борта у самого причала за
+    # судном не видно ни кордона, ни домов, ради которых кадр и снимается
     ("09_у_набережной",
-     (L * 1.06, -B * 1.15, 7.6), (L * 0.34, B * 0.25, 8.4), 28.0),
+     (L * 1.25, -B * 4.5, 26.0), (L * 0.48, 3.0, 8.5), 35.0),
 ]
+
+# виды, где судно обязано быть в кадре целиком; корма и нос — крупные
+# планы оконечностей, их подгонять по всей длине нельзя
+FIT = ("01_общий_вид", "09_у_набережной")
+
 
 def _hide_env():
     """Убрать набережную и воду: на бортовой проекции и виде сверху нужен
@@ -86,6 +93,41 @@ def _cam(name, loc, tgt, lens):
     o.rotation_euler = (Vector(tgt) - Vector(loc)).to_track_quat("-Z", "Y").to_euler()
     bpy.context.scene.collection.objects.link(o)
     return o
+
+
+def _ship_points():
+    """Опорные точки габарита судна для проверки кадра."""
+    pts = []
+    for x in (0.0, L * 0.25, L * 0.5, L * 0.75, L):
+        for y in (-B / 2, 0.0, B / 2):
+            for z in (0.0, G.DECKS["солнечная"], G.DECKS["солнечная"] + 3.0):
+                pts.append(Vector((x, y, z)))
+    return pts
+
+
+def _autofit(sc, cam, margin=0.05, tries=8):
+    """Подогнать объектив так, чтобы судно влезло в кадр целиком.
+
+    Кадр подбирался на глаз, и на общем виде и у набережной корма уходила
+    за край. Теперь объектив ужимается по габариту судна: точки габарита
+    проецируются в кадр, и фокусное делится, пока самая дальняя не войдёт
+    с запасом `margin`.
+    """
+    from bpy_extras.object_utils import world_to_camera_view
+    dg = bpy.context.evaluated_depsgraph_get()
+    pts = _ship_points()
+    lim = 0.5 * (1.0 - margin)
+    for _ in range(tries):
+        dg.update()
+        us = [world_to_camera_view(sc, cam, p) for p in pts]
+        us = [u for u in us if u.z > 0.0]
+        if not us:
+            return None
+        mx = max(max(abs(u.x - 0.5), abs(u.y - 0.5)) for u in us)
+        if mx <= lim:
+            return mx
+        cam.data.lens *= lim / mx
+    return mx
 
 
 def render_views(only=None, verbose=True):
@@ -127,6 +169,11 @@ def render_views(only=None, verbose=True):
             hidden = [] if env_on else _hide_env()
             cam = _cam("_вид_" + name, loc, tgt, lens)
             sc.camera = cam
+            if not isinstance(lens, tuple) and name in FIT:
+                mx = _autofit(sc, cam)
+                if verbose and mx is not None:
+                    print("   %s: объектив %.1f мм, габарит занимает %.0f%% кадра"
+                          % (name, cam.data.lens, mx * 200))
             p = os.path.join(OUT, name + ".jpg")
             sc.render.filepath = p
             bpy.ops.render.render(write_still=True)

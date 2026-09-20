@@ -203,6 +203,15 @@ def _emit(bm, p, slot):
             v.co.x = x0 + (v.co.x + 0.5) * (x1 - x0)
             v.co.y = y0 + (v.co.y + 0.5) * (y1 - y0)
             v.co.z = z0 + (v.co.z + 0.5) * (z1 - z0)
+    elif p[0] == "sph":
+        _, _, cx, cy, cz, r, _, sub = p
+        res = bmesh.ops.create_icosphere(bm, subdivisions=max(1, sub),
+                                         radius=r)
+        verts = res["verts"]
+        for v in verts:
+            v.co.x += cx
+            v.co.y += cy
+            v.co.z += cz
     else:
         _, _, cx, cy, r, z0, z1, _, seg = p
         res = bmesh.ops.create_cone(bm, cap_ends=True, cap_tris=False,
@@ -253,15 +262,17 @@ def build_room(name, deck, x0, x1, fn, pref, bvh, report, edge=None):
             continue
         kept.append(placed[1])
         parts += placed[0]
+    def _mat(p):
+        return p[8] if p[0] == "box" else (p[6] if p[0] == "sph" else p[7])
+
     mats = []
     for p in parts:
-        m = p[8] if p[0] == "box" else p[7]
+        m = _mat(p)
         if m not in mats:
             mats.append(m)
     bm = bmesh.new()
     for p in parts:
-        m = p[8] if p[0] == "box" else p[7]
-        _emit(bm, p, mats.index(m))
+        _emit(bm, p, mats.index(_mat(p)))
     obj = bpy.data.objects.get(name)
     if obj is None:
         me = bpy.data.meshes.new(name)

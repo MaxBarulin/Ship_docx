@@ -62,10 +62,18 @@ def cyl(name, cx, cy, r, z0, z1, mat, seg=16):
     return ("cyl", name, cx, cy, r, min(z0, z1), max(z0, z1), mat, seg)
 
 
+def sph(name, cx, cy, cz, r, mat, sub=2):
+    """Шар: крона дерева из цилиндров читается зелёным барабаном."""
+    return ("sph", name, cx, cy, cz, r, mat, sub)
+
+
 def bounds(p):
     """Габарит детали независимо от её типа."""
     if p[0] == "box":
         return p[2], p[3], p[4], p[5], p[6], p[7]
+    if p[0] == "sph":
+        cx, cy, cz, r = p[2], p[3], p[4], p[5]
+        return cx - r, cx + r, cy - r, cy + r, cz - r, cz + r
     cx, cy, r, z0, z1 = p[2], p[3], p[4], p[5], p[6]
     return cx - r, cx + r, cy - r, cy + r, z0, z1
 
@@ -84,6 +92,9 @@ def shift(parts, dz):
         if p[0] == "box":
             out.append(("box", p[1], p[2], p[3], p[4], p[5],
                         p[6] + dz, p[7] + dz, p[8]))
+        elif p[0] == "sph":
+            out.append(("sph", p[1], p[2], p[3], p[4] + dz, p[5], p[6],
+                        p[7]))
         else:
             out.append(("cyl", p[1], p[2], p[3], p[4],
                         p[5] + dz, p[6] + dz, p[7], p[8]))
@@ -97,6 +108,9 @@ def move(parts, dx=0.0, dy=0.0, dz=0.0):
         if p[0] == "box":
             out.append(("box", p[1], p[2] + dx, p[3] + dx, p[4] + dy,
                         p[5] + dy, p[6] + dz, p[7] + dz, p[8]))
+        elif p[0] == "sph":
+            out.append(("sph", p[1], p[2] + dx, p[3] + dy, p[4] + dz,
+                        p[5], p[6], p[7]))
         else:
             out.append(("cyl", p[1], p[2] + dx, p[3] + dy, p[4],
                         p[5] + dz, p[6] + dz, p[7], p[8]))
@@ -356,13 +370,13 @@ def planter(n, x, y, z, r=0.34, h=0.55, pot=STONE):
     return [cyl("%s_кадка" % n, x, y, r, z, z + h, pot, 20),
             cyl("%s_грунт" % n, x, y, r - 0.04, z + h - 0.03, z + h, BARK,
                 20),
-            cyl("%s_ствол" % n, x, y, 0.045, z + h - 0.03, zb + 0.10,
+            cyl("%s_ствол" % n, x, y, 0.045, z + h - 0.03, zb + 0.20,
                 BARK, 10),
-            cyl("%s_крона_0" % n, x, y, 0.30, zb, zb + 0.26, GREEN, 20),
-            cyl("%s_крона_1" % n, x, y, 0.44, zb + 0.22, zb + 0.62, GREEN,
-                24),
-            cyl("%s_крона_2" % n, x, y, 0.28, zb + 0.58, zb + 0.84, GREEN,
-                20)]
+            sph("%s_крона_0" % n, x, y, zb + 0.26, 0.40, GREEN, 2),
+            sph("%s_крона_1" % n, x - 0.20, y + 0.16, zb + 0.52, 0.28,
+                GREEN, 2),
+            sph("%s_крона_2" % n, x + 0.22, y - 0.14, zb + 0.56, 0.26,
+                GREEN, 2)]
 
 
 def vase(n, x, y, z, r=0.10, h=0.26):
