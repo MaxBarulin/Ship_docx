@@ -50,14 +50,18 @@ def _zone(deck, name):
     return None
 
 
-def _light(loc, energy, size, col=(1.0, 0.93, 0.85)):
+def _light(loc, energy, size, col=(1.0, 0.93, 0.85), up=False, size_y=None):
     d = bpy.data.lights.new("_св", "AREA")
     d.energy = energy
     d.color = col
     d.size = size
-    d.size_y = size
+    d.size_y = size if size_y is None else size_y
     o = bpy.data.objects.new("_св", d)
     o.location = loc
+    if up:
+        o.rotation_euler = (0.0, 0.0, 0.0)
+        bpy.context.scene.collection.objects.link(o)
+        return o
     o.rotation_euler = (math.radians(180), 0, 0)
     bpy.context.scene.collection.objects.link(o)
     return o
@@ -72,6 +76,12 @@ def render_rooms(only=None, verbose=True):
             sc.view_settings.view_transform, sc.view_settings.look,
             sc.view_settings.exposure)
     made = []
+    # солнце приглушаем на время интерьеров: иначе окна выбиваются в белое,
+    # а по подволоку идут жёсткие полосы теней от простенков
+    suns = [(o, o.data.energy) for o in bpy.data.objects
+            if o.type == "LIGHT" and o.data.type == "SUN"]
+    for o, e in suns:
+        o.data.energy = e * 0.42
     try:
         sc.render.engine = "CYCLES"
         sc.cycles.device = "GPU"
@@ -82,7 +92,7 @@ def render_rooms(only=None, verbose=True):
         sc.render.image_settings.file_format = "JPEG"
         sc.render.image_settings.quality = 92
         sc.view_settings.view_transform = "AgX"
-        sc.view_settings.exposure = -1.35
+        sc.view_settings.exposure = -0.55
         for look in ("AgX - Medium High Contrast", "AgX - Base Contrast"):
             try:
                 sc.view_settings.look = look
@@ -110,10 +120,18 @@ def render_rooms(only=None, verbose=True):
             sc.collection.objects.link(cam)
             sc.camera = cam
             # подволок не снимаем: иначе в зал бьёт небо, а пассажиры с
-            # верхней палубы повисают в воздухе. Вместо этого ставим под
-            # подволок мягкие источники — так и выглядит освещённый зал.
-            lights = [_light((x0 + L * k, y, zd + 2.02), 210.0, 3.4)
-                      for k in (0.25, 0.55, 0.85) for y in (-3.2, 3.2)]
+            # верхней палубы повисают в воздухе. Вместо этого под подволок
+            # идёт ряд мягких панелей по всей длине зала, а не три пятна:
+            # от трёх источников подволок оставался в пятнах и провалах.
+            n_l = max(3, int(L / 3.2))
+            lights = []
+            for i in range(n_l):
+                xx = x0 + L * (i + 0.5) / n_l
+                for y in (-3.4, 0.0, 3.4):
+                    lights.append(_light((xx, y, zd + 1.98), 130.0, 2.6))
+                # слабая подсветка подволока: иначе он уходит в грязь
+                lights.append(_light((xx, 0.0, zd + 1.55), 26.0, 3.0,
+                                     col=(1.0, 0.95, 0.9), up=True))
             p = os.path.join(OUT, name + ".jpg")
             sc.render.filepath = p
             bpy.ops.render.render(write_still=True)
@@ -124,6 +142,8 @@ def render_rooms(only=None, verbose=True):
             if verbose:
                 print(name, "готово")
     finally:
+        for o, e in suns:
+            o.data.energy = e
         (sc.camera, sc.render.filepath, sc.render.resolution_x,
          sc.render.resolution_y, sc.render.image_settings.file_format,
          smp, eng, vt, lk, ex) = keep

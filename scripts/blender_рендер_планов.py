@@ -70,31 +70,61 @@ def _hide_above(z_cut):
     return hidden
 
 
-def render_plans(only=None, verbose=True):
+def _plan_filled(path, thr=0.02):
+    """Доля непрозрачных пикселей: пустой план так и останется незамеченным.
+
+    Первая палуба уходила в рендер пустой — выноски показывали в никуда,
+    потому что палубный настил главной палубы скрыть как объект нельзя: его
+    минимум по z лежит на днище. Теперь срез делает плоскость отсечения
+    камеры, а доля заливки это подтверждает.
+    """
+    img = bpy.data.images.load(path)
+    try:
+        px = list(img.pixels)
+        n = len(px) // 4
+        full = sum(1 for k in range(n) if px[k * 4 + 3] > 0.35)
+        return full / float(n)
+    finally:
+        bpy.data.images.remove(img)
+
+
+def render_plans(only=None, verbose=True, check=True):
+    """Планы ярусов: срез плоскостью отсечения, плоская заливка без теней."""
     os.makedirs(OUT, exist_ok=True)
     sc = bpy.context.scene
     keep = (sc.camera, sc.render.filepath, sc.render.resolution_x,
             sc.render.resolution_y, sc.render.image_settings.file_format,
-            getattr(sc.cycles, "samples", None), sc.render.engine,
-            sc.view_settings.view_transform, sc.view_settings.look,
-            sc.view_settings.exposure, sc.render.film_transparent,
+            sc.render.engine, sc.view_settings.view_transform,
+            sc.view_settings.look, sc.view_settings.exposure,
+            sc.render.film_transparent,
             sc.render.image_settings.color_mode)
+    sh = sc.display.shading
+    keep_sh = (sh.light, sh.color_type, sh.show_cavity,
+               sh.show_object_outline, sh.show_shadows,
+               tuple(sh.object_outline_color),
+               sc.display.render_aa)
     d = bpy.data.cameras.new("_планкам")
     d.type = "ORTHO"
     d.ortho_scale = ORTHO
     cam = bpy.data.objects.new("_планкам", d)
     sc.collection.objects.link(cam)
-    made = []
+    made, thin = [], []
+    env = []
     try:
-        sc.render.engine = "CYCLES"
-        sc.cycles.device = "GPU"
-        sc.cycles.samples = SAMPLES
-        sc.cycles.use_denoising = True
+        # Workbench с плоским светом: на плане нужен читаемый контур, а не
+        # светотень. Тени от солнца забивали планы и сжигали палубу.
+        sc.render.engine = "BLENDER_WORKBENCH"
+        sh.light = "FLAT"
+        sh.color_type = "MATERIAL"
+        sh.show_cavity = False
+        sh.show_shadows = False
+        sh.show_object_outline = True
+        sh.object_outline_color = (0.10, 0.11, 0.13)
+        sc.display.render_aa = "16"
         sc.render.resolution_x, sc.render.resolution_y = RES
         sc.render.resolution_percentage = 100
         sc.render.image_settings.file_format = "PNG"
         sc.render.image_settings.color_mode = "RGBA"
-        # фон прозрачный: на плане нужен контур судна на белом, а не вода
         sc.render.film_transparent = True
         sc.view_settings.view_transform = "Standard"
         sc.view_settings.exposure = 0.0
@@ -108,29 +138,39 @@ def render_plans(only=None, verbose=True):
         for name, z_deck, cut in PLANS:
             if only and name not in only:
                 continue
-            cam.location = (XC, 0.0, z_deck + 60.0)
-            hidden = _hide_above(z_deck + cut)
+            h = 60.0
+            cam.location = (XC, 0.0, z_deck + h)
+            # срез: от секущей плоскости вниз до самого настила яруса
+            d.clip_start = h - cut
+            d.clip_end = h + 0.35
             p = os.path.join(OUT, name + ".png")
             sc.render.filepath = p
             bpy.ops.render.render(write_still=True)
-            for o in hidden:
-                o.hide_render = False
             made.append(p)
+            fill = _plan_filled(p) if check else None
+            if fill is not None and fill < 0.08:
+                thin.append((name, round(fill, 3)))
             if verbose:
-                print(name, "готово")
+                print(name, "готово" if fill is None
+                      else "заливка %.1f%%" % (fill * 100))
+        if thin:
+            print("!! планы почти пустые:", thin)
     finally:
+        for o in env:
+            o.hide_render = False
         bpy.data.objects.remove(cam, do_unlink=True)
         (sc.camera, sc.render.filepath, sc.render.resolution_x,
          sc.render.resolution_y, sc.render.image_settings.file_format,
-         smp, eng, vt, lk, ex, tr, cm) = keep
+         eng, vt, lk, ex, tr, cm) = keep
         sc.render.film_transparent = tr
         sc.render.image_settings.color_mode = cm
         sc.render.engine = eng
-        if smp is not None:
-            sc.cycles.samples = smp
         sc.view_settings.view_transform = vt
         sc.view_settings.look = lk
         sc.view_settings.exposure = ex
+        (sh.light, sh.color_type, sh.show_cavity, sh.show_object_outline,
+         sh.show_shadows, oc, sc.display.render_aa) = keep_sh
+        sh.object_outline_color = oc
     return made
 
 

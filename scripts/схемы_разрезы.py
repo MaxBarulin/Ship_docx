@@ -27,7 +27,12 @@ ACC, SEA, GREEN, LINE = (176, 38, 52), (28, 92, 138), (24, 116, 84), (150, 160, 
 EL, VENT, WAT, SEW, FIRE, STEAM = ((198, 124, 12), (52, 140, 196), (32, 150, 140),
                                    (126, 96, 168), (198, 54, 54), (206, 76, 24))
 PPM = 2400 / 146.0
-def px(X): return 1200 + (X - 69.5) * PPM
+# Поле слева под отметками палуб: раньше подписи ярусов ложились прямо на
+# модель и мешались с выносками. Схемы выставляют PADX перед отрисовкой.
+PADX = 0
+GUT = 292                # ширина левого поля отметок, px
+RGUT = 300               # правое поле: ватерлиния и габаритная высота
+def px(X): return PADX + 1200 + (X - 69.5) * PPM
 def szz(Z): return 235 - (Z - 7.2) * PPM
 T = H.equilibrium()["T"]
 
@@ -37,11 +42,50 @@ def tw(d, s, f):
     return b[2] - b[0], b[3] - b[1]
 
 
-def label(d, x, y, s, f, fill=INK, pad=4):
+BOXES = []               # прямоугольники всех подписей для проверки наложений
+
+
+def label(d, x, y, s, f, fill=INK, pad=4, track=True):
     w, h = tw(d, s, f)
-    d.rectangle([x - w / 2 - pad, y - h / 2 - pad - 1, x + w / 2 + pad, y + h / 2 + pad + 1],
-                fill=(255, 255, 255))
+    r = (x - w / 2 - pad, y - h / 2 - pad - 1, x + w / 2 + pad, y + h / 2 + pad + 1)
+    d.rectangle(list(r), fill=(255, 255, 255))
     d.text((x, y), s, font=f, fill=fill, anchor="mm")
+    if track:
+        BOXES.append((r, s))
+
+
+def level_label(d, y, s, f, fill=INK2, pad=5):
+    """Отметка в левом поле, выключка вправо к корме судна."""
+    w, h = tw(d, s, f)
+    x1 = px(0) - 12
+    r = (x1 - w - pad, y - h - pad - 2, x1 + pad, y + pad + 2)
+    d.rectangle(list(r), fill=(255, 255, 255))
+    d.text((x1, y), s, font=f, fill=fill, anchor="rs")
+    BOXES.append((r, s))
+
+
+def level_label_r(d, y, s, f, fill=INK2, pad=5):
+    """Отметка в правом поле, за носом: ватерлиния и габаритная высота
+    иначе ложатся на отметки палуб — между 1,40 и 2,22 м всего 13 px."""
+    w, h = tw(d, s, f)
+    x0 = px(G.LOA) + 12
+    r = (x0 - pad, y - h - pad - 2, x0 + w + pad, y + pad + 2)
+    d.rectangle(list(r), fill=(255, 255, 255))
+    d.text((x0, y), s, font=f, fill=fill, anchor="ls")
+    BOXES.append((r, s))
+
+
+def collisions(tol=2):
+    """Наезжающие друг на друга подписи."""
+    bad = []
+    for i in range(len(BOXES)):
+        (a, sa) = BOXES[i]
+        for j in range(i + 1, len(BOXES)):
+            (b, sb) = BOXES[j]
+            if (a[0] < b[2] - tol and b[0] < a[2] - tol
+                    and a[1] < b[3] - tol and b[1] < a[3] - tol):
+                bad.append((sa, sb))
+    return bad
 
 
 def leader(d, x0, y0, x1, y1, fill=LINE, w=1):
@@ -75,7 +119,12 @@ def ruler(d, y):
 
 
 def place(d, items, f, off, imh, gap=30):
-    """Раскладка выносок в строки без наложений."""
+    """Раскладка выносок в строки без наложений.
+
+    Строка подбирается так, чтобы не пересекалась ни сама подпись, ни её
+    выноска: выноска идёт от модели через все строки до своей, и если в
+    строке ближе к модели стоит подпись, выноска перечеркнёт её текст.
+    """
     rows_up, rows_dn = [], []
     for (X, Z, s, side, col) in sorted(items, key=lambda r: r[0]):
         ax, ay = px(X), szz(Z) + off
@@ -86,7 +135,10 @@ def place(d, items, f, off, imh, gap=30):
         while True:
             if k >= len(rows):
                 rows.append([])
-            if all(iv[1] < a or iv[0] > b for (a, b) in rows[k]):
+            free = all(iv[1] < a or iv[0] > b for (a, b) in rows[k])
+            crossed = any(a - 6 <= ax <= b + 6
+                          for j in range(k) for (a, b) in rows[j])
+            if free and (not crossed or k >= 3):
                 rows[k].append(iv)
                 break
             k += 1
@@ -134,6 +186,8 @@ def section_items():
 
 
 def section():
+    global PADX
+    PADX, BOXES[:] = GUT, []
     im = Image.open(os.path.join(RAW, "разрез.png")).convert("RGBA")
     im = Image.alpha_composite(Image.new("RGBA", im.size, (255, 255, 255, 255)),
                                im).convert("RGB")
@@ -142,9 +196,10 @@ def section():
     f = font(19)
     probe = ImageDraw.Draw(Image.new("RGB", (10, 10)))
     nu, nd = place(probe, items, f, 0, HI)
+    BOXES[:] = []          # пробный проход в учёт наложений не идёт
     TOP, BOT = 40 + nu * 30, 60 + nd * 30 + 110
-    img = Image.new("RGB", (W, 86 + TOP + HI + BOT), "white")
-    img.paste(im, (0, 86 + TOP))
+    img = Image.new("RGB", (W + GUT + RGUT, 86 + TOP + HI + BOT), "white")
+    img.paste(im, (GUT, 86 + TOP))
     off = 86 + TOP
     d = header(img, "Продольный разрез по диаметральной плоскости",
                "Четыре закрытых яруса, машинное отделение, мачта и габаритная высота",
@@ -152,20 +207,14 @@ def section():
     fs = font(17)
     for key, z in DECK_Z.items():
         y = szz(z) + off
-        d.line([px(0), y, px(G.LOA), y], fill=(196, 206, 220), width=1)
-        lab = "%s палуба %.2f" % (key, z)
-        wl = d.textlength(lab, font=fs)
-        # подложка под подписью: иначе отметка теряется на разрезе
-        d.rectangle([px(0) + 3, y - 22, px(0) + 11 + wl, y - 1],
-                    fill=(255, 255, 255))
-        d.text((px(0) + 7, y - 4), lab, font=fs, fill=INK2, anchor="ls")
+        d.line([px(0) - 10, y, px(G.LOA), y], fill=(196, 206, 220), width=1)
+        level_label(d, y - 4, "%s палуба %.2f" % (key, z), fs)
     y = szz(T) + off
-    d.line([px(0), y, px(G.LOA), y], fill=SEA, width=2)
-    d.text((px(G.LOA) - 6, y - 5), "ВЛ · осадка %.2f м" % T, font=fs, fill=SEA, anchor="rs")
+    d.line([px(0) - 10, y, px(G.LOA) + 10, y], fill=SEA, width=2)
+    level_label_r(d, y - 5, "ВЛ · осадка %.2f м" % T, fs, SEA)
     y = szz(T + G.AIR_DRAFT) + off
-    d.line([px(0), y, px(G.LOA), y], fill=ACC, width=2)
-    d.text((px(G.LOA) - 6, y - 5), "габаритная высота %.1f м от ВЛ" % G.AIR_DRAFT,
-           font=fs, fill=ACC, anchor="rs")
+    d.line([px(0) - 10, y, px(G.LOA) + 10, y], fill=ACC, width=2)
+    level_label_r(d, y - 5, "габаритная высота %.1f м от ВЛ" % G.AIR_DRAFT, fs, ACC)
     place(d, items, f, off, HI)
     ruler(d, 86 + TOP + HI + BOT - 80)
     p = os.path.join(OUT, "продольный_разрез.png")
@@ -174,6 +223,8 @@ def section():
 
 
 def systems():
+    global PADX
+    PADX, BOXES[:] = GUT, []
     im = Image.open(os.path.join(RAW, "разрез.png")).convert("RGBA")
     im = Image.alpha_composite(Image.new("RGBA", im.size, (255, 255, 255, 255)),
                                im).convert("RGB")
@@ -194,14 +245,15 @@ def systems():
     ]
     probe = ImageDraw.Draw(Image.new("RGB", (10, 10)))
     nu, nd = place(probe, items, font(19), 0, HI)
+    BOXES[:] = []
     HDR, BOT = 86, 60 + nd * 30 + 6 * 32 + 70
     TOP = 40 + nu * 30
-    img = Image.new("RGB", (W, HDR + TOP + HI + BOT), "white")
-    img.paste(im, (0, HDR + TOP))
+    img = Image.new("RGB", (W + GUT + RGUT, HDR + TOP + HI + BOT), "white")
+    img.paste(im, (GUT, HDR + TOP))
     off = HDR + TOP
     d = header(img, "Судовые системы",
                "Энергетика, ОВК, пресная вода и стоки, пар и утилизация тепла, пожарные зоны",
-               "Схемы · «Волжский Горизонт»")
+               "Схемы · М 1:250 (A2)")
 
     def run(pts, col, w=5):
         for i in range(len(pts) - 1):
@@ -250,11 +302,18 @@ def systems():
         y = ly + i * 32
         d.line([60, y, 110, y], fill=c, width=5)
         d.text((126, y - 11), t, font=font(19), fill=INK)
+    for z, nm in ((1.40, "первая"), (4.20, "главная"), (7.00, "верхняя"),
+                  (9.80, "шлюпочная"), (12.60, "солнечная")):
+        level_label(d, szz(z) + off - 4, "%s %.2f" % (nm, z), font(17))
     p = os.path.join(OUT, "судовые_системы.png")
     img.save(p)
     return p
 
 
 if __name__ == "__main__":
-    print(os.path.basename(section()))
-    print(os.path.basename(systems()))
+    for fn in (section, systems):
+        p = fn()
+        bad = collisions()
+        print(os.path.basename(p),
+              "— подписи не пересекаются" if not bad
+              else "!! наложений: %d  %s" % (len(bad), bad[:4]))
