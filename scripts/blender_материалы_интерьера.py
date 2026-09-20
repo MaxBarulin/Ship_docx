@@ -151,10 +151,14 @@ def metal(name, col, rough=0.22, aniso=0.45):
 
 
 def carpet(name, col):
+    """Ковролин и ковёр. Ворс (Sheen) берём слабый и в цвет ворса, иначе
+    белая вуаль сверху съедает цвет: тёмно-красный ковёр на рендере
+    выходил белым пятном."""
     m, nt, b = _mat(name)
     n = _tex(nt, "noise", 380.0, detail=6.0, loc=(-760, -160))
     _bump(nt, n.outputs["Fac"], 0.55, 0.0022, b)
-    _set(b, base=col, metallic=0.0, rough=0.97, sheen=0.30, sheen_r=0.5,
+    _set(b, base=col, metallic=0.0, rough=0.97, sheen=0.12, sheen_r=0.6,
+         sheen_c=tuple(min(1.0, c * 1.5) for c in col[:3]) + (1.0,),
          spec=0.25)
     return m
 
@@ -196,7 +200,7 @@ def rebuild_materials(verbose=True):
                      rough=0.26))
     made.append(wood("гор_дерево_светлое", *P["дуб"], scale=32.0, coat=0.28,
                      rough=0.34))
-    made.append(fabric("гор_текстиль", P["изумруд"], sheen=0.32, rough=0.86))
+    made.append(fabric("гор_текстиль", P["изумруд"], sheen=0.28, rough=0.86))
     made.append(fabric("гор_текстиль_тёплый", P["терракота"], sheen=0.30,
                        rough=0.86))
     made.append(fabric("гор_бельё", P["слоновая"], sheen=0.22, rough=0.70,

@@ -112,12 +112,23 @@ def open_mesh(src, h_room=2.20, wall=0.06):
 
 
 def _render(sc, path):
-    """Отрисовать именно свою сцену: bpy.ops.render.render(scene=...) её
-    не переключает, надо переключить окно."""
+    """Отрисовать именно свою сцену.
+
+    bpy.ops.render.render(scene=...) сцену не переключает, а в фоновом
+    процессе окна нет вовсе, поэтому сцена подменяется переопределением
+    контекста; переключение окна остаётся запасным вариантом для работы
+    из открытого Blender.
+    """
+    sc.render.filepath = path
+    try:
+        with bpy.context.temp_override(scene=sc):
+            bpy.ops.render.render(write_still=True)
+        return path
+    except (AttributeError, TypeError, RuntimeError):
+        pass
     win = bpy.context.window
     prev = win.scene
     win.scene = sc
-    sc.render.filepath = path
     try:
         bpy.ops.render.render(write_still=True)
     finally:

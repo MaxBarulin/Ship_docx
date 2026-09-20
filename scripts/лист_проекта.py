@@ -48,7 +48,12 @@ for t,s in reversed(right):
 def put(path, box):
     if not os.path.exists(path):
         d.rectangle(box, outline=(220,224,232)); return
-    im = Image.open(path).convert("RGB")
+    im = Image.open(path)
+    if im.mode in ("RGBA", "LA", "P"):
+        im = im.convert("RGBA")
+        im = Image.alpha_composite(
+            Image.new("RGBA", im.size, (255, 255, 255, 255)), im)
+    im = im.convert("RGB")
     bw, bh = box[2]-box[0], box[3]-box[1]
     s = max(bw/im.width, bh/im.height)
     im = im.resize((int(im.width*s), int(im.height*s)), Image.LANCZOS)
@@ -58,7 +63,12 @@ def put(path, box):
 
 def fit(path, x, y, w):
     if not os.path.exists(path): return y
-    im = Image.open(path).convert("RGB")
+    im = Image.open(path)
+    if im.mode in ("RGBA", "LA", "P"):
+        im = im.convert("RGBA")
+        im = Image.alpha_composite(
+            Image.new("RGBA", im.size, (255, 255, 255, 255)), im)
+    im = im.convert("RGB")
     s = w/im.width
     im = im.resize((w, int(im.height*s)), Image.LANCZOS)
     img.paste(im,(x,y))

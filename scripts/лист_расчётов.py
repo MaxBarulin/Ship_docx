@@ -44,7 +44,12 @@ for t, s in reversed(right):
 def fit(path, x, y, w):
     if not os.path.exists(path):
         return y
-    im = Image.open(path).convert("RGB")
+    im = Image.open(path)
+    if im.mode in ("RGBA", "LA", "P"):
+        im = im.convert("RGBA")
+        im = Image.alpha_composite(
+            Image.new("RGBA", im.size, (255, 255, 255, 255)), im)
+    im = im.convert("RGB")
     s = w / im.width
     im = im.resize((w, int(im.height * s)), Image.LANCZOS)
     img.paste(im, (x, y))
