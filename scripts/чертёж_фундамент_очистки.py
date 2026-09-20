@@ -9,6 +9,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle, Circle, Polygon as MPoly
 from lib import gorizont_awts as A, gorizont_mach as Mch
+from lib import eskd
 
 OUT = os.path.join(ROOT, "renders", "горизонт_2026", "чертежи")
 os.makedirs(OUT, exist_ok=True)
@@ -63,19 +64,29 @@ def pos(ax, x, y, n, dx=0.0, dy=0.45, r=0.13):
             color=INK, zorder=7)
 
 
-fig = plt.figure(figsize=(17.2, 11.6))
-fig.suptitle("Фундамент установки очистки сточных вод   ·   %s ВО" % A.MARK,
-             fontsize=17, fontweight="bold", x=0.012, ha="left", y=0.983)
-fig.text(0.012, 0.953,
-         "Общая сварная рама четырёх аппаратов AWTS в машинном отделении: "
-         "поддон с комингсом, балки по флорам и стрингерам, амортизаторы и "
-         "стопоры-ограничители. Материал %s" % A.STEEL,
-         fontsize=10, color="#56627a")
-fig.text(0.988, 0.969, "«Волжский Горизонт» · УЖЦ ОСК 2026", fontsize=10,
-         color="#56627a", ha="right")
+# Лист по ГОСТ 2.301 с основной надписью 2.104 формы 1: заголовок
+# и подпись сверху ушли в штамп
+SH = eskd.Sheet('A1', mark=A.MARK + " ВО",
+                name="Фундамент установки" + chr(10) + "очистки сточных вод",
+                material="Сталь %s" % A.STEEL,
+                mass=A.total_mass(), scale="1:10",
+                sheet_no=1, sheets=1)
+fig = SH.fig
+
+
+def _ax(x, y, w, h):
+    return SH.axes_frac(x, y, w, h)
+
+
+def _ftext(x, y, s, **kw):
+    """Надпись в долях свободного поля листа, а не всей фигуры."""
+    fx0, fy0, fx1, fy1 = SH.field()
+    return fig.__class__.text(fig, (fx0 + x * (fx1 - fx0)) / SH.W,
+                    (fy0 + y * (fy1 - fy0)) / SH.H, s, **kw)
+
 
 # ------------------------------------------------------------- план --------
-ax = fig.add_axes([0.030, 0.545, 0.425, 0.370])
+ax = _ax(*[0.030, 0.545, 0.425, 0.370])
 frame(ax, "План", "вид сверху, отметка верха рамы %.3f м" % ZTOP)
 ax.add_patch(Rectangle((X0 - 0.10, Y0 - 0.10), (X1 - X0) + 0.20,
                        (Y1 - Y0) + 0.20, facecolor="#eef2f7", edgecolor=INK,
@@ -127,7 +138,7 @@ ax.set_xlim(X0 - 1.5, X1 + 1.5)
 ax.set_ylim(Y0 - 1.1, Y1 + 1.1)
 
 # ------------------------------------------------------- разрез А–А --------
-ax = fig.add_axes([0.487, 0.560, 0.310, 0.355])
+ax = _ax(*[0.487, 0.560, 0.310, 0.355])
 frame(ax, "Разрез А–А", "поперёк судна")
 ax.add_patch(Rectangle((Y0 - 1.2, ZTT - 0.008), (Y1 - Y0) + 2.4, 0.008,
                        facecolor="#c9d3e0", edgecolor=INK, lw=1.0))
@@ -177,7 +188,7 @@ ax.set_xlim(Y0 - 2.1, Y1 + 2.1)
 ax.set_ylim(ZT - 0.80, ZEQ + 1.45)
 
 # -------------------------------------------------- узел балки (выноска) ---
-ax = fig.add_axes([0.812, 0.545, 0.176, 0.370])
+ax = _ax(*[0.812, 0.545, 0.176, 0.370])
 frame(ax, "Узел Б", "сечение балки и шов")
 b = A.LONG_BEAM
 hw, tw, bf, tf = 0.140, 0.008, 0.100, 0.010
@@ -206,7 +217,7 @@ ax.set_xlim(-0.20, 0.30)
 ax.set_ylim(-0.13, 0.26)
 
 # ------------------------------------------------------ спецификация -------
-ax = fig.add_axes([0.030, 0.045, 0.455, 0.465])
+ax = _ax(*[0.030, 0.045, 0.455, 0.465])
 ax.axis("off")
 ax.text(0.0, 1.01, "Спецификация", transform=ax.transAxes, fontsize=11,
         color=INK, fontweight="bold")
@@ -235,7 +246,7 @@ for (r, c), cell in tbl.get_celld().items():
     cell.set_width({0: 0.05, 1: 0.17, 2: 0.48, 3: 0.07, 4: 0.12, 5: 0.11}[c])
 
 # ------------------------------------------------------- нагрузки ----------
-ax = fig.add_axes([0.505, 0.285, 0.483, 0.225])
+ax = _ax(*[0.505, 0.285, 0.483, 0.225])
 ax.axis("off")
 ax.text(0.0, 1.03, "Расчётные нагрузки", transform=ax.transAxes, fontsize=11,
         color=INK, fontweight="bold")
@@ -266,7 +277,7 @@ for (r, c), cell in tbl.get_celld().items():
         cell.set_width(0.24)
 
 # -------------------------------------------------------- проверки ---------
-ax = fig.add_axes([0.505, 0.045, 0.483, 0.215])
+ax = _ax(*[0.505, 0.045, 0.483, 0.215])
 ax.axis("off")
 ax.text(0.0, 1.03, "Проверки", transform=ax.transAxes, fontsize=11,
         color=INK, fontweight="bold")
@@ -294,7 +305,7 @@ for (r, c), cell in tbl.get_celld().items():
             cell.set_text_props(color=GRN if ok else ACC, fontweight="bold")
 
 iso = R["isolator"]
-fig.text(0.505, 0.0,
+_ftext(0.505, 0.0,
          "Амортизатор %s: статическая доля %.0f кгс при номинале %.0f кгс, "
          "осадка %.1f мм, собственная частота блока %.2f Гц — "
          "в %.1f раза ниже частоты ГДГ (%.1f Гц) и в %.1f раза ниже "
@@ -303,7 +314,7 @@ fig.text(0.505, 0.0,
             iso["f0"], iso["ratio_dg"], iso["f_dg"], iso["ratio_blade"],
             iso["f_blade"]),
          fontsize=8.5, color="#56627a")
-fig.text(0.030, 0.014,
+_ftext(0.030, 0.014,
          "Фундамент подобран по жёсткости и отстройке по частоте, а не по "
          "напряжению: запас по эквивалентному напряжению %.0f-кратный, "
          "прогиб балки %.3f мм при допуске %.2f мм."
@@ -312,5 +323,5 @@ fig.text(0.030, 0.014,
          fontsize=8.5, color="#56627a")
 
 p = os.path.join(OUT, "06_фундамент_очистки.png")
-fig.savefig(p, dpi=165, bbox_inches="tight")
+SH.save(p)
 print(p)

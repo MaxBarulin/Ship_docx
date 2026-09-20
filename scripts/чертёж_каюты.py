@@ -14,6 +14,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle, Circle
 from lib import gorizont_cabins as C
+from lib import eskd
 
 OUT = os.path.join(ROOT, "renders", "горизонт_2026", "чертежи")
 os.makedirs(OUT, exist_ok=True)
@@ -113,16 +114,25 @@ SHEET = [
 ]
 BY_NAME = {t[0]: t for t in C.TYPES}
 
-fig = plt.figure(figsize=(17.4, 12.0))
-fig.suptitle("Планировки кают", fontsize=17, fontweight="bold", x=0.012,
-             ha="left", y=0.986)
-fig.text(0.012, 0.958,
-         "Планировка строится от прохода: сначала резервируется проход "
-         "нормативной ширины, и только то, что осталось, отдаётся мебели. "
-         "Где на раздельный санузел ширины нет — ставится совмещённый.",
-         fontsize=9.5, color="#56627a")
-fig.text(0.988, 0.972, "«Волжский Горизонт» · УЖЦ ОСК 2026", fontsize=10,
-         color="#56627a", ha="right")
+# Лист по ГОСТ 2.301 с основной надписью 2.104 формы 1:
+# заголовок и подпись сверху ушли в штамп
+_SHEET = eskd.Sheet('A1', mark="ВГ-2026.20.00",
+                    name="Планировки кают" + chr(10) + "пяти категорий",
+                    material=None,
+                    mass=None, scale="1:25",
+                    sheet_no=1, sheets=1)
+fig = _SHEET.fig
+
+
+def _ax(x, y, w, h):
+    return _SHEET.axes_frac(x, y, w, h)
+
+
+def _ftext(x, y, s, **kw):
+    """Надпись в долях свободного поля листа, а не всей фигуры."""
+    fx0, fy0, fx1, fy1 = _SHEET.field()
+    return fig.__class__.text(fig, (fx0 + x * (fx1 - fx0)) / _SHEET.W,
+                    (fy0 + y * (fy1 - fy0)) / _SHEET.H, s, **kw)
 
 # Каждый план вписывается в свою ячейку по фактическому соотношению
 # сторон: иначе широкий люкс вылезает за ячейку и наезжает на соседа.
@@ -141,11 +151,11 @@ for k, (key, title) in enumerate(SHEET):
     h = dh * sc / FIG_H
     cx = X0 + (k % COLS) * CELL_W + (CELL_W - w) / 2
     cy = Y0 - (k // COLS) * CELL_H + (CELL_H - h) / 2
-    ax = fig.add_axes([cx, cy, w, h])
+    ax = _ax(*[cx, cy, w, h])
     infos.append((title, kind, acc, plan(ax, key, W, D, kind, win, acc, bal,
                                          title)))
 
-ax = fig.add_axes([0.016, 0.035, 0.968, 0.238])
+ax = _ax(*[0.016, 0.035, 0.968, 0.238])
 ax.axis("off")
 ax.text(0.0, 1.02, "Проверка эргономики", transform=ax.transAxes, fontsize=11,
         color=INK, fontweight="bold")
@@ -179,7 +189,7 @@ for (r, c), cell in tbl.get_celld().items():
         if c == 9:
             good = rows[r - 1][9] == "проходит"
             cell.set_text_props(color=GRN if good else ACC, fontweight="bold")
-fig.text(0.016, 0.012,
+_ftext(0.016, 0.012,
          "Проход проверяется не на глаз: пол разбивается на сетку 50 мм, для "
          "каждой клетки считается запас до ближайшего предмета, и от двери "
          "пускается волна по клеткам, где проход не уже нормы. Если до окна, "
@@ -187,5 +197,5 @@ fig.text(0.016, 0.012,
          "бракуется и каюта не собирается (src/lib/gorizont_cabins.py, "
          "check_access).", fontsize=8.2, color="#56627a")
 p = os.path.join(OUT, "08_планировки_кают.png")
-fig.savefig(p, dpi=165, bbox_inches="tight")
+_SHEET.save(p)
 print(p)

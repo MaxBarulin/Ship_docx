@@ -8,6 +8,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 from lib import gorizont as G, gorizont_hydro as H, gorizont_struct as S
+from lib import eskd
 
 OUT = os.path.join(ROOT, "renders", "горизонт_2026", "чертежи")
 plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 8.5,
@@ -20,17 +21,22 @@ DB = S.DB_HEIGHT
 ER = (12.0, 34.0)
 ER_TOP = 0.465
 
-fig = plt.figure(figsize=(26, 8.6))
-fig.suptitle("Схема набора корпуса", fontsize=18, fontweight="bold",
-             x=0.008, ha="left", y=0.985)
-fig.text(0.008, 0.952,
-         "Шпация 550 мм, рамная шпация 2200 мм. Продольная система набора в днище, "
-         "втором дне и главной палубе; поперечная по бортам и в оконечностях",
-         fontsize=10.5, color="#56627a")
-fig.text(0.992, 0.968, "«Волжский Горизонт» · ВГ-2026.00.01 · проект 2026",
-         fontsize=10, color="#56627a", ha="right")
+# Лист по ГОСТ 2.301 с основной надписью 2.104 формы 1:
+# заголовок и подпись сверху ушли в штамп
+SH = eskd.Sheet('A1x2', mark="ВГ-2026.02.00",
+                name="Схема набора корпуса",
+                material="Сталь 09Г2С ГОСТ 19281-2014",
+                mass=None, scale="1:100",
+                sheet_no=1, sheets=1)
+fig = SH.fig
 
-ax = fig.add_axes([0.012, 0.10, 0.976, 0.80])
+
+def _ax(x, y, w, h):
+    return SH.axes_frac(x, y, w, h)
+
+
+
+ax = _ax(*[0.012, 0.10, 0.976, 0.80])
 ax.set_aspect("equal")
 ax.axis("off")
 
@@ -120,5 +126,5 @@ ax.text(69.5, -11.5, "x от кормового перпендикуляра, м
         "(номер шпангоута = x / 0.55)", fontsize=9, color="#56627a", ha="center")
 ax.set_xlim(-4, 143)
 ax.set_ylim(-12.4, 17.6)
-fig.savefig(os.path.join(OUT, "02_схема_набора.png"), dpi=140, bbox_inches="tight")
+SH.save(os.path.join(OUT, "02_схема_набора.png"))
 print("готово")

@@ -8,6 +8,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle, Circle
 from lib import gorizont_struct as S, gorizont_strength as St
+from lib import eskd
 
 OUT = os.path.join(ROOT, "renders", "горизонт_2026", "чертежи")
 CAD = os.path.join(ROOT, "CAD")
@@ -48,17 +49,22 @@ def dim(ax, p0, p1, txt, off=0, vert=False, fs=9):
         ax.plot([x1, x1], [y1, y1 + off], color=GRY, lw=0.6)
 
 
-fig = plt.figure(figsize=(16.6, 11.2))
-fig.suptitle("Кница спонсона шлюпочной палубы   ·   ВГ-2026.15.01",
-             fontsize=17, fontweight="bold", x=0.012, ha="left", y=0.982)
-fig.text(0.012, 0.951,
-         "Консоль спонсона несёт шлюпку на 100 человек и шлюпбалку. "
-         "13 книц на борт с шагом 2200 мм. Размеры в миллиметрах",
-         fontsize=10, color="#56627a")
-fig.text(0.988, 0.968, "«Волжский Горизонт» · проект 2026 · УЖЦ ОСК",
-         fontsize=10, color="#56627a", ha="right")
+# Лист по ГОСТ 2.301 с основной надписью 2.104 формы 1:
+# заголовок и подпись сверху ушли в штамп
+SH = eskd.Sheet('A1', mark="ВГ-2026.15.01",
+                name="Кница спонсона",
+                material="Сталь 09Г2С ГОСТ 19281-2014",
+                mass=None, scale="1:5",
+                sheet_no=1, sheets=1)
+fig = SH.fig
 
-ax = fig.add_axes([0.035, 0.44, 0.56, 0.46])
+
+def _ax(x, y, w, h):
+    return SH.axes_frac(x, y, w, h)
+
+
+
+ax = _ax(*[0.035, 0.44, 0.56, 0.46])
 ax.set_aspect("equal")
 ax.axis("off")
 ax.add_patch(plt.Polygon(WEB, closed=True, fc="#e9edf3", ec=INK, lw=2.0))
@@ -89,7 +95,7 @@ ax.text(A * 0.44, -HR - 106, "А", fontsize=12, color=ACC, ha="center", fontweig
 ax.set_xlim(-340, A + 250)
 ax.set_ylim(-HR - 220, 200)
 
-ax2 = fig.add_axes([0.63, 0.50, 0.33, 0.40])
+ax2 = _ax(*[0.63, 0.50, 0.33, 0.40])
 ax2.set_aspect("equal")
 ax2.axis("off")
 h = HR * 0.72
@@ -103,7 +109,7 @@ ax2.text(0, h + 44, "А — А   масштаб 1:2", fontsize=11, ha="center",
 ax2.set_xlim(-200, 240)
 ax2.set_ylim(-150, h + 100)
 
-ax3 = fig.add_axes([0.035, 0.05, 0.56, 0.34])
+ax3 = _ax(*[0.035, 0.05, 0.56, 0.34])
 ax3.axis("off")
 ax3.text(0, 1.0, "Расчёт на прочность", fontsize=12, fontweight="bold",
          color=INK, transform=ax3.transAxes)
@@ -135,27 +141,9 @@ for i, t in enumerate(lines):
     ax3.text(0, 0.90 - i * 0.068, t, fontsize=9,
              color=INK if i < 4 else "#2c3a4e", transform=ax3.transAxes)
 
-ax4 = fig.add_axes([0.63, 0.05, 0.33, 0.40])
-ax4.axis("off")
-ax4.add_patch(Rectangle((0, 0), 1, 1, transform=ax4.transAxes, fill=False,
-                        ec="#8d97a6", lw=1.2))
-rows = [("Обозначение", "ВГ-2026.15.01"),
-        ("Наименование", "Кница спонсона"),
-        ("Материал", "Лист 10 ГОСТ 19903, 09Г2С-15"),
-        ("Поясок", "Полоса 80x10 ГОСТ 103, 09Г2С"),
-        ("Масса детали", "%.1f кг" % chk["mass_kg"]),
-        ("Количество", "26 шт., 13 на борт"),
-        ("Заготовка", "Лазерная резка листа"),
-        ("Сварка", "РДС, катет 6 мм, двусторонний"),
-        ("Покрытие", "Грунт ЭП-0199, эмаль ЭП-1155"),
-        ("Масштаб", "1 : 5"),
-        ("Разработал", "команда УЖЦ ОСК 2026")]
-for i, (k, v) in enumerate(rows):
-    y = 0.94 - i * 0.085
-    ax4.text(0.03, y, k, fontsize=8.4, color="#56627a", transform=ax4.transAxes)
-    ax4.text(0.37, y, v, fontsize=8.6, color=INK, fontweight="bold",
-             transform=ax4.transAxes)
-fig.savefig(os.path.join(OUT, "03_кница_спонсона.png"), dpi=150, bbox_inches="tight")
+# свой информационный блок убран: данные ушли в основную надпись
+
+SH.save(os.path.join(OUT, "03_кница_спонсона.png"))
 print("чертёж готов")
 
 import ezdxf

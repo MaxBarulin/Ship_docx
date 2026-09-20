@@ -8,6 +8,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle, Circle
 from lib import gorizont_strength as St
+from lib import eskd
 
 OUT = os.path.join(ROOT, "renders", "горизонт_2026", "чертежи")
 CAD = os.path.join(ROOT, "CAD")
@@ -23,18 +24,22 @@ BF, TF, TW = B["flange_b"], B["flange_t"], B["t"]
 SC = 30.0
 PLATE = (A + 300.0, HR + 300.0)     # плита основания кондуктора
 
-fig = plt.figure(figsize=(16.6, 10.4))
-fig.suptitle("Кондуктор сварочный для кницы ВГ-2026.15.01   ·   ВГ-2026.15.90",
-             fontsize=17, fontweight="bold", x=0.012, ha="left", y=0.982)
-fig.text(0.012, 0.949,
-         "Приспособление удерживает стенку и поясок под прямым углом и задаёт "
-         "зазор под шов. Одна установка — одна деталь. Размеры в миллиметрах",
-         fontsize=10, color="#56627a")
-fig.text(0.988, 0.968, "«Волжский Горизонт» · проект 2026 · УЖЦ ОСК",
-         fontsize=10, color="#56627a", ha="right")
+# Лист по ГОСТ 2.301 с основной надписью 2.104 формы 1:
+# заголовок и подпись сверху ушли в штамп
+SH = eskd.Sheet('A1', mark="ВГ-2026.15.02",
+                name="Кондуктор сборочный" + chr(10) + "шлюпочного поста",
+                material="Сталь 09Г2С ГОСТ 19281-2014",
+                mass=None, scale="1:5",
+                sheet_no=1, sheets=1)
+fig = SH.fig
+
+
+def _ax(x, y, w, h):
+    return SH.axes_frac(x, y, w, h)
+
 
 # --- вид сверху
-ax = fig.add_axes([0.035, 0.46, 0.55, 0.44])
+ax = _ax(*[0.035, 0.46, 0.55, 0.44])
 ax.set_aspect("equal")
 ax.axis("off")
 ax.add_patch(Rectangle((-150, -150), PLATE[0], PLATE[1], fc="#eef1f5", ec=INK, lw=2))
@@ -75,7 +80,7 @@ ax.set_xlim(-260, PLATE[0] + 60)
 ax.set_ylim(-320, PLATE[1] + 130)
 
 # --- разрез по прижиму
-ax2 = fig.add_axes([0.61, 0.52, 0.36, 0.38])
+ax2 = _ax(*[0.61, 0.52, 0.36, 0.38])
 ax2.set_aspect("equal")
 ax2.axis("off")
 ax2.add_patch(Rectangle((-260, -20), 520, 20, fc="#eef1f5", ec=INK, lw=1.6))
@@ -95,7 +100,7 @@ ax2.set_xlim(-300, 360)
 ax2.set_ylim(-120, 520)
 
 # --- маршрутная карта
-ax3 = fig.add_axes([0.035, 0.035, 0.93, 0.40])
+ax3 = _ax(*[0.035, 0.035, 0.93, 0.40])
 ax3.axis("off")
 ax3.text(0, 1.0, "Маршрутная карта изготовления кницы ВГ-2026.15.01",
          fontsize=12, fontweight="bold", color=INK, transform=ax3.transAxes)
@@ -139,6 +144,5 @@ ax3.text(0, -0.05, "Штучное время %d мин на деталь, па�
          "Кондуктор окупается с первой партии: без него только сборка и правка "
          "занимают втрое больше." % (tot, tot * 26 / 60.0),
          fontsize=9.5, color="#2c3a4e", transform=ax3.transAxes)
-fig.savefig(os.path.join(OUT, "04_кондуктор_и_техпроцесс.png"), dpi=150,
-            bbox_inches="tight")
+SH.save(os.path.join(OUT, "04_кондуктор_и_техпроцесс.png"))
 print("готово")

@@ -14,6 +14,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle, Circle, Polygon as MPoly
 from lib import gorizont_awts as A
+from lib import eskd
 
 OUT = os.path.join(ROOT, "renders", "горизонт_2026", "чертежи")
 os.makedirs(OUT, exist_ok=True)
@@ -50,18 +51,21 @@ def dim(ax, p0, p1, txt, off=0.0, vert=False, fs=8.0):
                 fontsize=fs, color=INK)
 
 
-fig = plt.figure(figsize=(16.6, 10.8))
-fig.suptitle("Балка продольная фундамента   ·   ВГ-2026.16.01",
-             fontsize=17, fontweight="bold", x=0.012, ha="left", y=0.983)
-fig.text(0.012, 0.951,
-         "Сварной тавр %dx%d + %dx%d, длина %.0f мм, материал %s. "
-         "Четыре балки на узел ВГ-2026.16.00. Размеры в миллиметрах."
-         % (HW, TW, BF, TF, L, A.STEEL), fontsize=10, color="#56627a")
-fig.text(0.988, 0.968, "«Волжский Горизонт» · УЖЦ ОСК 2026", fontsize=10,
-         color="#56627a", ha="right")
+# Лист А1 по ГОСТ 2.301 с основной надписью 2.104 формы 1: раньше чертёж
+# был плакатом — заголовок сверху, подпись справа, ни рамки, ни штампа.
+SH = eskd.Sheet("A1", mark="ВГ-2026.16.01",
+                name="Балка продольная" + chr(10) + "фундамента",
+                material="Сталь %s" % A.STEEL,
+                mass=B["mass_kg_m"] * (A.X1 - A.X0), scale="1:5",
+                sheet_no=1, sheets=1)
+fig = SH.fig
 
-# ------------------------------------------------------------ вид сбоку ----
-ax = fig.add_axes([0.030, 0.640, 0.640, 0.250])
+
+def _ax(x, y, w, h):
+    return SH.axes_frac(x, y, w, h)
+
+
+ax = _ax(*[0.030, 0.640, 0.640, 0.250])
 frame(ax, "Вид сбоку")
 ax.add_patch(Rectangle((0, 0), L, HW, facecolor="#c9d3e0", edgecolor=INK,
                        lw=1.3))
@@ -89,7 +93,7 @@ ax.set_xlim(-160, L + 160)
 ax.set_ylim(-230, HW + TF + 90)
 
 # ------------------------------------------------------------- сечение -----
-ax = fig.add_axes([0.700, 0.640, 0.140, 0.250])
+ax = _ax(*[0.700, 0.640, 0.140, 0.250])
 frame(ax, "Сечение А–А")
 ax.add_patch(Rectangle((-TW / 2, 0), TW, HW, facecolor="#c9d3e0",
                        edgecolor=INK, lw=1.4))
@@ -110,7 +114,7 @@ ax.set_xlim(-130, 190)
 ax.set_ylim(-70, HW + TF + 60)
 
 # --------------------------------------------------------- вид сверху ------
-ax = fig.add_axes([0.030, 0.415, 0.640, 0.190])
+ax = _ax(*[0.030, 0.415, 0.640, 0.190])
 frame(ax, "Вид сверху")
 ax.add_patch(Rectangle((0, -BF / 2), L, BF, facecolor="#8c99ab",
                        edgecolor=INK, lw=1.3))
@@ -131,7 +135,7 @@ ax.set_xlim(-160, L + 160)
 ax.set_ylim(-150, 120)
 
 # ------------------------------------------------- технические требования --
-ax = fig.add_axes([0.700, 0.415, 0.288, 0.190])
+ax = _ax(*[0.700, 0.415, 0.288, 0.190])
 ax.axis("off")
 ax.text(0.0, 1.0, "Технические требования", transform=ax.transAxes,
         fontsize=11, color=INK, fontweight="bold")
@@ -152,7 +156,7 @@ for i, line in enumerate(tt):
             color="#3c4757")
 
 # ----------------------------------------------------- маршрутная карта ----
-ax = fig.add_axes([0.030, 0.040, 0.640, 0.330])
+ax = _ax(*[0.030, 0.040, 0.640, 0.330])
 ax.axis("off")
 ax.text(0.0, 1.0, "Маршрутная карта изготовления", transform=ax.transAxes,
         fontsize=11, color=INK, fontweight="bold")
@@ -202,7 +206,7 @@ for (r, c), cell in tbl.get_celld().items():
     cell.set_width({0: 0.07, 1: 0.18, 2: 0.47, 3: 0.19, 4: 0.09}[c])
 
 # ------------------------------------------------------------ параметры ----
-ax = fig.add_axes([0.700, 0.040, 0.288, 0.330])
+ax = _ax(*[0.700, 0.040, 0.288, 0.330])
 ax.axis("off")
 ax.text(0.0, 1.0, "Расчётные данные детали", transform=ax.transAxes,
         fontsize=11, color=INK, fontweight="bold")
@@ -241,6 +245,7 @@ ax.text(0.0, 0.0,
         "блока отстроена от возбуждения ГДГ и винтов." % bc["case"],
         transform=ax.transAxes, fontsize=8.2, color="#56627a", va="bottom")
 
+# технические требования уже выведены на поле чертежа выше
 p = os.path.join(OUT, "07_балка_фундамента.png")
-fig.savefig(p, dpi=165, bbox_inches="tight")
+SH.save(p)
 print(p)
