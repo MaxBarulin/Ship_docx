@@ -24,6 +24,7 @@ from lib import gorizont_hydro as H
 from lib import gorizont_roll as RL
 
 DOCS = [
+    os.path.join(ROOT, "README.md"),
     os.path.join(ROOT, "docs", "проект", "записка_горизонт.md"),
     os.path.join(ROOT, "docs", "проект", "сверка_с_описанием.md"),
 ]
