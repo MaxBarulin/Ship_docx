@@ -1,10 +1,7 @@
-# Python env for the CAD toolchain (recreate with scripts/setup-cad.sh)
+# Виртуальное окружение и кэш Python
 .venv/
 __pycache__/
 *.py[cod]
-
-# cadgen build outputs kept out of git by default; commit deliberately
-*.step.json
 
 # Автобэкапы Blender: дублируют .blend целиком при каждом сохранении
 *.blend1

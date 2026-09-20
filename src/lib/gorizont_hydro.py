@@ -2,7 +2,7 @@
 """Теория корабля «Волжского Горизонта».
 
 Гидростатика, посадка, остойчивость, ходкость и качка. Считается всё от
-обводов, а не от коэффициентов: таблица шпангоутов в `gorizont.STATIONS`
+обводов, а не от коэффициентов: плазовая таблица в `gorizont.OFFSETS`
 задаёт три полушироты и три аппликаты на каждом сечении, между ними обвод
 линейный, между шпангоутами — тоже. Это та же функция полушироты, по которой
 построена поверхность корпуса в Blender, поэтому расчёт и модель описывают
@@ -28,42 +28,168 @@ RHO = 1.000          # плотность пресной воды, т/м3
 NU = 1.14e-6         # кинематическая вязкость воды при 15 C, м2/с
 GRAV = 9.81
 
-_ST = G.STATIONS
+_OFF = G.OFFSETS
+_WL = G.WATERLINES
+_XS = [r[1] for r in _OFF]
 
 
-def _station(x):
-    """Интерполяция строки таблицы шпангоутов по длине."""
-    if x <= _ST[0][0]:
-        r = _ST[0]
-        return r[1], r[2], r[3], r[4], r[5], r[6]
-    if x >= _ST[-1][0]:
-        r = _ST[-1]
-        return r[1], r[2], r[3], r[4], r[5], r[6]
-    for i in range(len(_ST) - 1):
-        x0, x1 = _ST[i][0], _ST[i + 1][0]
-        if x0 <= x <= x1:
-            t = (x - x0) / (x1 - x0)
-            a, b = _ST[i], _ST[i + 1]
-            return tuple(a[k] + t * (b[k] - a[k]) for k in range(1, 7))
-    raise ValueError(x)
+# --- монотонный кубический сплайн (Fritsch-Carlson) -------------------------
+# Плазовая таблица задаёт обвод в узлах; между узлами его сглаживают. Берём
+# монотонный кубический сплайн: он проходит через узлы точно и не даёт
+# выбросов между ними — то же, что делает плазовщик гибкой рейкой.
+def _pchip(xs, ys):
+    n = len(xs)
+    h = [xs[i + 1] - xs[i] for i in range(n - 1)]
+    d = [(ys[i + 1] - ys[i]) / h[i] for i in range(n - 1)]
+    m = [0.0] * n
+    for i in range(1, n - 1):
+        if d[i - 1] * d[i] <= 0.0:
+            m[i] = 0.0
+        else:
+            w1, w2 = 2 * h[i] + h[i - 1], h[i] + 2 * h[i - 1]
+            m[i] = (w1 + w2) / (w1 / d[i - 1] + w2 / d[i])
+
+    def _end(dk, dk1, hk, hk1):
+        t = ((2 * hk + hk1) * dk - hk * dk1) / (hk + hk1)
+        if t * dk <= 0.0:
+            return 0.0
+        if dk * dk1 < 0.0 and abs(t) > abs(3.0 * dk):
+            return 3.0 * dk
+        return t
+
+    if n > 2:
+        m[0] = _end(d[0], d[1], h[0], h[1])
+        m[-1] = _end(d[-1], d[-2], h[-1], h[-2])
+    else:
+        m[0] = m[-1] = d[0]
+    return xs, ys, m, h
+
+
+def _pchip_at(spl, x):
+    xs, ys, m, h = spl
+    if x <= xs[0]:
+        return ys[0]
+    if x >= xs[-1]:
+        return ys[-1]
+    lo, hi = 0, len(xs) - 1
+    while hi - lo > 1:
+        mid = (lo + hi) // 2
+        if xs[mid] <= x:
+            lo = mid
+        else:
+            hi = mid
+    t = (x - xs[lo]) / h[lo]
+    t2, t3 = t * t, t * t * t
+    return ((2 * t3 - 3 * t2 + 1) * ys[lo]
+            + (t3 - 2 * t2 + t) * h[lo] * m[lo]
+            + (-2 * t3 + 3 * t2) * ys[lo + 1]
+            + (t3 - t2) * h[lo] * m[lo + 1])
+
+
+_SPL_ZK = _pchip(_XS, [r[2] for r in _OFF])
+_SPL_BK = _pchip(_XS, [r[3] for r in _OFF])
+_SPL_ZB = _pchip(_XS, [r[4] for r in _OFF])
+_SPL_BB = _pchip(_XS, [r[5] for r in _OFF])
+_SPL_PHI = _pchip(_XS, [math.radians(G.SECTION_SHAPE[r[0]][0]) for r in _OFF])
+_COLCACHE = {}
+_PROFCACHE = {}
+
+
+# --- геометрия шпангоута ----------------------------------------------------
+# Сечение строится так же, как его строит плазовщик: плоское днище, скуловая
+# дуга, касательная к днищу и к борту, и прямой борт с развалом phi. Радиус
+# скулы из условия касания однозначен. Ординаты плазовой таблицы — отсчёты
+# этого же сечения, поэтому таблица, расчёт и модель описывают один обвод.
+# Ватерлиний ниже килевой линии не существует: в таблице там прочерк.
+def bilge_radius(bk, bb, zk, zb, phi):
+    s, c = math.sin(phi), math.cos(phi)
+    return ((bb - bk) * c - (zb - zk) * s) / (1.0 - s)
+
+
+def section_y(z, zk, bk, zb, bb, phi):
+    """Полуширота сечения на высоте z; ниже килевой линии — 0."""
+    if z < zk:
+        return 0.0
+    if z >= zb:
+        return bb
+    r = bilge_radius(bk, bb, zk, zb, phi)
+    if r <= 1e-6:
+        return bk + (bb - bk) * (z - zk) / max(zb - zk, 1e-9)
+    z_t = zk + r * (1.0 - math.sin(phi))
+    if z <= z_t:
+        d = z - zk - r
+        return bk + math.sqrt(max(r * r - d * d, 0.0))
+    return bk + r * math.cos(phi) + (z - z_t) * math.tan(phi)
+
+
+def _column(x):
+    """Параметры шпангоута, сглаженные по длине:
+    (z киля, полуширота днища, z борта, полуширота по борту, развал борта)."""
+    key = round(x, 4)
+    c = _COLCACHE.get(key)
+    if c is None:
+        c = (_pchip_at(_SPL_ZK, x), max(0.0, _pchip_at(_SPL_BK, x)),
+             _pchip_at(_SPL_ZB, x), max(0.0, _pchip_at(_SPL_BB, x)),
+             _pchip_at(_SPL_PHI, x))
+        if len(_COLCACHE) < 300000:
+            _COLCACHE[key] = c
+    return c
+
+
+def profile(x):
+    """Узлы обвода шпангоута снизу вверх: [(z, полуширота), ...].
+
+    Килевая линия, ватерлинии плазовой таблицы выше неё и точка по борту.
+    """
+    zk, bk, zb, bb, phi = _column(x)
+    pr = _PROFCACHE.get(round(x, 4))
+    if pr is not None:
+        return pr
+    pts = [(zk, bk)]
+    r = bilge_radius(bk, bb, zk, zb, phi)
+    z_t = zk + r * (1.0 - math.sin(phi)) if r > 1e-6 else zk
+    extra = [z_t] if zk + 1e-3 < z_t < zb - 1e-3 else []
+    zs = sorted(set([z for z in _WL if zk + 1e-6 < z < zb - 1e-6] + extra))
+    for z in zs:
+        pts.append((z, section_y(z, zk, bk, zb, bb, phi)))
+    pts.append((zb, bb))
+    if len(_PROFCACHE) < 300000:
+        _PROFCACHE[round(x, 4)] = pts
+    return pts
 
 
 def half_breadth(x, z):
-    """Полуширота обвода на шпангоуте x и высоте z от основной плоскости."""
-    b_dn, b_sk, b_pal, z_sk, z_kil, z_brt = _station(x)
-    if z < z_kil:
-        return 0.0
-    if z <= z_sk:
-        if z_sk - z_kil < 1e-9:
-            return b_sk
-        t = (z - z_kil) / (z_sk - z_kil)
-        return b_dn + t * (b_sk - b_dn)
-    if z <= z_brt:
-        if z_brt - z_sk < 1e-9:
-            return b_pal
-        t = (z - z_sk) / (z_brt - z_sk)
-        return b_sk + t * (b_pal - b_sk)
-    return b_pal
+    """Полуширота обвода на шпангоуте x и высоте z.
+
+    Считается прямо по геометрии сечения, поэтому в узлах плазовой таблицы
+    совпадает с таблицей точно, а между узлами обвод остаётся плавным.
+    """
+    zk, bk, zb, bb, phi = _column(x)
+    return section_y(z, zk, bk, zb, bb, phi)
+
+
+def side_height(x):
+    """Высота борта (линия палубы) на шпангоуте x с учётом седловатости."""
+    return _column(x)[2]
+
+
+def keel_height(x):
+    """Высота килевой линии на шпангоуте x."""
+    return _column(x)[0]
+
+
+def _station(x):
+    """Совместимость: (днище, скула, палуба, z скулы, z киля, z борта).
+
+    Скула — верхняя точка скуловой дуги, где она переходит в прямой борт.
+    """
+    zk, bk, zb, bb, phi = _column(x)
+    r = bilge_radius(bk, bb, zk, zb, phi)
+    if r <= 1e-6:
+        return bk, bk, bb, zk, zk, zb
+    z_sk = zk + r * (1.0 - math.sin(phi))
+    b_sk = bk + r * math.cos(phi)
+    return bk, b_sk, bb, z_sk, zk, zb
 
 
 def super_half_breadth(x):
@@ -81,23 +207,29 @@ def super_half_breadth(x):
 def section_polygon(x, z_top=None):
     """Полный контур шпангоута (оба борта), список (y, z).
 
-    При z_top выше высоты борта в контур добавляется закрытая надстройка:
-    она водонепроницаема на 86 % длины и на больших углах крена даёт
-    дополнительный запас плавучести.
+    Контур строится по узлам плазовой таблицы, поэтому скула передаётся
+    дугой, а не изломом. При z_top выше высоты борта в контур добавляется
+    закрытая надстройка: она водонепроницаема на 86 % длины и на больших
+    углах крена даёт дополнительный запас плавучести.
     """
-    b_dn, b_sk, b_pal, z_sk, z_kil, z_brt = _station(x)
+    pts = profile(x)
+    zk, zb = pts[0][0], pts[-1][0]
     if z_top is None:
-        z_top = z_brt
-    if z_top <= z_brt:
-        b_top = half_breadth(x, z_top)
-        right = [(0.0, z_kil), (b_dn, z_kil), (b_sk, z_sk), (b_top, z_top)]
+        z_top = zb
+    right = [(0.0, zk)]
+    if z_top <= zb:
+        for (z, y) in pts:
+            if z <= z_top + 1e-9:
+                right.append((y, z))
+        right.append((half_breadth(x, z_top), z_top))
     else:
+        for (z, y) in pts:
+            right.append((y, z))
         bs = super_half_breadth(x)
-        right = [(0.0, z_kil), (b_dn, z_kil), (b_sk, z_sk), (b_pal, z_brt)]
         if bs > 0.05:
-            right += [(bs, z_brt), (bs, z_top)]
+            right += [(bs, zb), (bs, z_top)]
         else:
-            right += [(b_pal, z_top)]
+            right += [(pts[-1][1], z_top)]
     left = [(-y, z) for (y, z) in reversed(right)]
     return left + right[1:]
 
@@ -152,18 +284,27 @@ def _trapz(ys, xs):
 
 
 def section_area(x, T):
-    """Погружённая площадь шпангоута при осадке T, оба борта."""
-    b_dn, b_sk, b_pal, z_sk, z_kil, z_brt = _station(x)
-    if T <= z_kil:
+    """Погружённая площадь шпангоута при осадке T, оба борта.
+
+    Интегрируется по всем узлам плазовой таблицы, а не по трём точкам, —
+    иначе скуловая дуга срезается хордой и объём теряется.
+    """
+    pts = profile(x)
+    zk = pts[0][0]
+    if T <= zk:
         return 0.0
-    zs = set([z_kil, T])
-    for z in (z_sk, z_brt):
-        if z_kil < z < T:
-            zs.add(z)
-    zs = sorted(zs)
+    zs = [zk]
+    for (z, _y) in pts[1:]:
+        if z < T - 1e-9:
+            zs.append(z)
+    zs.append(min(T, pts[-1][0]))
+    if T > pts[-1][0]:
+        zs.append(T)
     a = 0.0
     for i in range(len(zs) - 1):
         z0, z1 = zs[i], zs[i + 1]
+        if z1 - z0 < 1e-12:
+            continue
         a += 0.5 * (half_breadth(x, z0) + half_breadth(x, z1)) * (z1 - z0)
     return 2.0 * a
 
@@ -247,8 +388,12 @@ def curves(T_from=1.0, T_to=3.6, n=13):
 # аппликата ЦТ м, момент свободной поверхности т·м.
 # Масса корпуса и надстройки — не оценка, а результат gorizont_struct.steel_weight()
 # и superstructure_weight(): сумма листов и профилей по фактическим размерам связей.
+# Первые две группы не задаются числом, а считаются по толщинам связей в
+# gorizont_struct: изменил толщину настила — сразу поехали масса, осадка и
+# все нагрузки, а не только напряжение. Числа в таблице ниже — заглушки,
+# фактические подставляет groups().
 WEIGHT_GROUPS = [
-    ("Корпус металлический",              1095.6,   0.0, 139.0,  1.79,   0.0),
+    ("Корпус металлический",              1090.2,   0.0, 139.0,  1.76,   0.0),
     ("Надстройка и рубка",                 367.6,  11.0, 131.0,  8.84,   0.0),
     ("Изоляция и зашивка, первая палуба",   55.0,  39.6, 114.2,  2.60,   0.0),
     ("Изоляция и зашивка, главная",         70.0,  11.2, 129.6,  5.40,   0.0),
@@ -285,6 +430,25 @@ LIGHTSHIP_GROUPS = 21
 BALLAST_CAPACITY = 400.0
 
 
+_GROUPS = None
+
+
+def groups():
+    """Нагрузка масс с пересчитанными по толщинам корпусом и надстройкой."""
+    global _GROUPS
+    if _GROUPS is None:
+        from . import gorizont_struct as _S
+        hull = _S.steel_weight()
+        sup = _S.superstructure_weight()
+        g = list(WEIGHT_GROUPS)
+        g[0] = (g[0][0], round(hull["m"], 1), g[0][2], g[0][3],
+                round(hull["z"], 2), g[0][5])
+        g[1] = (g[1][0], round(sup["m"], 1), g[1][2], g[1][3],
+                round(sup["z"], 2), g[1][5])
+        _GROUPS = g
+    return _GROUPS
+
+
 def group_xcg(g):
     """Абсцисса ЦТ группы. Корпус распределяется по площади сечения обшивки."""
     name, m, x0, x1, z, fs = g
@@ -300,12 +464,12 @@ def group_xcg(g):
 
 
 def weight_summary():
-    tot = sum(g[1] for g in WEIGHT_GROUPS)
-    mx = sum(g[1] * group_xcg(g) for g in WEIGHT_GROUPS)
-    mz = sum(g[1] * g[4] for g in WEIGHT_GROUPS)
-    mfs = sum(g[5] for g in WEIGHT_GROUPS)
-    light = sum(g[1] for g in WEIGHT_GROUPS[:LIGHTSHIP_GROUPS])
-    zl = sum(g[1] * g[4] for g in WEIGHT_GROUPS[:LIGHTSHIP_GROUPS]) / light
+    tot = sum(g[1] for g in groups())
+    mx = sum(g[1] * group_xcg(g) for g in groups())
+    mz = sum(g[1] * g[4] for g in groups())
+    mfs = sum(g[5] for g in groups())
+    light = sum(g[1] for g in groups()[:LIGHTSHIP_GROUPS])
+    zl = sum(g[1] * g[4] for g in groups()[:LIGHTSHIP_GROUPS]) / light
     return dict(D=tot, xg=mx / tot, zg=mz / tot, Mfs=mfs,
                 lightship=light, zg_light=zl, deadweight=tot - light,
                 dzg_fs=mfs / tot)
@@ -314,7 +478,7 @@ def weight_summary():
 def weight_distribution(xs):
     """Строевая нагрузки масс w(x), т/м."""
     w = [0.0] * len(xs)
-    for g in WEIGHT_GROUPS:
+    for g in groups():
         name, m, x0, x1, z, fs = g
         if name.startswith("Корпус"):
             sh = []
@@ -466,6 +630,9 @@ def stability_summary(z_top=None):
 
 
 WIND_PRESSURE = {"О": 0.294, "М": 0.392, "М-СП": 0.490}
+# Разряд района плавания по классу судна: считаем по тому классу, который
+# объявлен в gorizont.RRR_CLASS, а не по зашитому в функции «О».
+CLASS = G.RRR_CLASS.split()[0]
 WAVE_HEIGHT = {"О": 2.0, "М": 3.0, "М-СП": 3.5}
 WAVE_LENGTH = {"О": 20.0, "М": 30.0, "М-СП": 40.0}
 
@@ -476,16 +643,17 @@ def windage(T):
         (G.LOA * 0.96, G.DEPTH - T, T),
         (120.0, G.DECKS["главная"] + 2.8 - G.DEPTH, G.DEPTH),
         (120.0, 2.8, G.DECKS["верхняя"]),
-        (96.0, 2.8, G.DECKS["солнечная"]),
-        (96.0, 1.1, 12.60),
+        (96.0, 2.8, G.DECKS["шлюпочная"]),
+        (96.0, 1.1, G.DECKS["солнечная"]),
     ]
     A = sum(l * h for l, h, z in parts)
     z = sum(l * h * (z0 + h / 2) for l, h, z0 in parts) / A
     return A, z - T
 
 
-def weather_criterion(cls="О", z_top=None):
+def weather_criterion(cls=None, z_top=None):
     """Критерий погоды K = M_опр / M_кр по нормам РРР."""
+    cls = cls or CLASS
     s = stability_summary(z_top)
     e = equilibrium()
     T = e["T"]
@@ -521,8 +689,9 @@ def weather_criterion(cls="О", z_top=None):
                 theta_stat=math.degrees(math.atan(lw / max(h, 1e-6))))
 
 
-def rrr_checks(cls="О", z_top=None):
+def rrr_checks(cls=None, z_top=None):
     s = stability_summary(z_top)
+    cls = cls or CLASS
     w = weather_criterion(cls, z_top)
     e = equilibrium()
     ldyn30 = _interp(s["theta"], s["dyn"], 30.0)

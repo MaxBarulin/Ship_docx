@@ -71,8 +71,9 @@ def _integrate(xs, q):
     return N, M
 
 
-def case(condition="тихая вода", step=0.5, cls="О"):
+def case(condition="тихая вода", step=0.5, cls=None):
     """Расчёт одного случая нагружения."""
+    cls = cls or H.CLASS
     xs = H._xs(step)
     w = H.weight_distribution(xs)
     ws = H.weight_summary()
@@ -100,8 +101,9 @@ def case(condition="тихая вода", step=0.5, cls="О"):
                 N_max=max(N, key=abs), wave=hw if amp else 0.0)
 
 
-def stresses(cls="О", grade="09Г2С"):
+def stresses(cls=None, grade="09Г2С"):
     """Напряжения в палубе и днище по всем случаям нагружения."""
+    cls = cls or H.CLASS
     g = S.equivalent_girder()
     st = S.STEEL[grade]
     sig_allow = 0.60 * st["ReH"]
@@ -187,6 +189,6 @@ def bracket_check(br=None, corroded=False):
                     and sigma <= sigma_cr and tau_weld <= 0.6 * tau_allow * 2))
 
 
-def report(cls="О"):
+def report(cls=None):
     return dict(stresses=stresses(cls), bracket=bracket_check(),
                 bracket_corroded=bracket_check(corroded=True))

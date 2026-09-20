@@ -173,5 +173,5 @@ msp.add_text("VG-2026.15.01 KNICA SPONSONA  LIST 10  09G2S  26 SHT",
              dxfattribs={"layer": "TEXT", "height": 25}).set_placement((0, 150))
 msp.add_text("POYASOK 80x10 L=%.0f  09G2S  26 SHT" % ln,
              dxfattribs={"layer": "TEXT", "height": 20}).set_placement((0, -HR - 215))
-doc.saveas(os.path.join(CAD, "VG-2026.15.01_knica_sponsona.dxf"))
+doc.saveas(os.path.join(CAD, "ВГ-2026.15.01_кница_спонсона.dxf"))
 print("dxf готов", round(ln))

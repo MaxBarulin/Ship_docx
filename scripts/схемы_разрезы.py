@@ -134,7 +134,9 @@ def section_items():
 
 
 def section():
-    im = Image.open(os.path.join(RAW, "разрез.png")).convert("RGB")
+    im = Image.open(os.path.join(RAW, "разрез.png")).convert("RGBA")
+    im = Image.alpha_composite(Image.new("RGBA", im.size, (255, 255, 255, 255)),
+                               im).convert("RGB")
     W, HI = im.size
     items = section_items()
     f = font(19)
@@ -151,7 +153,12 @@ def section():
     for key, z in DECK_Z.items():
         y = szz(z) + off
         d.line([px(0), y, px(G.LOA), y], fill=(196, 206, 220), width=1)
-        d.text((px(0) + 6, y - 4), "%s палуба %.2f" % (key, z), font=fs, fill=INK2, anchor="ls")
+        lab = "%s палуба %.2f" % (key, z)
+        wl = d.textlength(lab, font=fs)
+        # подложка под подписью: иначе отметка теряется на разрезе
+        d.rectangle([px(0) + 3, y - 22, px(0) + 11 + wl, y - 1],
+                    fill=(255, 255, 255))
+        d.text((px(0) + 7, y - 4), lab, font=fs, fill=INK2, anchor="ls")
     y = szz(T) + off
     d.line([px(0), y, px(G.LOA), y], fill=SEA, width=2)
     d.text((px(G.LOA) - 6, y - 5), "ВЛ · осадка %.2f м" % T, font=fs, fill=SEA, anchor="rs")
@@ -167,7 +174,9 @@ def section():
 
 
 def systems():
-    im = Image.open(os.path.join(RAW, "разрез.png")).convert("RGB")
+    im = Image.open(os.path.join(RAW, "разрез.png")).convert("RGBA")
+    im = Image.alpha_composite(Image.new("RGBA", im.size, (255, 255, 255, 255)),
+                               im).convert("RGB")
     W, HI = im.size
     items = [
         (0.5 * (M.MO_X0 + M.MO_X1), 1.9, "%d ГДГ по %d кВт" % (G.DG_COUNT, G.DG_POWER), "dn", EL),

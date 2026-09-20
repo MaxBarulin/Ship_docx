@@ -1,5 +1,15 @@
 # -*- coding: utf-8 -*-
-"""Теоретический чертёж в едином масштабе: бок, полуширота, корпус."""
+"""Теоретический чертёж: бок, полуширота, корпус — в одном масштабе.
+
+Все три проекции строятся из одной функции обвода (gorizont_hydro.half_breadth),
+то есть из той же геометрии, что и плазовая таблица и модель в Blender.
+Шпангоуты — 25 теоретических сечений (20 основных через L/20 = 6,95 м и
+полушпангоуты 0,5 / 1,5 / 18,5 / 19,5 в оконечностях, где обвод меняется
+быстрее всего). Ватерлинии — 13 отметок плазовой таблицы, батоксы — через 1 м.
+
+Правило чтения: на боку кривые суть батоксы, на полушироте — ватерлинии,
+на корпусе — шпангоуты; остальные линии на каждой проекции прямые.
+"""
 import os, sys, math
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, os.path.join(ROOT, "src"))
@@ -9,128 +19,161 @@ import matplotlib.pyplot as plt
 from lib import gorizont as G, gorizont_hydro as H
 
 OUT = os.path.join(ROOT, "renders", "горизонт_2026", "расчёты")
-plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 8,
-                     "figure.facecolor": "white", "savefig.facecolor": "white"})
 os.makedirs(OUT, exist_ok=True)
+plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 7.5,
+                     "figure.facecolor": "white", "savefig.facecolor": "white"})
 INK, ACC, SEA, GRY = "#16202f", "#b02634", "#1c5c8a", "#9aa4b4"
-
-STATIONS = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 118, 124, 130, 136]
-WL = [0.5 * i for i in range(1, 10)]
-BUT = [1.0, 2.5, 4.0, 5.5, 7.0, 8.0]
-
-Z_PROF = 13.2          # смещение бока по вертикали
-X_BODY = 148.0         # центр корпуса по горизонтали
-T = H.equilibrium()["T"]
-
-fig, ax = plt.subplots(figsize=(34, 6.2))
-ax.set_aspect("equal")
-ax.axis("off")
-xs = [i * 0.5 for i in range(int(G.LOA / 0.5) + 1)]
+FRAMES = [r[0] for r in G.OFFSETS]
+FX = {r[0]: r[1] for r in G.OFFSETS}
+WL = list(G.WATERLINES)
+BUT = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0]
+D = G.DEPTH
+Y_PROF = 11.6
+X_BODY = 156.0
+XS = [i * 0.25 for i in range(int(G.LOA / 0.25) + 1)]
 
 
-def prof_z(x, y):
+def buttock_z(x, y):
     """Высота батокса y на шпангоуте x, либо None."""
-    b_dn, b_sk, b_pal, z_sk, z_kil, z_brt = H._station(x)
-    if b_pal < y:
+    zk, bk, zb, bb, phi = H._column(x)
+    if bb < y:
         return None
-    n = int((z_brt - z_kil) / 0.01) + 1
-    for k in range(n):
-        z = z_kil + k * 0.01
-        if H.half_breadth(x, z) >= y:
-            return z
-    return None
+    if bk >= y:
+        return zk
+    lo, hi = zk, zb
+    for _ in range(40):
+        mid = 0.5 * (lo + hi)
+        if H.half_breadth(x, mid) < y:
+            lo = mid
+        else:
+            hi = mid
+    return 0.5 * (lo + hi)
 
 
-# ---- сетка шпангоутов
-for x in STATIONS:
-    ax.plot([x, x], [0, 9.0], color=GRY, lw=0.5)
-    ax.plot([x, x], [Z_PROF, Z_PROF + 5.0], color=GRY, lw=0.5)
-    ax.text(x, -0.55, str(x), ha="center", va="top", fontsize=7, color="#56627a")
-ax.text(G.LOA / 2, -1.5, "шпангоуты, м от кормового перпендикуляра",
-        ha="center", fontsize=8, color="#56627a")
+def draw():
+    fig, ax = plt.subplots(figsize=(35.4, 9.6))
+    ax.set_aspect("equal")
+    ax.axis("off")
 
-# ---- бок: батоксы
-for y in BUT:
-    xx, zz = [], []
-    for x in xs:
-        z = prof_z(x, y)
-        if z is not None:
+    # ---------------------------------------------------------------- БОК --
+    for z in WL:
+        ax.plot([0, G.LOA], [Y_PROF + z] * 2, color=GRY, lw=0.35, zorder=1)
+        ax.text(-1.2, Y_PROF + z, "%.1f" % z, ha="right", va="center",
+                fontsize=6, color="#56627a")
+    for n in FRAMES:
+        x = FX[n]
+        zk = H.keel_height(x)
+        ax.plot([x, x], [Y_PROF + zk, Y_PROF + D], color=GRY, lw=0.45, zorder=1)
+    ax.plot(XS, [Y_PROF + H.keel_height(x) for x in XS], color=INK, lw=1.5,
+            zorder=4)
+    ax.plot([0, G.LOA], [Y_PROF + D] * 2, color=INK, lw=1.5, zorder=4)
+    ax.plot(XS, [Y_PROF + min(H.side_height(x), 4.90) for x in XS], color=INK,
+            lw=0.9, ls=(0, (6, 3)), zorder=4)
+    ax.plot([0, 0], [Y_PROF + H.keel_height(0), Y_PROF + D], color=INK, lw=1.5)
+    ax.plot([G.LOA, G.LOA], [Y_PROF + H.keel_height(G.LOA), Y_PROF + 4.90],
+            color=INK, lw=1.5)
+    for y in BUT:
+        xx, zz = [], []
+        last = None
+        for x in XS:
+            z = buttock_z(x, y)
+            if z is None:
+                if xx:
+                    ax.plot(xx, zz, color=SEA, lw=0.8, zorder=3)
+                    last = (xx[-1], zz[-1])
+                    xx, zz = [], []
+                continue
             xx.append(x)
-            zz.append(Z_PROF + z)
-    if xx:
-        ax.plot(xx, zz, color=INK, lw=0.8)
-        ax.text(xx[0] - 0.6, zz[0], "%.1f" % y, fontsize=6.5, color=SEA,
-                ha="right", va="center")
-ax.plot(xs, [Z_PROF + H._station(x)[4] for x in xs], color=INK, lw=1.4)
-ax.plot(xs, [Z_PROF + G.DEPTH for x in xs], color=INK, lw=1.4)
-ax.plot([xs[0], xs[0]], [Z_PROF + H._station(0)[4], Z_PROF + G.DEPTH], color=INK, lw=1.4)
-ax.plot([xs[-1], xs[-1]], [Z_PROF + H._station(139)[4], Z_PROF + G.DEPTH + 0.7],
-        color=INK, lw=1.4)
-for z in WL:
-    ax.plot([0, G.LOA], [Z_PROF + z, Z_PROF + z], color="#dde2e9", lw=0.5)
-ax.plot([0, G.LOA], [Z_PROF + T, Z_PROF + T], color=SEA, lw=1.2)
-ax.text(1.0, Z_PROF + T + 0.18, "ВЛ %.2f м" % T, fontsize=7.5, color=SEA)
-ax.text(0, Z_PROF + 5.15, "БОК — батоксы 1.0 / 2.5 / 4.0 / 5.5 / 7.0 / 8.0 м от ДП",
-        fontsize=9.5, color=INK, fontweight="bold")
+            zz.append(Y_PROF + z)
+        if xx:
+            ax.plot(xx, zz, color=SEA, lw=0.8, zorder=3)
+            last = (xx[-1], zz[-1])
+        if last:
+            ax.text(last[0] + 0.7, last[1], "%g" % y, color=SEA, fontsize=6,
+                    va="center")
+    ax.text(G.LOA / 2, Y_PROF + 5.6, "БОК  —  кривые суть батоксы",
+            ha="center", fontsize=10, color=INK, weight="bold")
 
-# ---- полуширота
-for z in WL:
-    yy = [H.half_breadth(x, z) for x in xs]
-    ax.plot(xs, yy, color=INK, lw=0.8)
-    j = next((i for i in range(len(yy)) if yy[i] > 0.05), 0)
-    ax.text(xs[j] - 0.6, yy[j], "%.1f" % z, fontsize=6.5, color=SEA,
-            ha="right", va="center")
-ax.plot(xs, [H._station(x)[2] for x in xs], color=INK, lw=1.4)
-ax.plot(xs, [H.half_breadth(x, T) for x in xs], color=SEA, lw=1.2)
-ax.plot([0, G.LOA], [0, 0], color=INK, lw=1.0)
-ax.text(0, 9.8, "ПОЛУШИРОТА — ватерлинии через 0.5 м, синяя — расчётная",
-        fontsize=9.5, color=INK, fontweight="bold")
+    # -------------------------------------------------------- ПОЛУШИРОТА --
+    ax.plot([0, G.LOA], [0, 0], color=INK, lw=1.2, zorder=4)
+    for n in FRAMES:
+        x = FX[n]
+        ax.plot([x, x], [0, H.half_breadth(x, D)], color=GRY, lw=0.45, zorder=1)
+        ax.text(x, -0.75, "%g" % n, ha="center", va="top", fontsize=6.5,
+                color=INK)
+    for y in BUT:
+        ax.plot([0, G.LOA], [y, y], color=GRY, lw=0.35, zorder=1)
+        ax.text(-1.2, y, "%g" % y, ha="right", va="center", fontsize=6,
+                color="#56627a")
+    for z in WL:
+        xx, yy = [], []
+        for x in XS:
+            if z < H.keel_height(x) - 1e-9:
+                if xx:
+                    ax.plot(xx, yy, color=SEA, lw=0.8, zorder=3)
+                    xx, yy = [], []
+                continue
+            xx.append(x)
+            yy.append(H.half_breadth(x, z))
+        if xx:
+            ax.plot(xx, yy, color=SEA, lw=0.8, zorder=3)
+    ax.plot(XS, [H.half_breadth(x, D) for x in XS], color=INK, lw=1.5, zorder=4)
+    ax.text(G.LOA / 2, -2.4,
+            "ПОЛУШИРОТА  —  кривые суть ватерлинии; цифры внизу суть номера "
+            "теоретических шпангоутов", ha="center", fontsize=10, color=INK,
+            weight="bold")
 
-# ---- корпус
-for x in STATIONS:
-    poly = H.section_polygon(x, G.DEPTH)
-    sign = 1 if x >= 70 else -1
-    ys = [X_BODY + sign * abs(p[0]) for p in poly]
-    zs = [Z_PROF + p[1] for p in poly]
-    ax.plot(ys, zs, color=ACC if sign > 0 else INK, lw=0.9)
-    ax.text(X_BODY + sign * (max(abs(v - X_BODY) for v in ys) + 0.25),
-            Z_PROF + max(p[1] for p in poly) + 0.12, str(x), fontsize=6.5,
-            color="#56627a", ha="left" if sign > 0 else "right")
-ax.plot([X_BODY, X_BODY], [Z_PROF, Z_PROF + 5.2], color=INK, lw=1.0)
-for z in WL:
-    ax.plot([X_BODY - 8.6, X_BODY + 8.6], [Z_PROF + z, Z_PROF + z],
-            color="#dde2e9", lw=0.5)
-ax.plot([X_BODY - 8.6, X_BODY + 8.6], [Z_PROF + T, Z_PROF + T], color=SEA, lw=1.2)
-ax.text(X_BODY - 8.6, Z_PROF + 5.6,
-        "КОРПУС — слева кормовые, справа носовые шпангоуты",
-        fontsize=9.5, color=INK, fontweight="bold")
+    # ------------------------------------------------------------- КОРПУС --
+    for z in WL:
+        ax.plot([X_BODY - 8.9, X_BODY + 8.9], [Y_PROF + z] * 2, color=GRY,
+                lw=0.35, zorder=1)
+    for y in BUT:
+        for s in (1, -1):
+            ax.plot([X_BODY + s * y] * 2, [Y_PROF, Y_PROF + D], color=GRY,
+                    lw=0.35, zorder=1)
+    ax.plot([X_BODY] * 2, [Y_PROF - 0.5, Y_PROF + 5.4], color=INK, lw=0.8,
+            ls=(0, (7, 3, 1, 3)), zorder=2)
+    ax.plot([X_BODY - 8.9, X_BODY + 8.9], [Y_PROF] * 2, color=INK, lw=0.8,
+            zorder=2)
+    for n in FRAMES:
+        x = FX[n]
+        s = -1 if n < 10 else 1
+        pts = H.profile(x)
+        xx = [X_BODY] + [X_BODY + s * p[1] for p in pts] + [X_BODY]
+        zz = [Y_PROF + pts[0][0]] + [Y_PROF + p[0] for p in pts] + [Y_PROF + D]
+        lw = 1.15 if float(n) == int(n) else 0.7
+        ax.plot(xx, zz, color=ACC if n in (0, 10, 20) else SEA, lw=lw, zorder=3)
+        ax.text(X_BODY + s * (H.half_breadth(x, D) + 0.28), Y_PROF + D + 0.14,
+                "%g" % n, ha="center", va="bottom", fontsize=5.6, color=INK)
+    ax.text(X_BODY, Y_PROF + 5.6, "КОРПУС  —  кривые суть шпангоуты",
+            ha="center", fontsize=10, color=INK, weight="bold")
+    ax.text(X_BODY - 4.6, Y_PROF - 1.1, "кормовые", ha="center", fontsize=7,
+            color="#56627a")
+    ax.text(X_BODY + 4.6, Y_PROF - 1.1, "носовые", ha="center", fontsize=7,
+            color="#56627a")
 
-# ---- таблица плазовых ординат
-tx, ty = X_BODY - 9.0, 9.2
-rows = [("L наибольшая", "139.0 м"), ("B наибольшая", "16.5 м"),
-        ("Высота борта", "4.20 м"), ("Осадка расчётная", "%.2f м" % T),
-        ("Водоизмещение", "%.0f т" % H.equilibrium()["D"]),
-        ("Коэффициент общей полноты", "%.3f" % H.hydrostatics(T)["delta"]),
-        ("Коэффициент полноты ВЛ", "%.3f" % H.hydrostatics(T)["alpha"]),
-        ("Коэффициент полноты миделя", "%.3f" % H.hydrostatics(T)["beta"])]
-for i, (k, v) in enumerate(rows):
-    ax.text(tx, ty - i * 0.95, k, fontsize=7.5, color="#56627a")
-    ax.text(tx + 15.5, ty - i * 0.95, v, fontsize=7.5, color=INK, ha="right",
-            fontweight="bold")
-ax.plot([tx - 0.3, tx + 15.8], [ty + 0.6, ty + 0.6], color="#c3cad5", lw=0.8)
-ax.plot([tx - 0.3, tx + 15.8], [ty - len(rows) * 0.95 + 0.5,
-                                ty - len(rows) * 0.95 + 0.5],
-        color="#c3cad5", lw=0.8)
+    # ------------------------------------------------------------ подписи --
+    e = H.equilibrium()
+    ax.text(0, Y_PROF + 7.4,
+            "«ВОЛЖСКИЙ ГОРИЗОНТ» — ТЕОРЕТИЧЕСКИЙ ЧЕРТЁЖ", fontsize=13,
+            color=INK, weight="bold")
+    ax.text(0, Y_PROF + 6.55,
+            "L = %.1f м   B = %.2f м   H = %.2f м   T = %.2f м   "
+            "теоретическая шпация L/20 = %.2f м   ватерлинии 0,00…4,20 м   "
+            "батоксы через 1,00 м" % (G.LOA, G.BEAM, D, e["T"], G.LOA / 20),
+            fontsize=9, color="#56627a")
+    ax.text(0, -3.7,
+            "Обвод: плоское днище, скуловая дуга, касательная к днищу и к "
+            "борту, прямой борт с развалом — см. таблицу плазовых ординат. "
+            "Штриховая линия на боку суть верхняя кромка фальшборта.",
+            fontsize=8.5, color="#56627a")
+    ax.set_xlim(-6, X_BODY + 12)
+    ax.set_ylim(-4.8, Y_PROF + 8.4)
+    p = os.path.join(OUT, "01_теоретический_чертёж.png")
+    fig.savefig(p, dpi=170, bbox_inches="tight", pad_inches=0.25)
+    plt.close(fig)
+    return p
 
-ax.text(0, 20.3, "ТЕОРЕТИЧЕСКИЙ ЧЕРТЁЖ  «ВОЛЖСКИЙ ГОРИЗОНТ»",
-        fontsize=15, fontweight="bold", color=INK)
-ax.text(0, 19.45, "Единый масштаб по всем трём проекциям. "
-        "Обводы заданы таблицей шпангоутов src/lib/gorizont.py",
-        fontsize=9, color="#56627a")
-ax.text(X_BODY + 8.6, 20.3, "проект 2026 · УЖЦ ОСК", fontsize=9,
-        color="#56627a", ha="right")
-ax.set_xlim(-6, X_BODY + 10)
-ax.set_ylim(-2.4, 21.2)
-fig.savefig(os.path.join(OUT, "01_теоретический_чертёж.png"), dpi=200,
-            bbox_inches="tight")
-print("готово")
+
+if __name__ == "__main__":
+    print(draw())

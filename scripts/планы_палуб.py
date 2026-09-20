@@ -26,6 +26,12 @@ W, HH = 2400, 800           # итоговый лист
 ORTHO, RAWW, RAWH, XC = 148.0, 2800, 560, 69.5
 SCALE = W / ORTHO           # пикселей на метр на итоговом листе
 X0 = XC - ORTHO / 2.0       # левый край кадра в метрах
+# Полуширота судна в пикселях листа: от неё, а не от числа «на глаз»,
+# отсчитываются выноски — иначе подписи наезжают на борт.
+HULL_PX = max(H.half_breadth(x, G.DEPTH - 0.01)
+              for x in [i * 0.5 for i in range(int(G.LOA * 2) + 1)]) * SCALE
+LEAD = HULL_PX + 10         # начало выноски
+LAB = HULL_PX + 34          # первая строка подписей
 
 PLANS = [
     ("0_трюм_второе_дно", "Трюм и второе дно · 0.00…1.30 м",
@@ -48,8 +54,10 @@ def px(x):
 
 
 def build(name, title, sub, key):
-    raw = Image.open(os.path.join(RAW, name + ".png")).convert("RGB")
+    raw = Image.open(os.path.join(RAW, name + ".png")).convert("RGBA")
     raw = raw.resize((W, int(RAWH * W / RAWW)), Image.LANCZOS)
+    bg = Image.new("RGBA", raw.size, (255, 255, 255, 255))
+    raw = Image.alpha_composite(bg, raw).convert("RGB")
     if key is None:
         raw = Image.blend(raw, Image.new("RGB", raw.size, "white"), 0.55)
     canvas = Image.new("RGB", (W, HH), "white")
@@ -89,14 +97,14 @@ def build(name, title, sub, key):
                 rows_end.append(0)
             rows_end[r] = tx + wlab / 2
             if side > 0:
-                ty = ship_top - 148 - r * 44
-                d.line([cx, ship_top - 124, cx, ty + 30], fill=(170, 180, 194), width=2)
+                ty = ship_top - LAB - r * 44
+                d.line([cx, ship_top - LEAD, cx, ty + 30], fill=(170, 180, 194), width=2)
                 if abs(tx - cx) > 2:
                     d.line([cx, ty + 30, tx, ty + 30], fill=(170, 180, 194), width=2)
                 d.text((tx, ty), lab, font=fnt, fill=INK, anchor="ma")
             else:
-                ty = ship_top + 148 + r * 44
-                d.line([cx, ship_top + 124, cx, ty - 8], fill=(170, 180, 194), width=2)
+                ty = ship_top + LAB + r * 44
+                d.line([cx, ship_top + LEAD, cx, ty - 8], fill=(170, 180, 194), width=2)
                 if abs(tx - cx) > 2:
                     d.line([cx, ty - 8, tx, ty - 8], fill=(170, 180, 194), width=2)
                 d.text((tx, ty), lab, font=fnt, fill=INK, anchor="ma")
