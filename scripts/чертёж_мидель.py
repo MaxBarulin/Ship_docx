@@ -180,7 +180,8 @@ lines += ["",
           (r["steel"]["name"], r["steel"]["ReH"]),
           "Допускаемое напряжение 0.60·ReH = %.0f МПа, использовано %.0f %%" %
           (r["sigma_allow"], 100 * max(x["sigma_deck"] for x in r["rows"]) / r["sigma_allow"]),
-          "Волна класса «О»: высота 2.0 м, длина равна длине судна"]
+          "Волна класса «%s»: высота %.1f м, длина равна длине судна"
+          % (H.CLASS, H.WAVE_HEIGHT[H.CLASS])]
 for i, s_ in enumerate(lines):
     ax3.text(0, 0.92 - i * 0.055, s_, fontsize=8.8, color=INK if i < 4 else "#3a4658",
              family="DejaVu Sans", transform=ax3.transAxes)

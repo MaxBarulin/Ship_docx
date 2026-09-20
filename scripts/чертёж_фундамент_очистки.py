@@ -241,7 +241,7 @@ ax.text(0.0, 1.03, "Расчётные нагрузки", transform=ax.transAxes
         color=INK, fontweight="bold")
 ax.text(0.0, 0.93,
         "Масса блока: сухая %.1f т, рабочая заправка %.1f т, металл рамы "
-        "%.2f т, поддон %.2f т. Перегрузки — по нормам РРР для класса «О»"
+        "%.2f т, поддон %.2f т. Перегрузки — по нормам РРР для класса «М»"
         % (R["masses"]["dry"], R["masses"]["liquid"], R["masses"]["steel"],
            R["masses"]["tray"]),
         transform=ax.transAxes, fontsize=8.5, color="#56627a")
