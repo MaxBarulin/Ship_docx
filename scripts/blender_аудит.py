@@ -556,7 +556,9 @@ def seats(verbose=True, save=True):
         if 0.44 <= dx <= 0.62 and 0.44 <= dy <= 0.62 and 0.20 <= h <= 1.20:
             cnt[name] = cnt.get(name, 0) + 1
         elif 0.30 <= dx <= 0.42 and 0.30 <= dy <= 0.42 and 0.62 <= h <= 0.95:
-            cnt[name] = cnt.get(name, 0) + 1
+            cnt[name] = cnt.get(name, 0) + 1     # барный табурет
+        elif 0.50 <= max(dx, dy) <= 1.15 and 0.40 <= min(dx, dy) <= 0.80                 and 0.30 <= h <= 0.52:
+            cnt[name] = cnt.get(name, 0) + 1     # подушка дивана или кресла
     if save:
         import json
         with open(os.path.join(ROOT_SRC, "lib", "gorizont_seats.json"),

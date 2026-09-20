@@ -53,6 +53,30 @@ def px(x):
     return (x - X0) * SCALE
 
 
+_SEATS = None
+
+
+def _seats(x0, x1, deck):
+    """Посадка в зоне по счёту модели: её пишет blender_аудит.seats()."""
+    global _SEATS
+    if _SEATS is None:
+        try:
+            with io.open(os.path.join(ROOT, "src", "lib",
+                                      "gorizont_seats.json"),
+                         encoding="utf-8") as f:
+                _SEATS = json.load(f)
+        except Exception:
+            _SEATS = {}
+    if not _SEATS:
+        return 0
+    from lib import gorizont_rooms as RM
+    total = 0
+    for obj, (d, a, b, _fn, _p) in RM.ROOMS.items():
+        if d == deck and a >= x0 - 0.6 and b <= x1 + 0.6:
+            total += _SEATS.get(obj, 0)
+    return total
+
+
 def build(name, title, sub, key):
     raw = Image.open(os.path.join(RAW, name + ".png")).convert("RGBA")
     raw = raw.resize((W, int(RAWH * W / RAWW)), Image.LANCZOS)
