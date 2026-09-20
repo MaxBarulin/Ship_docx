@@ -73,12 +73,14 @@ class Sheet(object):
         self.ax.axis("off")
         self.ax.set_aspect("equal")
         self.form = form
-        self.tb_h = TB_H if form == 1 else TB_H2A
+        # form=0 — лист без основной надписи ЕСКД: её место занимает своя
+        # шапка технологического документа по ГОСТ 3.1103
+        self.tb_h = {1: TB_H, "2a": TB_H2A}.get(form, 0.0)
         self._frame()
         if form == 1:
             self._title_block(mark, name, material, mass, scale, sheet_no,
                               sheets, lit, people or PEOPLE, org)
-        else:
+        elif form == "2a":
             self._title_block_2a(mark, sheet_no)
 
     # --- геометрия листа ---------------------------------------------------
