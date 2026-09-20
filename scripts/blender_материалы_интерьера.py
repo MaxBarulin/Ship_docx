@@ -96,7 +96,7 @@ def wood(name, c_dark, c_light, scale=6.0, coat=0.35, rough=0.30):
     """Шпон: волокно волной с искажением, лак поверх."""
     m, nt, b = _mat(name)
     w = _tex(nt, "wave", scale, detail=6.0, dist=6.0, loc=(-820, 40))
-    r = _ramp(nt, [(0.32, c_dark), (0.68, c_light)], loc=(-560, 40))
+    r = _ramp(nt, [(0.38, c_dark), (0.62, c_light)], loc=(-560, 40))
     nt.links.new(w.outputs["Fac"], r.inputs["Fac"])
     nt.links.new(r.outputs["Color"], b.inputs["Base Color"])
     n = _tex(nt, "noise", 240.0, detail=4.0, loc=(-820, -260))
@@ -196,9 +196,9 @@ PALETTE = {
 def rebuild_materials(verbose=True):
     P = PALETTE
     made = []
-    made.append(wood("гор_дерево", *P["орех"], scale=26.0, coat=0.40,
+    made.append(wood("гор_дерево", *P["орех"], scale=34.0, coat=0.40,
                      rough=0.26))
-    made.append(wood("гор_дерево_светлое", *P["дуб"], scale=32.0, coat=0.28,
+    made.append(wood("гор_дерево_светлое", *P["дуб"], scale=42.0, coat=0.28,
                      rough=0.34))
     made.append(fabric("гор_текстиль", P["изумруд"], sheen=0.28, rough=0.86))
     made.append(fabric("гор_текстиль_тёплый", P["терракота"], sheen=0.30,
@@ -224,6 +224,11 @@ def rebuild_materials(verbose=True):
             n.inputs["IOR"].default_value = 1.46
     made.append(plain("гор_картина", (0.42, 0.38, 0.34, 1.0), rough=0.45,
                       coat=0.25))
+    # зеркало и экран телевизора — разные вещи: одно отражает, другое гасит
+    made.append(metal("гор_зеркало", (0.93, 0.94, 0.95, 1.0), rough=0.02,
+                      aniso=0.0))
+    made.append(plain("гор_экран", (0.035, 0.038, 0.042, 1.0), rough=0.22,
+                      coat=0.4))
     made.append(plain("гор_фарфор", (0.965, 0.960, 0.950, 1.0), rough=0.12,
                       coat=0.45))
     made.append(plain("гор_цветы", (0.62, 0.12, 0.22, 1.0), rough=0.55))

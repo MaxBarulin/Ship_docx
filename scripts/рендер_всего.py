@@ -12,7 +12,8 @@ r"""Пакетный рендер всей графики в отдельном 
 живым.
 
 Без аргументов делает всё. Аргументы после `--`: каюты, интерьеры, виды,
-планы, разрез, схемы.
+планы, разрез, схемы. Через двоеточие можно назвать один кадр:
+`интерьеры:7_носовой_салон`.
 """
 import bpy, sys, os, time, io, json
 
@@ -39,7 +40,15 @@ def run(path, fn, **kw):
 
 def main():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
-    want = set(argv) if argv else {s[0] for s in STEPS}
+    # аргумент вида «интерьеры:7_носовой_салон» ограничивает шаг одним кадром
+    want, only = {}, {}
+    for a in argv:
+        step, _, sub = a.partition(":")
+        want[step] = True
+        if sub:
+            only.setdefault(step, []).append(sub)
+    if not want:
+        want = {s[0]: True for s in STEPS}
     rep, t0 = {}, time.time()
     for name, script, fn, kw in STEPS:
         if name not in want:
@@ -47,6 +56,8 @@ def main():
         t1 = time.time()
         print("### старт %s" % name, flush=True)
         try:
+            if only.get(name):
+                kw = dict(kw, only=only[name])
             r = run(os.path.join(SC, script), fn, **kw)
             rep[name] = {"файлов": len(r) if isinstance(r, list) else 1,
                          "сек": round(time.time() - t1, 1)}
