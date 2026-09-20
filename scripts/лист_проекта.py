@@ -127,15 +127,16 @@ for k,v in ROWS:
     d.line([TX+28, yy-10, W-92, yy-10], fill=(226,231,238))
 
 cy = TY+TH+26
-cap(1790, cy, "Категории кают")
+cap(1790, cy, "Категории кают", "люкс, бизнес, эконом; планировки с "
+    "проверкой проходов — чертежи/08_планировки_кают.png")
 cx = 1790; cw = (W-64-1790-2*18)//3
-for p in ("1_люкс_план","3_бизнес_план","7_эконом_план"):
-    src = os.path.join(R,"каюты",p+".png")
+for p in ("1_люкс_интерьер", "3_бизнес_интерьер", "7_эконом_интерьер"):
+    src = os.path.join(R, "каюты", p + ".jpg")
     if os.path.exists(src):
         im = Image.open(src).convert("RGB")
         s = cw/im.width
         im = im.resize((cw,int(im.height*s)), Image.LANCZOS)
-        img.paste(im,(cx, cy+56))
+        img.paste(im, (cx, cy + 84))
     cx += cw+18
 
 d.rectangle([0,H-64,W,H], fill=(18,30,48))
