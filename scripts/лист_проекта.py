@@ -48,7 +48,12 @@ for t,s in reversed(right):
 def put(path, box):
     if not os.path.exists(path):
         d.rectangle(box, outline=(220,224,232)); return
-    im = Image.open(path).convert("RGB")
+    im = Image.open(path)
+    if im.mode in ("RGBA", "LA", "P"):
+        im = im.convert("RGBA")
+        im = Image.alpha_composite(
+            Image.new("RGBA", im.size, (255, 255, 255, 255)), im)
+    im = im.convert("RGB")
     bw, bh = box[2]-box[0], box[3]-box[1]
     s = max(bw/im.width, bh/im.height)
     im = im.resize((int(im.width*s), int(im.height*s)), Image.LANCZOS)
@@ -58,7 +63,12 @@ def put(path, box):
 
 def fit(path, x, y, w):
     if not os.path.exists(path): return y
-    im = Image.open(path).convert("RGB")
+    im = Image.open(path)
+    if im.mode in ("RGBA", "LA", "P"):
+        im = im.convert("RGBA")
+        im = Image.alpha_composite(
+            Image.new("RGBA", im.size, (255, 255, 255, 255)), im)
+    im = im.convert("RGB")
     s = w/im.width
     im = im.resize((w, int(im.height*s)), Image.LANCZOS)
     img.paste(im,(x,y))
@@ -106,7 +116,7 @@ ROWS = [("Длина / ширина","%.1f / %.1f м" % (G.LOA, G.BEAM)),
         ("Остойчивость","h = %.2f м, критерий погоды %.1f при норме 1.0" % (STB["h"], WC["K"])),
         ("Прочность корпуса","%.1f МПа из допускаемых %.0f, запас %.2f"
          % (SMAX, SALL, SALL / SMAX)),
-        ("Класс","РРР «О» (М-СП), Лед 1 / Arc 4"),
+        ("Класс", "%s, %s" % (G.RRR_REGISTER, G.RRR_CLASS)),
         ("Спасательные средства","6 шлюпок, %d мест на каждый борт при %d людях на борту"
          % (SUM["boats_per_side"], SUM["onboard"]))]
 yy = TY+68
@@ -117,15 +127,16 @@ for k,v in ROWS:
     d.line([TX+28, yy-10, W-92, yy-10], fill=(226,231,238))
 
 cy = TY+TH+26
-cap(1790, cy, "Категории кают")
+cap(1790, cy, "Категории кают", "люкс, бизнес, эконом; планировки с "
+    "проверкой проходов — чертежи/08_планировки_кают.png")
 cx = 1790; cw = (W-64-1790-2*18)//3
-for p in ("1_люкс_план","3_бизнес_план","7_эконом_план"):
-    src = os.path.join(R,"каюты",p+".png")
+for p in ("1_люкс_интерьер", "3_бизнес_интерьер", "7_эконом_интерьер"):
+    src = os.path.join(R, "каюты", p + ".jpg")
     if os.path.exists(src):
         im = Image.open(src).convert("RGB")
         s = cw/im.width
         im = im.resize((cw,int(im.height*s)), Image.LANCZOS)
-        img.paste(im,(cx, cy+56))
+        img.paste(im, (cx, cy + 84))
     cx += cw+18
 
 d.rectangle([0,H-64,W,H], fill=(18,30,48))

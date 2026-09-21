@@ -272,7 +272,10 @@ def zone_labels(msp, zones, z, scale, seats=True):
         if kind != "cabins" and room > len(name) * 1.85 + 6:
             text(msp, cx, -1.0 * K, name, 3.2, scale, "06_ПОМЕЩЕНИЯ")
             if area:
-                d = "%.0f м2" % area + ((" · %d мест" % cap) if (cap and seats) else "")
+                # cap — площадь по описанию задания, а не посадка
+                d = "%.0f м2" % area
+                if cap and abs(cap - area) > 1.0:
+                    d += " (задание %.0f м2)" % cap
                 text(msp, cx, -2.6 * K, d, 2.8, scale, "06_ПОМЕЩЕНИЯ")
 
 
@@ -658,7 +661,8 @@ def lines_plan():
     msp.add_line((0, 0), (G.LOA * K, 0), dxfattribs={"layer": "07_ОСИ"})
     frames_ruler(msp, 0, G.LOA, -11.2 * K, sc)
     notes = ("Теоретический чертёж: бок (смещён вниз на 6 м) и полуширота.",
-             "Ординаты — таблица STATIONS, 15 расчётных шпангоутов.",
+             "Ординаты — плазовая таблица, 25 теоретических шпангоутов "
+             "на 13 ватерлиний.",
              "Корпус: транцевая корма, скула с радиусом, цилиндрическая вставка 30…88 м.")
     frame(msp, sheet, sc, bbox, "ВГ-2026 теоретический чертёж",
           "Теоретический чертёж", "Волжский Горизонт · L = 139,0 · B = 16,5 · H = 4,2", notes)

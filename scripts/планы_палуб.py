@@ -7,7 +7,7 @@
 
     python scripts/планы_палуб.py [папка_с_сырыми_рендерами]
 """
-import os, sys
+import os, sys, io, json
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, os.path.join(ROOT, "src"))
 from PIL import Image, ImageDraw, ImageFont
@@ -26,6 +26,12 @@ W, HH = 2400, 800           # итоговый лист
 ORTHO, RAWW, RAWH, XC = 148.0, 2800, 560, 69.5
 SCALE = W / ORTHO           # пикселей на метр на итоговом листе
 X0 = XC - ORTHO / 2.0       # левый край кадра в метрах
+# Полуширота судна в пикселях листа: от неё, а не от числа «на глаз»,
+# отсчитываются выноски — иначе подписи наезжают на борт.
+HULL_PX = max(H.half_breadth(x, G.DEPTH - 0.01)
+              for x in [i * 0.5 for i in range(int(G.LOA * 2) + 1)]) * SCALE
+LEAD = HULL_PX + 10         # начало выноски
+LAB = HULL_PX + 34          # первая строка подписей
 
 PLANS = [
     ("0_трюм_второе_дно", "Трюм и второе дно · 0.00…1.30 м",
@@ -47,9 +53,35 @@ def px(x):
     return (x - X0) * SCALE
 
 
+_SEATS = None
+
+
+def _seats(x0, x1, deck):
+    """Посадка в зоне по счёту модели: её пишет blender_аудит.seats()."""
+    global _SEATS
+    if _SEATS is None:
+        try:
+            with io.open(os.path.join(ROOT, "src", "lib",
+                                      "gorizont_seats.json"),
+                         encoding="utf-8") as f:
+                _SEATS = json.load(f)
+        except Exception:
+            _SEATS = {}
+    if not _SEATS:
+        return 0
+    from lib import gorizont_rooms as RM
+    total = 0
+    for obj, (d, a, b, _fn, _p) in RM.ROOMS.items():
+        if d == deck and a >= x0 - 0.6 and b <= x1 + 0.6:
+            total += _SEATS.get(obj, 0)
+    return total
+
+
 def build(name, title, sub, key):
-    raw = Image.open(os.path.join(RAW, name + ".png")).convert("RGB")
+    raw = Image.open(os.path.join(RAW, name + ".png")).convert("RGBA")
     raw = raw.resize((W, int(RAWH * W / RAWW)), Image.LANCZOS)
+    bg = Image.new("RGBA", raw.size, (255, 255, 255, 255))
+    raw = Image.alpha_composite(bg, raw).convert("RGB")
     if key is None:
         raw = Image.blend(raw, Image.new("RGB", raw.size, "white"), 0.55)
     canvas = Image.new("RGB", (W, HH), "white")
@@ -65,12 +97,18 @@ def build(name, title, sub, key):
 
     zones = GA.DECKS.get(key, []) if key else []
     items = []
-    for x0, x1, kind, zname, cap, area in zones:
+    for x0, x1, kind, zname, want, area in zones:
         lab = zname
         if area:
             lab += " · %.0f м²" % area
-        if cap:
-            lab += " · %d мест" % cap
+        # пятое поле таблицы зон — площадь по описанию задания, а не места.
+        # Раньше её печатали как «мест», и на плане стояло «Провизионные
+        # склады · 87 м² · 110 мест».
+        if want and area and abs(want - area) > 1.0:
+            lab += " (по заданию %.0f м²)" % want
+        n = _seats(x0, x1, key)
+        if n:
+            lab += " · %d мест" % n
         items.append([px(0.5 * (x0 + x1)), lab])
     items.sort()
     fnt = F(REG, 21)
@@ -89,14 +127,14 @@ def build(name, title, sub, key):
                 rows_end.append(0)
             rows_end[r] = tx + wlab / 2
             if side > 0:
-                ty = ship_top - 148 - r * 44
-                d.line([cx, ship_top - 124, cx, ty + 30], fill=(170, 180, 194), width=2)
+                ty = ship_top - LAB - r * 44
+                d.line([cx, ship_top - LEAD, cx, ty + 30], fill=(170, 180, 194), width=2)
                 if abs(tx - cx) > 2:
                     d.line([cx, ty + 30, tx, ty + 30], fill=(170, 180, 194), width=2)
                 d.text((tx, ty), lab, font=fnt, fill=INK, anchor="ma")
             else:
-                ty = ship_top + 148 + r * 44
-                d.line([cx, ship_top + 124, cx, ty - 8], fill=(170, 180, 194), width=2)
+                ty = ship_top + LAB + r * 44
+                d.line([cx, ship_top + LEAD, cx, ty - 8], fill=(170, 180, 194), width=2)
                 if abs(tx - cx) > 2:
                     d.line([cx, ty - 8, tx, ty - 8], fill=(170, 180, 194), width=2)
                 d.text((tx, ty), lab, font=fnt, fill=INK, anchor="ma")

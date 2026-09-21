@@ -8,8 +8,9 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon as MPoly, Rectangle
 from lib import gorizont as G, gorizont_hydro as H, gorizont_struct as S, gorizont_strength as St
+from lib import eskd
 
-OUT = r"E:\Ship_docx\renders\горизонт_2026\чертежи"
+OUT = os.path.join(ROOT, "renders", "горизонт_2026", "чертежи")
 plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 9,
                      "figure.facecolor": "white", "savefig.facecolor": "white"})
 os.makedirs(OUT, exist_ok=True)
@@ -20,16 +21,22 @@ T = H.equilibrium()["T"]
 DB = S.DB_HEIGHT
 SP = S.SPACING
 
-fig = plt.figure(figsize=(16.8, 11.4))
-fig.suptitle("Конструктивный мидель-шпангоут   ·   шп. 127 (x = 70.0 м)",
-             fontsize=17, fontweight="bold", x=0.012, ha="left", y=0.982)
-fig.text(0.012, 0.952, "Смешанная система набора: продольная в днище, втором дне и главной палубе, "
-         "поперечная по бортам. Шпация 550 мм, рамная шпация 2200 мм",
-         fontsize=10, color="#56627a")
-fig.text(0.988, 0.968, "«Волжский Горизонт» · ВГ-2026.00.00 СБ", fontsize=10,
-         color="#56627a", ha="right")
+# Лист по ГОСТ 2.301 с основной надписью 2.104 формы 1:
+# заголовок и подпись сверху ушли в штамп
+SH = eskd.Sheet('A1', mark="ВГ-2026.00.00 СБ",
+                name="Мидель-шпангоут" + chr(10) + "конструктивный",
+                material="Сталь 09Г2С ГОСТ 19281-2014",
+                mass=None, scale="1:25",
+                sheet_no=1, sheets=1)
+fig = SH.fig
 
-ax = fig.add_axes([0.02, 0.545, 0.63, 0.345])
+
+def _ax(x, y, w, h):
+    return SH.axes_frac(x, y, w, h)
+
+
+
+ax = _ax(*[0.02, 0.545, 0.63, 0.345])
 ax.set_aspect("equal")
 ax.axis("off")
 
@@ -141,7 +148,7 @@ ax.set_ylim(-1.55, 5.75)
 # ---------------- спецификация связей и результаты расчёта
 g = S.equivalent_girder()
 r = St.stresses()
-ax2 = fig.add_axes([0.655, 0.34, 0.325, 0.56])
+ax2 = _ax(*[0.655, 0.34, 0.325, 0.56])
 ax2.axis("off")
 ax2.text(0, 1.0, "Спецификация связей эквивалентного бруса",
          fontsize=11, fontweight="bold", color=INK, transform=ax2.transAxes)
@@ -160,7 +167,7 @@ for (rr, cc), cell in tbl.get_celld().items():
     if cc > 0:
         cell.set_text_props(ha="right")
 
-ax3 = fig.add_axes([0.03, 0.045, 0.60, 0.43])
+ax3 = _ax(*[0.03, 0.045, 0.60, 0.43])
 ax3.axis("off")
 ax3.text(0, 1.0, "Результаты расчёта общей продольной прочности",
          fontsize=11, fontweight="bold", color=INK, transform=ax3.transAxes)
@@ -180,27 +187,15 @@ lines += ["",
           (r["steel"]["name"], r["steel"]["ReH"]),
           "Допускаемое напряжение 0.60·ReH = %.0f МПа, использовано %.0f %%" %
           (r["sigma_allow"], 100 * max(x["sigma_deck"] for x in r["rows"]) / r["sigma_allow"]),
-          "Волна класса «О»: высота 2.0 м, длина равна длине судна"]
+          "Волна класса «%s»: высота %.1f м, длина равна длине судна"
+          % (H.CLASS, H.WAVE_HEIGHT[H.CLASS])]
 for i, s_ in enumerate(lines):
     ax3.text(0, 0.92 - i * 0.055, s_, fontsize=8.8, color=INK if i < 4 else "#3a4658",
              family="DejaVu Sans", transform=ax3.transAxes)
 
 # штамп
-ax4 = fig.add_axes([0.655, 0.045, 0.325, 0.25])
-ax4.axis("off")
-ax4.add_patch(Rectangle((0, 0), 1, 1, transform=ax4.transAxes, fill=False,
-                        ec="#8d97a6", lw=1.2))
-stamp = [("Изделие", "Круизное судно «Волжский Горизонт»"),
-         ("Обозначение", "ВГ-2026.00.00 СБ"),
-         ("Наименование", "Мидель-шпангоут конструктивный"),
-         ("Материал", "09Г2С ГОСТ 19281-2014"),
-         ("Масса корпуса", "%.0f т (расчёт по связям)" % S.steel_weight()["m"]),
-         ("Масштаб", "1 : 25"),
-         ("Разработал", "команда УЖЦ ОСК 2026")]
-for i, (k_, v_) in enumerate(stamp):
-    y = 0.90 - i * 0.125
-    ax4.text(0.03, y, k_, fontsize=8.2, color="#56627a", transform=ax4.transAxes)
-    ax4.text(0.40, y, v_, fontsize=8.6, color=INK, fontweight="bold",
-             transform=ax4.transAxes)
-fig.savefig(os.path.join(OUT, "01_мидель_шпангоут.png"), dpi=150, bbox_inches="tight")
+# свой информационный блок убран: те же данные стоят в основной
+# надписи листа, и два штампа на чертеже противоречили друг другу
+
+SH.save(os.path.join(OUT, "01_мидель_шпангоут.png"))
 print("готово")

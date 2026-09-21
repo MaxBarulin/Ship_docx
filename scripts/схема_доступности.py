@@ -46,7 +46,10 @@ MUSTER = [(44.6, 0.0), (53.4, 0.0), (94.1, 0.0)]
 
 img = Image.new("RGB", (W, H), "white")
 for i, (fn, _, _) in enumerate(DECKS):
-    raw = Image.open(os.path.join(RAW, fn + ".png")).convert("RGB")
+    raw = Image.open(os.path.join(RAW, fn + ".png")).convert("RGBA")
+    # у сырого плана фон прозрачный: без подложки он ложится чёрным
+    raw = Image.alpha_composite(
+        Image.new("RGBA", raw.size, (255, 255, 255, 255)), raw).convert("RGB")
     raw = raw.resize((W, STRIP), Image.LANCZOS)
     img.paste(raw, (0, HDR + i * (STRIP + GAP) + GAP))
 d = ImageDraw.Draw(img)

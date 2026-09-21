@@ -44,7 +44,12 @@ for t, s in reversed(right):
 def fit(path, x, y, w):
     if not os.path.exists(path):
         return y
-    im = Image.open(path).convert("RGB")
+    im = Image.open(path)
+    if im.mode in ("RGBA", "LA", "P"):
+        im = im.convert("RGBA")
+        im = Image.alpha_composite(
+            Image.new("RGBA", im.size, (255, 255, 255, 255)), im)
+    im = im.convert("RGB")
     s = w / im.width
     im = im.resize((w, int(im.height * s)), Image.LANCZOS)
     img.paste(im, (x, y))
@@ -53,10 +58,12 @@ def fit(path, x, y, w):
 
 y = 226
 y = fit(os.path.join(CALC, "01_теоретический_чертёж.png"), 40, y, W - 80) + 18
+y = fit(os.path.join(CALC, "01б_корпус_и_ординаты.png"), 40, y, W - 80) + 18
 y = fit(os.path.join(CALC, "02_кривые_элементов.png"), 40, y, W - 80) + 18
 y = fit(os.path.join(CALC, "04_остойчивость.png"), 40, y, W - 80) + 18
 y = fit(os.path.join(CALC, "06_ходкость.png"), 40, y, W - 80) + 18
 y = fit(os.path.join(CALC, "05_продольная_прочность.png"), 40, y, W - 80) + 18
+y = fit(os.path.join(DRW, "06_фундамент_очистки.png"), 40, y, W - 80) + 18
 y2 = fit(os.path.join(DRW, "01_мидель_шпангоут.png"), 40, y, (W - 100) // 2)
 fit(os.path.join(DRW, "03_кница_спонсона.png"), 60 + (W - 100) // 2, y, (W - 100) // 2)
 print("высота получилась", max(y2, y))
