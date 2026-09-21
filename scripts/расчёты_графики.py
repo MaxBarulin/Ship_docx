@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MultipleLocator
 from lib import gorizont as G, gorizont_hydro as H, gorizont_struct as S, gorizont_strength as St
 from lib import gorizont_power as P
-from lib import gorizont_propulsion as PR
 
 OUT = os.path.join(ROOT, "renders", "горизонт_2026", "расчёты")
 plt.rcParams.update({
@@ -270,123 +269,12 @@ def power_balance():
     save(fig, "07_электробаланс.png")
 
 
-def propulsion_comparison():
-    """Один вал против двух: геометрия диска, потребная мощность, итог."""
-    import matplotlib.patches as mp
-    from matplotlib.gridspec import GridSpec
-
-    rows = PR.compare()
-    draft = rows[0]["tip"] + rows[0]["immersion"]
-    axis = G.SHAFT_Z_PROP
-
-    fig = plt.figure(figsize=(14.6, 7.6))
-    head(fig, "Один вал или два: сравнение при одинаковой установленной мощности",
-         "Сверху — сечение по диску винта в масштабе; снизу — потребная "
-         "мощность и итог сравнения. Установленная мощность у всех вариантов "
-         "3600 кВт")
-    gs = GridSpec(2, 3, figure=fig, height_ratios=[0.52, 1.0],
-                  top=0.84, bottom=0.11, hspace=0.30, wspace=0.28)
-
-    # --- верх: три сечения в масштабе -------------------------------------
-    for i, r in enumerate(rows):
-        ax = fig.add_subplot(gs[0, i])
-        ax.set_aspect("equal")
-        half = 4.35
-        ax.add_patch(mp.Rectangle((-half, 0), 2 * half, draft,
-                                  facecolor="#dbe7f0", edgecolor="none", zorder=0))
-        ax.axhline(draft, color=SEA, lw=1.6)
-        ax.axhline(0.0, color="#8892a4", lw=1.2, ls="--")
-        ax.axhline(axis, color="#b9c2d0", lw=0.8, ls=":")
-        offsets = [0.0] if r["shafts"] == 1 else [-PR.SHAFT_OFFSET, PR.SHAFT_OFFSET]
-        ok = r["imm_ratio"] >= 0.15
-        edge = GRN if ok else ACC
-        for y in offsets:
-            if r["nozzle"]:
-                nz = r["d"] / 2 + 0.12
-                ax.add_patch(mp.Circle((y, axis), nz, fill=False,
-                                       edgecolor="#56627a", lw=1.2, ls="-"))
-            ax.add_patch(mp.Circle((y, axis), r["d"] / 2, fill=False,
-                                   edgecolor=edge, lw=2.2))
-            ax.plot([y], [axis], marker="+", color=edge, ms=7)
-        ax.annotate("", xy=(half - 0.35, draft), xytext=(half - 0.35, r["tip"]),
-                    arrowprops=dict(arrowstyle="<->", color=edge, lw=1.1))
-        ax.text(half - 0.55, draft + 0.16,
-                "%.2f м = %.2f·D" % (r["immersion"], r["imm_ratio"]),
-                fontsize=8, color=edge, ha="right", va="bottom")
-        ax.text(-half + 0.12, draft + 0.16, "ВЛ %.2f м" % draft,
-                fontsize=8, color=SEA, va="bottom")
-        ax.text(-half + 0.15, 0.10, "ОП", fontsize=8, color="#56627a")
-        ax.set_xlim(-half, half)
-        ax.set_ylim(-0.55, draft + 0.72)
-        ax.set_yticks([])
-        ax.set_xticks([])
-        ax.grid(False)
-        ax.set_title("%s. %s\nD = %.2f м, диск %.2f м²"
-                     % (r["code"], r["name"], r["d"], r["area"]),
-                     fontsize=9, loc="left")
-        if not ok:
-            ax.text(0, -0.42, "заглубление меньше 0.15·D — нужен тоннель", fontsize=8.5,
-                    color=ACC, ha="center")
-
-    # --- низ слева: потребная мощность ------------------------------------
-    ax = fig.add_subplot(gs[1, 0:2])
-    vs = [14 + 0.5 * i for i in range(29)]
-    styles = [(ACC, "--"), ("#c98a1f", "-."), (GRN, "-")]
-    for r, (c, ls) in zip(rows, styles):
-        v = next(x for x in PR.VARIANTS if x["code"] == r["code"])
-        ax.plot(vs, [PR.required_power(v, s) for s in vs], color=c, ls=ls,
-                lw=2.0, label="%s — %s" % (r["code"], r["name"]))
-    ax.axhline(PR.REFERENCE_POWER, color=INK, lw=1.4)
-    ax.text(27.9, PR.REFERENCE_POWER + 80, "установлено 3600 кВт на ГЭД",
-            fontsize=8.5, color=INK, ha="right")
-    for r, (c, _ls) in zip(rows, styles):
-        ax.plot([r["cav_speed"]], [min(r["cav_power"], PR.REFERENCE_POWER)],
-                marker="o", color=c, ms=6)
-    ax.axvline(G.SPEED_KMH, color="#8892a4", lw=0.9, ls=":")
-    ax.text(G.SPEED_KMH - 0.15, 2600, "служебная 22", fontsize=8,
-            color="#56627a", rotation=90, va="top", ha="right")
-    ax.set_xlabel("скорость на глубокой воде, км/ч")
-    ax.set_ylabel("мощность на валах, кВт")
-    ax.set_ylim(0, 4200)
-    ax.set_xlim(14, 28)
-    ax.legend(fontsize=8, loc="upper left")
-    ax.set_title("Потребная мощность и предел по нагрузке диска "
-                 "(точка — где начинается кавитация)", fontsize=10, loc="left")
-
-    # --- низ справа: отклонения от принятого -------------------------------
-    ax = fig.add_subplot(gs[1, 2])
-    d = PR.deltas()
-    labels = ["мощность,\nчтобы догнать", "топливо\nза сутки",
-              "упор на\nшвартовах", "нагрузка\nдиска"]
-    keys = ["need_power", "fuel", "bollard", "density"]
-    x = range(len(labels))
-    wdt = 0.36
-    for j, (dd, c) in enumerate(zip(d, (ACC, "#c98a1f"))):
-        vals = [dd[k] for k in keys]
-        pos = [i + (j - 0.5) * wdt for i in x]
-        ax.bar(pos, vals, width=wdt, color=c, label="%s" % dd["code"])
-        for xx, vv in zip(pos, vals):
-            ax.text(xx, vv + (2.5 if vv >= 0 else -6), "%+.0f" % vv,
-                    ha="center", fontsize=8, color=INK)
-    ax.axhline(0, color=INK, lw=1.0)
-    ax.set_xticks(list(x))
-    ax.set_xticklabels(labels, fontsize=8)
-    ax.set_ylabel("отклонение от принятого варианта, %")
-    ax.set_ylim(-45, 95)
-    ax.legend(fontsize=8, title="вариант", title_fontsize=8, loc="upper left")
-    ax.set_title("Чем платит одновальный", fontsize=10, loc="left")
-
-    acc = next(r for r in rows if r["accepted"])
-    fig.text(0.01, 0.015,
-             "Решает не КПД: при отказе одной линии вала двухвальное судно "
-             "идёт %.1f км/ч, одновальное — стоит. Масса, сэкономленная на "
-             "валопроводе (−%.0f т), возвращается через станцию (+%.0f т): "
-             "одновальному нужны ГДГ по %d кВт вместо %d."
-             % (acc["v_one_shaft"], abs(PR.deltas()[0]["mass"]),
-                rows[0]["plant_mass"] - acc["plant_mass"],
-                rows[0]["dg_unit"], acc["dg_unit"]),
-             fontsize=8.5, color="#56627a")
-    save(fig, "08_сравнение_движителей.png")
+# Здесь был график «один вал против двух». Он умер вместе с винтами:
+# движитель сменился на колёсный, и сравнивать теперь надо колесо с винтом
+# на мелководье, а не вал с валом. Числа для такого графика уже есть в
+# gorizont_wheel.propeller_comparison(); сам график — работа отдельная,
+# и рисовать его вслепую, без Blender и без matplotlib под рукой, значит
+# сдать непроверенную картинку.
 
 
 if __name__ == "__main__":
@@ -397,4 +285,3 @@ if __name__ == "__main__":
     strength_plots()
     resistance_plots()
     power_balance()
-    propulsion_comparison()

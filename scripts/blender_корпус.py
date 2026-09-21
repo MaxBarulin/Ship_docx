@@ -1,195 +1,230 @@
 # -*- coding: utf-8 -*-
-r"""Корпус по плазовой таблице: обшивка, плоская главная палуба, туннели.
+r"""Корпус колёсного судна: обводы, ниши колёс, палубы, массинг надстройки.
 
-Сечение берётся прямо из gorizont_hydro.section_y, то есть из той же
-геометрии, по которой напечатана плазовая таблица и построен
-теоретический чертёж. Поэтому модель и чертёж совпадают по построению,
-а не «примерно».
+Корпус строится не по плазовой таблице, а по тем же непрерывным функциям,
+из которых она сама и генерируется (`gorizont_lines.keel_z`, `bottom_half`,
+`side_half`, `flare`). Таблица — это те же функции в двадцати пяти точках;
+брать её для модели значит терять форму между шпангоутами.
 
-Что строится:
-  * замкнутая оболочка от килевой линии до главной палубы D = 4,20 м
-    (подъём борта выше палубы — это фальшборт, он в blender_фальшборт.py);
-  * плоская палуба-крышка на 4,20 м;
-  * транец на кормовом перпендикуляре и сход обвода на форштевне;
-  * два туннеля гребных винтов — конические выемки в днище, без них
-    винт диаметром 1,70 м не уместится под кормовым подзором.
+Сечение собирается так же, как его строит плазовщик: плоское днище, скуловая
+дуга, касательная и к днищу и к борту, прямой борт с развалом. Поэтому
+модель, гидростатика и чертёж описывают один обвод — расходиться им негде.
 
-    exec(open(r"E:\Ship_docx\scripts\blender_корпус.py", encoding="utf-8").read())
-    rebuild_hull()
+Ниши колёс вырезаются булевой операцией, а не обходятся распределениями:
+ниша — это прямоугольный карман в борту, а не изменение сечения. Их
+геометрию задаёт `gorizont_wheel.niche_geometry()`, то есть та же функция,
+которая считает потерянную в нишах плавучесть.
+
+Надстройка пока массинг: объёмы с плавными углами по дизайн-системе. Точная
+компоновка появится, когда будет переписан `gorizont_ga` под три яруса, —
+до тех пор ставить в неё переборки и каюты нечего.
+
+Запуск внутри Blender:
+    exec(open(r"<путь>/scripts/blender_корпус.py", encoding="utf-8").read())
+    построить()
 """
-import bpy, bmesh, math, sys
-
-ROOT_SRC = r"E:\Ship_docx\src"
-if ROOT_SRC not in sys.path:
-    sys.path.insert(0, ROOT_SRC)
-from lib import gorizont as G, gorizont_hydro as H
-
-Z_DECK = G.DEPTH
-NB, NARC, NSIDE, ND = 4, 24, 10, 4   # точек: днище, скула, борт, палуба
-TUNNEL_R = G.NOZZLE_OUTER + 0.08
-TUNNEL_X1 = 16.0               # длина схода туннеля в нос
-MAT = ("гор_корпус_подводный", "гор_корпус_ватерлиния",
-       "гор_корпус_борт", "гор_палуба_тик")
+import bpy, bmesh, math, os, sys
 
 
-def hull_xs(step_end=0.4, step_mid=1.0):
-    """Сетка сечений: гуще в оконечностях, обязательно через шпангоуты."""
-    xs, x = [], 0.0
-    while x <= G.LOA + 1e-9:
-        xs.append(round(x, 3))
-        x += step_end if (x < 24.0 or x > 106.0) else step_mid
-    xs += [round(r[1], 3) for r in G.OFFSETS]
-    xs += [round(TUNNEL_X1, 3)]
-    return sorted(set(v for v in xs if 0.0 <= v <= G.LOA))
+def _корень():
+    for кандидат in (
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        if "__file__" in globals() else None,
+        os.environ.get("GORIZONT_ROOT"),
+        os.path.dirname(os.path.dirname(bpy.data.filepath)) if bpy.data.filepath else None,
+    ):
+        if кандидат and os.path.isdir(os.path.join(кандидат, "src", "lib")):
+            return кандидат
+    raise RuntimeError("Не найден корень репозитория; задайте GORIZONT_ROOT")
 
 
-def half_section(x):
-    """Полусечение от ДП по днищу и борту до ДП по палубе: [(y, z), ...].
+ROOT = _корень()
+for путь in (os.path.join(ROOT, "src"), os.path.join(ROOT, "scripts")):
+    if путь not in sys.path:
+        sys.path.insert(0, путь)
 
-    Днище, скуловая дуга по углу (а не по высоте — иначе в крутой части
-    дуги точек не хватает и модель отходит от таблицы) и прямой борт.
-    """
-    zk, bk, zb, bb, phi = H._column(x)
-    zk = min(zk, Z_DECK - 0.02)
-    r = H.bilge_radius(bk, bb, zk, zb, phi)
-    pts = [(0.0, zk)]
-    for k in range(1, NB + 1):
-        pts.append((bk * k / NB, zk))
-    z_t = zk + r * (1.0 - math.sin(phi)) if r > 1e-6 else zk
-    a_max = math.pi / 2 - phi
-    for k in range(1, NARC + 1):
-        z = min(zk + r * (1.0 - math.cos(a_max * k / NARC)), Z_DECK)             if r > 1e-6 else zk
-        pts.append((H.section_y(z, zk, bk, zb, bb, phi), z))
-    for k in range(1, NSIDE + 1):
-        z = min(z_t + max(Z_DECK - z_t, 0.0) * k / NSIDE, Z_DECK)
-        pts.append((H.section_y(z, zk, bk, zb, bb, phi), z))
-    yd = H.section_y(Z_DECK, zk, bk, zb, bb, phi)
-    pts[-1] = (yd, Z_DECK)
-    for k in range(1, ND):
-        pts.append((yd * (1.0 - k / ND), Z_DECK))
-    pts.append((0.0, Z_DECK))
-    return pts
+from lib import gorizont as G
+from lib import gorizont_lines as L
+from lib import gorizont_wheel as W
+from lib import gorizont_style as S
+import blender_стиль as Ст
+
+КОЛЛЕКЦИЯ = "01_Корпус"
+ШАГ_ПО_ДЛИНЕ = 1.0        # шпация модели, м
+ТОЧЕК_ДНИЩА = 6           # точек на плоском днище полусечения
+ТОЧЕК_БОРТА = 22          # точек от скулы до кромки борта
 
 
-def ring(x):
-    """Замкнутый контур шпангоута: оба борта, по часовой в плоскости yz."""
-    h = half_section(x)
-    return h + [(-y, z) for (y, z) in reversed(h[1:-1])]
+# --- вспомогательное ---------------------------------------------------------
+def _коллекция(имя):
+    кол = bpy.data.collections.get(имя)
+    if кол is None:
+        кол = bpy.data.collections.new(имя)
+        bpy.context.scene.collection.children.link(кол)
+    return кол
 
 
-def build_shell(name="корпус"):
-    xs = hull_xs()
-    bm = bmesh.new()
-    rings = []
+def _объект(имя, verts, faces, коллекция):
+    """Создать объект из списка вершин и граней, заменив прежний с тем же именем."""
+    старый = bpy.data.objects.get(имя)
+    if старый is not None:
+        bpy.data.objects.remove(старый, do_unlink=True)
+    меш = bpy.data.meshes.new(имя)
+    меш.from_pydata(verts, [], faces)
+    меш.validate(verbose=False)
+    меш.update()
+    об = bpy.data.objects.new(имя, меш)
+    коллекция.objects.link(об)
+    return об
+
+
+def полусечение(x):
+    """Полусечение корпуса на абсциссе x: список (y, z) от ДП до кромки борта."""
+    zk = L.keel_z(x)
+    bb = L.side_half(x)
+    bk = min(L.bottom_half(x), bb)
+    phi = math.radians(L.flare(x))
+    точки = [(bk * i / (ТОЧЕК_ДНИЩА - 1), zk) for i in range(ТОЧЕК_ДНИЩА)]
+    for i in range(1, ТОЧЕК_БОРТА + 1):
+        z = zk + (G.DEPTH - zk) * i / ТОЧЕК_БОРТА
+        y = L.section_y(z, zk, bk, G.DEPTH, bb, phi)
+        точки.append((y if y is not None else bk, z))
+    return точки
+
+
+def _обводы():
+    """Сетка обшивки: лофт замкнутых сечений по длине."""
+    xs = [i * ШАГ_ПО_ДЛИНЕ for i in range(int(G.LOA / ШАГ_ПО_ДЛИНЕ) + 1)]
+    if xs[-1] < G.LOA:
+        xs.append(G.LOA)
+    кольца, verts = [], []
     for x in xs:
-        rings.append([bm.verts.new((x, y, z)) for (y, z) in ring(x)])
-    n = len(rings[0])
-    for i in range(len(xs) - 1):
-        a, b = rings[i], rings[i + 1]
-        for k in range(n):
-            k2 = (k + 1) % n
-            vs = [a[k], b[k], b[k2], a[k2]]
-            if len(set(vs)) < 3:
-                continue
-            try:
-                bm.faces.new(vs)
-            except ValueError:
-                pass
-    for idx, rev in ((0, True), (len(xs) - 1, False)):
-        vs = rings[idx][::-1] if rev else rings[idx]
-        try:
-            bm.faces.new(vs)
-        except ValueError:
-            pass
-    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-5)
-    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
-    me = bpy.data.meshes.new(name + "_mesh")
-    bm.to_mesh(me)
-    bm.free()
-    return me
+        полу = полусечение(x)
+        # замкнутое кольцо: правый борт снизу вверх, левый сверху вниз
+        кольцо = [(x, y, z) for y, z in полу]
+        кольцо += [(x, -y, z) for y, z in reversed(полу[:-1])]
+        кольца.append([len(verts) + i for i in range(len(кольцо))])
+        verts.extend(кольцо)
+
+    faces = []
+    n = len(кольца[0])
+    for a, b in zip(кольца, кольца[1:]):
+        for j in range(n):
+            k = (j + 1) % n
+            faces.append([a[j], a[k], b[k], b[j]])
+    faces.append(list(reversed(кольца[0])))      # транец
+    faces.append(list(кольца[-1]))               # форштевень
+    return verts, faces
 
 
-def _tunnel_mesh(sign):
-    """Конус выемки туннеля гребного винта."""
-    bm = bmesh.new()
-    seg = 28
-    xs = [-0.6, 0.0, 4.0, 8.0, 12.0, TUNNEL_X1]
-    rings = []
+def _ниша(имя, знак, коллекция):
+    """Кубик-заготовка под вырез ниши колеса в борту."""
+    н = W.niche_geometry()
+    y0, y1 = н["y_внутренняя_кромка"], н["борт"] + 0.5
+    x0 = W.X_AXIS - н["длина_ниши"] / 2.0
+    x1 = W.X_AXIS + н["длина_ниши"] / 2.0
+    z0, z1 = 0.55, G.DEPTH + 0.5
+    verts = [(x, знак * y, z) for x in (x0, x1) for y in (y0, y1) for z in (z0, z1)]
+    faces = [[0, 1, 3, 2], [4, 6, 7, 5], [0, 2, 6, 4],
+             [1, 5, 7, 3], [0, 4, 5, 1], [2, 3, 7, 6]]
+    return _объект(имя, verts, faces, коллекция)
+
+
+def построить(с_нишами=True, с_надстройкой=True):
+    """Собрать корпус целиком."""
+    Ст.построить()
+    кол = _коллекция(КОЛЛЕКЦИЯ)
+
+    verts, faces = _обводы()
+    корпус = _объект("Корпус_обшивка", verts, faces, кол)
+    Ст.назначить(корпус, "Корпус_графит")
+
+    if с_нишами:
+        for знак, имя in ((1, "Ниша_ПБ"), (-1, "Ниша_ЛБ")):
+            резак = _ниша(имя + "_резак", знак, кол)
+            мод = корпус.modifiers.new(name=имя, type="BOOLEAN")
+            мод.operation = "DIFFERENCE"
+            мод.object = резак
+            резак.display_type = "WIRE"
+            резак.hide_render = True
+
+    # Главная палуба: плоская поверхность по обводу на отметке высоты борта
+    xs = [i * 2.0 for i in range(int(G.LOA / 2.0) + 1)]
+    v, f = [], []
     for x in xs:
-        t = max(0.0, min(1.0, (x + 0.6) / (TUNNEL_X1 + 0.6)))
-        r = TUNNEL_R * (1.0 - t ** 1.7)
-        r = max(r, 0.01)
-        ring_v = []
-        for k in range(seg):
-            a = 2 * math.pi * k / seg
-            ring_v.append(bm.verts.new((x,
-                                        sign * G.PROP_Y + r * math.cos(a),
-                                        G.SHAFT_Z_PROP + r * math.sin(a))))
-        rings.append(ring_v)
+        bb = L.side_half(x)
+        v.extend([(x, bb, G.DEPTH), (x, -bb, G.DEPTH)])
     for i in range(len(xs) - 1):
-        for k in range(seg):
-            k2 = (k + 1) % seg
-            bm.faces.new([rings[i][k], rings[i + 1][k],
-                          rings[i + 1][k2], rings[i][k2]])
-    bm.faces.new(rings[0][::-1])
-    bm.faces.new(rings[-1])
-    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
-    me = bpy.data.meshes.new("_tunnel")
-    bm.to_mesh(me)
-    bm.free()
-    return me
+        f.append([2 * i, 2 * i + 1, 2 * i + 3, 2 * i + 2])
+    палуба = _объект("Палуба_главная", v, f, кол)
+    Ст.назначить(палуба, "Настил_дерево")
+
+    if с_надстройкой:
+        надстройка(кол)
+
+    print("Корпус построен: %.0f x %.1f x %.2f м, высота борта %.2f"
+          % (G.LOA, G.BEAM, G.DRAFT, G.DEPTH))
+    print("   ниши колёс: %s, надстройка: %s"
+          % ("да" if с_нишами else "нет", "массинг" if с_надстройкой else "нет"))
+    return корпус
 
 
-def assign_materials(o):
-    T = H.equilibrium()["T"]
-    for nm in MAT:
-        m = bpy.data.materials.get(nm)
-        if m and m.name not in [s.name for s in o.data.materials if s]:
-            o.data.materials.append(m)
-    idx = {m.name: i for i, m in enumerate(o.data.materials) if m}
-    for p in o.data.polygons:
-        z = p.center.z
-        if z > Z_DECK - 0.01 and abs(p.normal.z) > 0.7:
-            k = idx.get("гор_палуба_тик", 0)
-        elif z < T - 0.15:
-            k = idx.get("гор_корпус_подводный", 0)
-        elif z < T + 0.25:
-            k = idx.get("гор_корпус_ватерлиния", 0)
-        else:
-            k = idx.get("гор_корпус_борт", 0)
-        p.material_index = k
+def _объём(имя, x0, x1, полуширота, z0, z1, коллекция, радиус=0.0):
+    verts = [(x, y, z) for x in (x0, x1)
+             for y in (полуширота, -полуширота) for z in (z0, z1)]
+    faces = [[0, 1, 3, 2], [4, 6, 7, 5], [0, 2, 6, 4],
+             [1, 5, 7, 3], [0, 4, 5, 1], [2, 3, 7, 6]]
+    об = _объект(имя, verts, faces, коллекция)
+    if радиус > 0.0:
+        # Плавные углы — требование дизайн-системы, а не украшение: без них
+        # силуэт разваливается на коробки и перестаёт читаться современным.
+        мод = об.modifiers.new(name="Скругление", type="BEVEL")
+        мод.width = радиус
+        мод.segments = 6
+        мод.limit_method = "ANGLE"
+    return об
 
 
-def rebuild_hull(name="корпус", tunnels=True, verbose=True):
-    old = bpy.data.objects.get(name)
-    col = (old.users_collection[0] if old and old.users_collection
-           else bpy.data.collections.get("01_Корпус")
-           or bpy.context.scene.collection)
-    me = build_shell(name)
-    if old:
-        bpy.data.objects.remove(old, do_unlink=True)
-    o = bpy.data.objects.new(name, me)
-    col.objects.link(o)
-    rep = {"обшивка": [len(me.vertices), len(me.polygons)]}
-    if tunnels:
-        for s in (1, -1):
-            tm = _tunnel_mesh(s)
-            to = bpy.data.objects.new("_tunnel", tm)
-            col.objects.link(to)
-            mod = o.modifiers.new("туннель", "BOOLEAN")
-            mod.operation = "DIFFERENCE"
-            mod.solver = "EXACT"
-            mod.object = to
-            bpy.context.view_layer.objects.active = o
-            bpy.ops.object.modifier_apply(modifier=mod.name)
-            bpy.data.objects.remove(to, do_unlink=True)
-        rep["с_туннелями"] = [len(o.data.vertices), len(o.data.polygons)]
-    assign_materials(o)
-    bm = bmesh.new()
-    bm.from_mesh(o.data)
-    bm.edges.ensure_lookup_table()
-    rep["открытых_рёбер"] = sum(1 for e in bm.edges if len(e.link_faces) != 2)
-    bm.free()
-    if verbose:
-        print(rep)
-    return rep
+def надстройка(коллекция=None):
+    """Массинг надстройки: два яруса, солнечная палуба, рубка."""
+    кол = коллекция or _коллекция(КОЛЛЕКЦИЯ)
+    ф = S.ФОРМА
+    x0, x1 = G.SUPER_START, G.SUPER_END
+    полу = G.SUPER_HALF
+    d = G.DECKS
+
+    ярус1 = _объём("Надстройка_ярус_главной", x0, x1, полу, d["главная"], d["средняя"],
+                   кол, радиус=ф["радиус_кромок"])
+    Ст.назначить(ярус1, "Надстройка_белая")
+    ярус2 = _объём("Надстройка_ярус_средней", x0 + 4.0, x1 - 6.0, полу, d["средняя"],
+                   d["солнечная"], кол, радиус=ф["радиус_кромок"])
+    Ст.назначить(ярус2, "Надстройка_белая")
+
+    # Лента остекления: непрерывная полоса по борту каждого яруса
+    for имя, z_пал in (("Остекление_главная", d["главная"]),
+                       ("Остекление_средняя", d["средняя"])):
+        z0 = z_пал + ф["подоконник"]
+        стекло = _объём(имя, x0 + 1.0, x1 - 1.0, полу + 0.02, z0,
+                        z0 + ф["высота_ленты"], кол)
+        Ст.назначить(стекло, "Остекление")
+
+    # Акцентная полоса на борту корпуса со светлой отбивкой: красный на
+    # графите сам по себе даёт контраст 2,17 при пороге 3,0 и не читается.
+    z = G.DRAFT + ф["полоса_над_ВЛ"]
+    w = ф["акцентная_полоса"] / 2.0
+    о = ф["окантовка_полосы"]
+    отбивка = _объём("Акцент_отбивка", 2.0, G.LOA - 2.0, G.BEAM / 2 + 0.03,
+                     z - w - о, z + w + о, кол)
+    Ст.назначить(отбивка, "Надстройка_белая")
+    полоса = _объём("Акцент_полоса", 2.0, G.LOA - 2.0, G.BEAM / 2 + 0.04,
+                    z - w, z + w, кол)
+    Ст.назначить(полоса, "Акцент_красный")
+
+    рубка = _объём("Рубка", 96.0, 105.0, 5.5, G.WHEELHOUSE_FLOOR,
+                   G.WHEELHOUSE_ROOF, кол, радиус=ф["радиус_кромок"])
+    Ст.назначить(рубка, "Надстройка_белая")
+    return ярус1
+
+
+if __name__ == "__main__":
+    построить()
