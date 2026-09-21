@@ -34,260 +34,24 @@ import os, sys, math
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, os.path.join(ROOT, "src"))
 
-# --- главные размерения ------------------------------------------------------
-LOA, BEAM, DEPTH, DRAFT = 128.0, 16.5, 3.00, 1.20
-HALF = BEAM / 2.0
-FRAMES = 20
-WATERLINES = (0.00, 0.15, 0.30, 0.45, 0.60, 0.80, 1.00,
-              1.20, 1.50, 1.80, 2.20, 2.60, 3.00)
+from lib import gorizont as G
+from lib import gorizont_lines as L
+from lib import gorizont_hydro as H
+from lib import gorizont_struct as S
+from lib import gorizont_strength as St
+from lib import gorizont_wheel as W
 
-# Ниши колёс: вырез в борту под колесо с приводом. Объём ниши ниже
-# ватерлинии вычитается из водоизмещения — иначе судно «плавает» на воде,
-# которой в нишах нет.
-WHEEL_X = 84.0            # центр колеса от кормового перпендикуляра
-NICHE_LEN, NICHE_WIDTH = 7.2, 3.6
-NICHE_Z0, NICHE_Z1 = 0.55, 3.00    # от какой до какой высоты вырезана ниша
-
-
-def _s(x):
-    """Безразмерная абсцисса 0 (корма) … 1 (нос)."""
-    return x / LOA
-
-
-def keel_z(x):
-    """Высота килевой линии. Плоское днище на средней части, подъём к
-    оконечностям: в корме под колёсный поток, в носу под всплытие."""
-    s = _s(x)
-    if s < 0.16:
-        t = (0.16 - s) / 0.16
-        return 0.95 * t ** 1.7
-    if s > 0.80:
-        t = (s - 0.80) / 0.20
-        return 2.05 * t ** 1.9
-    return 0.0
-
-
-def bottom_half(x):
-    """Полуширота плоского днища у килевой линии."""
-    s = _s(x)
-    if s < 0.16:
-        t = s / 0.16
-        return 3.30 + 4.05 * t ** 0.62
-    if s > 0.80:
-        t = (s - 0.80) / 0.20
-        return 7.35 * (1.0 - t) ** 0.78
-    return 7.35
-
-
-def side_half(x):
-    """Полуширота по верхней кромке борта."""
-    s = _s(x)
-    if s < 0.10:
-        t = s / 0.10
-        return 6.25 + (HALF - 6.25) * t ** 0.55
-    if s > 0.84:
-        t = (s - 0.84) / 0.16
-        return HALF * (1.0 - t ** 1.45) + 0.12 * t ** 1.45
-    return HALF
-
-
-def flare(x):
-    """Развал борта от вертикали, градусов. В оконечностях больше."""
-    s = _s(x)
-    if s < 0.16:
-        return 2.0 + 9.0 * (0.16 - s) / 0.16
-    if s > 0.80:
-        return 2.0 + 11.0 * (s - 0.80) / 0.20
-    return 1.2
-
-
-def stations():
-    """Теоретические шпангоуты: основные через L/20 плюс полушпангоуты."""
-    ns = [0, 0.5, 1, 1.5] + list(range(2, 19)) + [18.5, 19, 19.5, 20]
-    ns = sorted(set(ns))
-    return [(n, n * LOA / FRAMES) for n in ns]
-
-
-def bilge_radius(bk, bb, zk, zb, phi):
-    s, c = math.sin(phi), math.cos(phi)
-    return ((bb - bk) * c - (zb - zk) * s) / (1.0 - s)
-
-
-def section_y(z, zk, bk, zb, bb, phi):
-    if z < zk - 1e-9:
-        return None
-    if z >= zb - 1e-9:
-        return bb
-    r = bilge_radius(bk, bb, zk, zb, phi)
-    if r <= 1e-6:
-        t = (z - zk) / max(zb - zk, 1e-9)
-        return bk + (bb - bk) * t
-    z_t = zk + r * (1.0 - math.sin(phi))
-    if z <= z_t:
-        d = z - zk - r
-        return bk + math.sqrt(max(r * r - d * d, 0.0))
-    return bk + r * math.cos(phi) + (z - z_t) * math.tan(phi)
-
-
-def build():
-    """Плазовая таблица и параметры сечений в формате gorizont.OFFSETS."""
-    offsets, shapes = [], {}
-    for n, x in stations():
-        zk, bk = keel_z(x), bottom_half(x)
-        bb = side_half(x)
-        phi = math.radians(flare(x))
-        bk = min(bk, bb)                 # в оконечностях днище уже борта
-        r = bilge_radius(bk, bb, zk, DEPTH, phi)
-        ys = tuple(None if (y := section_y(z, zk, bk, DEPTH, bb, phi)) is None
-                   else round(y, 3) for z in WATERLINES)
-        offsets.append((n, round(x, 3), round(zk, 3), round(bk, 3),
-                        DEPTH, round(bb, 3), ys))
-        shapes[n] = (round(math.degrees(phi), 2), round(r, 3))
-    return offsets, shapes
-
-
-def подменить_обводы():
-    """Подставить новый корпус в gorizont до импорта гидростатики."""
-    from lib import gorizont as G
-    offsets, shapes = build()
-    G.LOA, G.BEAM, G.DEPTH, G.DRAFT = LOA, BEAM, DEPTH, DRAFT
-    G.WATERLINES, G.OFFSETS, G.SECTION_SHAPE = WATERLINES, offsets, shapes
-    G.FRAMES_TH, G.SPACING_TH = FRAMES, LOA / FRAMES
-    G.Z_MAX = DRAFT + 9.0
-    return G
+LOA, BEAM, DEPTH, DRAFT = G.LOA, G.BEAM, G.DEPTH, G.DRAFT
+WATERLINES = G.WATERLINES
+build = L.build
 
 
 def объём_ниш(T):
     """Подводный объём двух ниш колёс, м3 — вычитается из водоизмещения."""
-    h = max(0.0, min(T, NICHE_Z1) - NICHE_Z0)
-    return 2.0 * NICHE_LEN * NICHE_WIDTH * h
-
-
-# --- масса корпусной стали ---------------------------------------------------
-# Толщины против построенного судна снижены только там, где их назначает
-# гидростатический напор: он падает с 2,27 до 1,20 м. Настил палубы, палубный
-# стрингер и ширстрек не трогаются — их назначает общая продольная прочность,
-# а высота борта упала с 4,20 до 3,00 м, то есть момент сопротивления и без
-# того уменьшился. Проверка в конце отчёта показывает, сходится ли он.
-ТОЛЩИНЫ = {
-    "горизонтальный киль": 11.0, "днище": 7.5, "скула": 8.5,
-    "борт в районе ВЛ": 7.5, "борт ниже пояса": 7.0, "ширстрек": 10.0,
-    "второе дно": 7.0, "настил главной палубы": 10.0, "палубный стрингер": 12.0,
-    "переборки водонепроницаемые": 6.0,
-}
-DB_HEIGHT = 0.90          # высота двойного дна, оно же настил единственного
-                          # яруса внутри корпуса
-RHO_STEEL = 7.85
-ШПАЦИЯ, РАМНАЯ = 0.55, 2.20
-M_WAVE_BASE, L_BASE, H_BASE = 182073.0, 139.0, 3.0   # прогиб на волне, база
-SIGMA_ALLOW = 195000.0                               # кПа, 0,6*ReH 09Г2С
-WAVE = 2.0                                           # класс «О»
-
-
-def масса_стали(H, G, step=1.0):
-    """Масса корпусной стали по связям, а не по доле от водоизмещения."""
-    from lib import gorizont_struct as S
-    xs = H._xs(step)
-    позиции = []
-
-    def add(имя, площадь, t, z):
-        позиции.append((имя, площадь, t, площадь * t / 1000.0 * RHO_STEEL, z))
-
-    дн = ск = бр = 0.0
-    z_дн = z_бр = 0.0
-    for i in range(len(xs) - 1):
-        x, dx = 0.5 * (xs[i] + xs[i + 1]), xs[i + 1] - xs[i]
-        b_dn, b_sk, b_pal, z_sk, z_kil, z_brt = H._station(x)
-        b = 2 * b_dn
-        g = 2 * math.hypot(b_sk - b_dn, z_sk - z_kil)
-        sd = 2 * math.hypot(b_pal - b_sk, min(DEPTH, z_brt) - z_sk)
-        дн += b * dx; ск += g * dx; бр += sd * dx
-        z_дн += b * dx * z_kil; z_бр += sd * dx * (z_sk + z_brt) / 2
-
-    t_дн = ТОЛЩИНЫ["днище"] * 0.9 + ТОЛЩИНЫ["горизонтальный киль"] * 0.1
-    t_бр = (ТОЛЩИНЫ["борт ниже пояса"] * 0.55 + ТОЛЩИНЫ["борт в районе ВЛ"] * 0.25
-            + ТОЛЩИНЫ["ширстрек"] * 0.20)
-    add("Обшивка днища с горизонтальным килем", дн, t_дн, z_дн / max(дн, 1e-9))
-    add("Скуловой пояс", ск, ТОЛЩИНЫ["скула"], 0.30)
-    add("Обшивка борта", бр, t_бр, z_бр / max(бр, 1e-9))
-
-    def палуба(x0, x1, z, k=1.0):
-        a = 0.0
-        for i in range(len(xs) - 1):
-            x = 0.5 * (xs[i] + xs[i + 1])
-            if x0 <= x <= x1:
-                a += 2 * H.half_breadth(x, min(z, DEPTH)) * (xs[i + 1] - xs[i])
-        return a * k
-
-    a_стрингер = 2 * 1.20 * (LOA - 8.0)
-    add("Настил главной палубы", палуба(2, LOA - 2, DEPTH) - a_стрингер,
-        ТОЛЩИНЫ["настил главной палубы"], DEPTH)
-    add("Палубный стрингер", a_стрингер, ТОЛЩИНЫ["палубный стрингер"], DEPTH)
-    add("Настил двойного дна", палуба(2, LOA - 10, DB_HEIGHT, 0.92),
-        ТОЛЩИНЫ["второе дно"], DB_HEIGHT)
-
-    n_пер = 9
-    a_пер = sum(2 * H.half_breadth(LOA * (k + 1) / (n_пер + 1), 2.0) * DEPTH * 0.92
-                for k in range(n_пер))
-    add("Водонепроницаемые переборки %d шт" % n_пер, a_пер,
-        ТОЛЩИНЫ["переборки водонепроницаемые"], DEPTH / 2)
-
-    L_прод = LOA * 0.78          # длина участка с продольным набором
-    for имя, n, проф, z in (("Рёбра жёсткости днища", 22, "ребро днища", 0.08),
-                            ("Рёбра жёсткости двойного дна", 24, "ребро второго дна", DB_HEIGHT),
-                            ("Рёбра жёсткости главной палубы", 24, "ребро палубы", DEPTH - 0.1)):
-        a = S.profile_area(проф) * 1e-4 * n * L_прод
-        позиции.append((имя, a, 0.0, a * RHO_STEEL, z))
-    for имя, проф, n, z in (("Вертикальный киль", "вертикальный киль", 1, 0.35),
-                            ("Днищевые стрингеры", "днищевой стрингер", 4, 0.35),
-                            ("Бортовые стрингеры", "бортовой стрингер", 3, 1.90),
-                            ("Карлингсы главной палубы", "карлингс", 3, DEPTH - 0.3)):
-        hw, tw, bf, tf = S.PROFILES[проф]
-        a = (hw * tw + bf * tf) * 1e-6 * n * L_прод
-        позиции.append((имя, a, 0.0, a * RHO_STEEL, z))
-
-    n_фл = int(LOA / РАМНАЯ)
-    a_фл = sum(2 * H._station((k + 0.5) * РАМНАЯ)[1] * 0.90 * 0.72 for k in range(n_фл))
-    позиции.append(("Флоры сплошные %d шт" % n_фл, a_фл, 9.0,
-                    a_фл * 9.0 / 1000.0 * RHO_STEEL, 0.35))
-    позиции.append(("Бракетные флоры", a_фл * 0.45, 8.0,
-                    a_фл * 0.45 * 8.0 / 1000.0 * RHO_STEEL, 0.35))
-    n_шп = int(LOA / ШПАЦИЯ)
-    h_борт = DEPTH - 0.7
-    a_шп = S.profile_area("шпангоут") * 1e-4 * 2 * h_борт * n_шп
-    позиции.append(("Шпангоуты %d шп." % n_шп, a_шп, 0.0, a_шп * RHO_STEEL, 1.80))
-    n_рш = int(LOA / РАМНАЯ)
-    a_рш = S.profile_area("рамный шпангоут") * 1e-4 * 2 * h_борт * n_рш
-    позиции.append(("Рамные шпангоуты %d шт" % n_рш, a_рш, 0.0, a_рш * RHO_STEEL, 1.80))
-    a_бм = S.profile_area("рамный бимс") * 1e-4 * 14.0 * n_рш
-    позиции.append(("Рамные бимсы %d шт" % n_рш, a_бм, 0.0, a_бм * RHO_STEEL, DEPTH - 0.3))
-
-    m = sum(p[3] for p in позиции)
-    # Ниши колёс — вырезы в борту, каждый требует окантовки и подкрепления
-    # по контуру: рамный набор вокруг выреза, комингс, усиленная палуба над.
-    ниши = 0.035 * m
-    позиции.append(("Окантовка и подкрепление ниш колёс (3,5 %)", 0.0, 0.0, ниши, 1.80))
-    прочее = 0.16 * m
-    позиции.append(("Кницы, фундаменты, штевни, сварка (16 %)", 0.0, 0.0, прочее, 1.40))
-    m += ниши + прочее
-    z = sum(p[3] * p[4] for p in позиции) / m
-    return dict(позиции=позиции, m=m, z=z)
-
-
-def прочность():
-    """Потребный момент сопротивления против доступного."""
-    M = M_WAVE_BASE * (LOA / L_BASE) ** 2 * (WAVE / H_BASE)
-    W_треб = M / SIGMA_ALLOW
-    # Доступный момент оценивается от построенного судна по высоте борта:
-    # при тех же толщинах W растёт примерно как H^1.6
-    W_есть = 0.970 * (DEPTH / 4.20) ** 1.6
-    return M, W_треб, W_есть
+    return W.niche_buoyancy(T)["объём"]
 
 
 def отчёт(таблица=False):
-    G = подменить_обводы()
-    from lib import gorizont_hydro as H       # импорт после подмены обводов
-
     print("Новый корпус: %.1f x %.1f м, высота борта %.2f, осадка %.2f\n"
           % (LOA, BEAM, DEPTH, DRAFT))
     print("%6s %9s %8s %8s %8s %8s %8s"
@@ -306,19 +70,27 @@ def отчёт(таблица=False):
     print("Аппликата центра величины %.2f м, метацентрический радиус %.2f м"
           % (h["zc"], h["r"]))
 
-    ст = масса_стали(H, G)
+    ст = S.steel_weight()
     print("\nМасса корпусной стали по связям: %.0f т, центр тяжести %.2f м" % (ст["m"], ст["z"]))
-    for имя, пл, t, m, z in ст["позиции"]:
-        if m > 8:
-            print("   %-46s %6.1f т" % (имя, m))
-    print("\n   для сравнения: построенное судно 139 x 16,5 x 4,2 — 1133 т")
-    print("   оценка по прототипу давала на габаритную часть ~700 т стали")
+    for i in sorted(ст["items"], key=lambda i: -i["m"])[:8]:
+        print("   %-46s %6.1f т" % (i["name"], i["m"]))
 
-    M, W_треб, W_есть = прочность()
-    print("\nПродольная прочность, класс «О» (волна %.1f м):" % WAVE)
-    print("   изгибающий момент %.0f кН·м, потребный брус %.3f м3" % (M, W_треб))
-    print("   доступный при высоте борта %.2f м ~%.3f м3 — %s"
-          % (DEPTH, W_есть, "проходит" if W_есть >= W_треб else "НЕ ПРОХОДИТ"))
+    r = St.stresses()
+    print("\nПродольная прочность, класс «%s», допускаемое %.0f МПа:"
+          % (G.RRR_CLASS, r["sigma_allow"]))
+    for row in r["rows"]:
+        print("   %-12s палуба %6.1f  днище %6.1f  %s"
+              % (row["condition"], row["sigma_deck"], row["sigma_bot"],
+                 "ок" if row["ok"] else "НЕ ПРОХОДИТ"))
+
+    ws = H.weight_summary()
+    eq = H.equilibrium()
+    print("\nНагрузка масс: порожнём %.0f т, дедвейт %.0f т, полное %.0f т"
+          % (ws["lightship"], ws["deadweight"], ws["D"]))
+    print("Осадка равновесия %.2f м при расчётной %.2f — %s"
+          % (eq["T"], DRAFT,
+             "сходится" if abs(eq["T"] - DRAFT) < 0.05
+             else "надо снять %.0f т" % (ws["D"] - H.hydrostatics(DRAFT)["D"])))
 
     if таблица:
         print("\nПлазовая таблица, мм от ДП (прочерк — ватерлиния ниже киля):")
