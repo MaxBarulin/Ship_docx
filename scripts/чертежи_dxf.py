@@ -18,7 +18,7 @@
 DWG получается из этих DXF пакетно: `python scripts/чертежи_dwg.py`
 (AutoCAD Core Console, формат 2018) → CAD/DWG/.
 """
-import os, sys, math
+import os, sys, math, textwrap
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, os.path.join(ROOT, "src"))
 import ezdxf
@@ -80,8 +80,9 @@ def pick_sheet(w_mm, h_mm):
     return "A0x2", 500
 
 
-def frame(msp, sheet, scale, bbox, mark, title, subtitle, notes=(), material="—"):
-    """Рамка ГОСТ 2.301 и основная надпись ГОСТ 2.104, форма 1."""
+def frame(msp, sheet, scale, bbox, mark, title, subtitle, notes=(), material="—", wrap=None):
+    """Рамка ГОСТ 2.301 и основная надпись ГОСТ 2.104, форма 1. wrap — ширина пункта
+    технических требований в знаках: длинные пункты переносятся, продолжение без номера."""
     Wd, Hd = SHEETS[sheet]
     Wd, Hd = Wd * scale, Hd * scale
     x0, y0, x1, y1 = bbox
@@ -110,9 +111,14 @@ def frame(msp, sheet, scale, bbox, mark, title, subtitle, notes=(), material="�
     t(bx + 3 * scale, by + bh + 4 * scale, "УЖЦ ОСК 2026 · «Волжский Горизонт» · ПБ «Без границ»", 3.0)
     ty0 = by + bh + 11 * scale
     if notes:
-        n_last = len(notes)
+        lines = []
         for i, n in enumerate(notes):
-            t(bx + 3 * scale, ty0 + (n_last - 1 - i) * 5.0 * scale, "%d. %s" % (i + 1, n), 2.5)
+            parts = textwrap.wrap(n, wrap) if wrap else [n]
+            for j, part in enumerate(parts):
+                lines.append(("%d. %s" % (i + 1, part)) if j == 0 else "    " + part)
+        n_last = len(lines)
+        for i, ln in enumerate(lines):
+            t(bx + 3 * scale, ty0 + (n_last - 1 - i) * 5.0 * scale, ln, 2.5)
         t(bx + 3 * scale, ty0 + n_last * 5.0 * scale + 1.5 * scale, "Технические требования", 3.5)
     return ox, oy, Wd, Hd
 

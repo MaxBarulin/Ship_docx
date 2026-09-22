@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Растровые копии DXF-чертежей для записки, листа проекта и быстрой проверки.
 
-Листы ОР из CAD/ и расчётно-теоретические РТ из CAD/расчёты/ — в одну папку
+Листы ОР из CAD/, расчётно-теоретические РТ из CAD/расчёты/ и модульное решение МР из CAD/модули/ — в одну папку
 renders/горизонт_2026/чертежи_dxf/, имена файлов те же.
 """
 import os, glob
@@ -22,7 +22,8 @@ CFG = Configuration(color_policy=ColorPolicy.COLOR,
 
 
 def main():
-    files = sorted(glob.glob(os.path.join(SRC, "*.dxf"))) + sorted(glob.glob(os.path.join(SRC, "расчёты", "*.dxf")))
+    files = (sorted(glob.glob(os.path.join(SRC, "*.dxf"))) + sorted(glob.glob(os.path.join(SRC, "расчёты", "*.dxf")))
+             + sorted(glob.glob(os.path.join(SRC, "модули", "*.dxf"))))
     for p in files:
         doc = ezdxf.readfile(p)
         msp = doc.modelspace()

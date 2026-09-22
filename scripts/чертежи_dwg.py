@@ -55,9 +55,10 @@ def main(все=False):
         print("нет AutoCAD Core Console:", ACC); return 1
     os.makedirs(OUT, exist_ok=True)
     маска = "*.dxf" if все else "ВГ-2026_ОР-*.dxf"
-    # листы ОР — в CAD/DWG; расчётные графики и таблицы (fig2dxf) — в CAD/DWG/расчёты
+    # листы ОР — в CAD/DWG; листы РТ — в CAD/DWG/расчёты; листы МР (модульное решение) — в CAD/DWG/модули
     задания = [(dxf, OUT) for dxf in sorted(glob.glob(os.path.join(SRC, маска)))]
     задания += [(dxf, os.path.join(OUT, "расчёты")) for dxf in sorted(glob.glob(os.path.join(SRC, "расчёты", "*.dxf")))]
+    задания += [(dxf, os.path.join(OUT, "модули")) for dxf in sorted(glob.glob(os.path.join(SRC, "модули", "*.dxf")))]
     ошибок = 0
     for dxf, out_dir in задания:
         dwg = os.path.join(out_dir, os.path.splitext(os.path.basename(dxf))[0] + ".dwg")
