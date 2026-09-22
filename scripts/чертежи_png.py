@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Растровые копии DXF-чертежей для записки, листа проекта и быстрой проверки.
 
-Листы ОР из CAD/, расчётно-теоретические РТ из CAD/расчёты/ и модульное решение МР из CAD/модули/ — в одну папку
+Листы ОР из CAD/, расчётно-теоретические РТ из CAD/расчёты/, модульное решение МР из CAD/модули/ и КД узла из CAD/узел/ — в одну папку
 renders/горизонт_2026/чертежи_dxf/, имена файлов те же.
 
 Два правила, без которых растр нечитаем (поймано 22.09.2026):
@@ -69,7 +69,7 @@ def растр(dxf, png):
 
 def main():
     files = (sorted(glob.glob(os.path.join(SRC, "*.dxf"))) + sorted(glob.glob(os.path.join(SRC, "расчёты", "*.dxf")))
-             + sorted(glob.glob(os.path.join(SRC, "модули", "*.dxf"))))
+             + sorted(glob.glob(os.path.join(SRC, "модули", "*.dxf"))) + sorted(glob.glob(os.path.join(SRC, "узел", "*.dxf"))))
     for p in files:
         name = os.path.splitext(os.path.basename(p))[0] + ".png"
         w, h = растр(p, os.path.join(OUT, name))
