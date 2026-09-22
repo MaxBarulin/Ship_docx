@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
-"""Растровые копии DXF-чертежей для записки, листа проекта и быстрой проверки."""
+"""Растровые копии DXF-чертежей для записки, листа проекта и быстрой проверки.
+
+Листы ОР из CAD/ и расчётно-теоретические РТ из CAD/расчёты/ — в одну папку
+renders/горизонт_2026/чертежи_dxf/, имена файлов те же.
+"""
 import os, glob
 import matplotlib
 matplotlib.use("Agg")
@@ -18,7 +22,8 @@ CFG = Configuration(color_policy=ColorPolicy.COLOR,
 
 
 def main():
-    for p in sorted(glob.glob(os.path.join(SRC, "*.dxf"))):
+    files = sorted(glob.glob(os.path.join(SRC, "*.dxf"))) + sorted(glob.glob(os.path.join(SRC, "расчёты", "*.dxf")))
+    for p in files:
         doc = ezdxf.readfile(p)
         msp = doc.modelspace()
         fig = plt.figure(figsize=(23.4, 16.5), dpi=130)

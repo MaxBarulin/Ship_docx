@@ -160,8 +160,4 @@ ax2.text(1.0, 1.035,
          transform=ax2.transAxes, fontsize=9.5, color="#56627a", ha="right")
 fig.savefig(os.path.join(OUT, "01б_корпус_и_ординаты.png"), dpi=165,
             bbox_inches="tight")
-from lib import fig2dxf
-fig2dxf.save_dxf(fig, os.path.join(ROOT, "CAD", "расчёты", "01б_корпус_и_ординаты.dxf"),
-                 title="проекция «корпус» и таблица плазовых ординат",
-                 note="выделенные строки — ватерлинии %.2f (факт) и %.2f (расчётная)" % (T, G.DRAFT))
 print(os.path.join(OUT, "01б_корпус_и_ординаты.png"))

@@ -126,6 +126,5 @@ ax.text(69.5, -11.5, "x от кормового перпендикуляра, м
         "(номер шпангоута = x / 0.55)", fontsize=9, color="#56627a", ha="center")
 ax.set_xlim(-4, 143)
 ax.set_ylim(-12.4, 17.6)
-SH.save(os.path.join(OUT, "02_схема_набора.png"),
-        dxf=os.path.join(ROOT, "CAD", "расчёты", "09_схема_набора.dxf"), title="схема набора корпуса")
+SH.save(os.path.join(OUT, "02_схема_набора.png"))
 print("готово")

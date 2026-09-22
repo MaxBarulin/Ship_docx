@@ -238,13 +238,9 @@ class Sheet(object):
         self._text(10.0, self.H / 2.0, text, size=size, ha="center", rot=90,
                    color="#7b8798")
 
-    def save(self, path, dxf=None, title=""):
-        """Растр листа; с `dxf` — тот же лист и в DXF (fig2dxf, мм = мм листа)."""
+    def save(self, path):
         os.makedirs(os.path.dirname(path), exist_ok=True)
         self.fig.savefig(path, dpi=self.dpi, facecolor="white")
-        if dxf:
-            from . import fig2dxf
-            fig2dxf.save_dxf(self.fig, dxf, title=title or os.path.splitext(os.path.basename(path))[0])
         plt.close(self.fig)
         return path
 

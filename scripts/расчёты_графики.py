@@ -31,15 +31,8 @@ def head(fig, title, sub):
              color="#56627a", ha="right")
 
 
-CAD_OUT = os.path.join(ROOT, "CAD", "расчёты")
-
-
 def save(fig, name):
     fig.savefig(os.path.join(OUT, name), dpi=150, bbox_inches="tight")
-    # тот же лист в DXF для CAD (→ DWG через scripts/чертежи_dwg.py)
-    from lib import fig2dxf
-    fig2dxf.save_dxf(fig, os.path.join(CAD_OUT, os.path.splitext(name)[0] + ".dxf"),
-                     title=os.path.splitext(name)[0].replace("_", " "))
     plt.close(fig)
     print("  ", name)
 
