@@ -1,0 +1,10 @@
+# Зависимости скриптов проекта вне Blender (bpy, bmesh, mathutils живут в самом Blender).
+#   pip install -r requirements.txt
+# В облачной сессии Claude Code их ставит .claude/hooks/session-start.sh.
+matplotlib   # планы, схемы, графики теории корабля
+numpy        # облик_2d
+pillow       # листы и схемы, собираемые из растров
+ezdxf        # чертежи ОР и узла в DXF
+build123d    # 3D узла: CAD/src/blade_axle.py → STEP, STL
+pyshp        # маршрут: реки Natural Earth (import shapefile)
+playwright   # маршрут: снимок Яндекс Карт; нужен установленный Chrome, работает локально

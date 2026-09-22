@@ -6,14 +6,13 @@
 Dimensions come from lib.gorizont_node - the same library that drives the
 assembly drawing (CAD/VG-2026_31_00_SB*.dxf), the specification and the
 strength calculation, so the drawing and the 3D model cannot diverge.
-Model axis is Z, units are millimetres. This file is ASCII-only on purpose:
-cadgen reads the script with the locale encoding and chokes on Cyrillic.
+Model axis is Z, units are millimetres. Needs only build123d
+(pip install -r requirements.txt).
 """
 import os, sys
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.insert(0, os.path.join(ROOT, "src"))
-from cadgen import build123d as bd
-from cadgen import step
+import build123d as bd
 from lib import gorizont_node as N
 
 
@@ -105,7 +104,6 @@ def _nut():
     return nut
 
 
-@step(out="../STEP/VG-2026_31_00_blade_axle.step")
 def blade_axle():
     parts = [_axle()]
     for y in N.HUB_Y:
@@ -114,37 +112,21 @@ def blade_axle():
     return bd.Compound(label="VG-2026.31.00 blade axle with crank", children=parts)
 
 
-def _fallback_export():
-    """cadgen's STEP writer needs a matching OCP build; when it is missing,
-    write the STEP straight from build123d (same geometry, plain export)."""
-    import build123d as b3d
-    out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "STEP", "VG-2026_31_00_blade_axle.step")
-    out = os.path.abspath(out)
-    os.makedirs(os.path.dirname(out), exist_ok=True)
-    # rebuild the geometry with plain build123d so nothing depends on cadgen
-    global bd
-    bd = b3d
-    shape = blade_axle.__wrapped__() if hasattr(blade_axle, "__wrapped__") else None
-    if shape is None:
-        parts = [_axle()]
-        for y in N.HUB_Y:
-            parts.append(_hub(y)); parts.append(_hub(-y))
-        parts += [_crank(), _pin(), _bushing(1), _bushing(-1), _key(N.CRANK_Y), _nut()]
-        shape = b3d.Compound(label="VG-2026.31.00 blade axle with crank", children=parts)
-    b3d.export_step(shape, out)
-    vol = sum(p.volume for p in shape.children) if shape.children else shape.volume
-    print("STEP:", out, "volume %.0f mm3, mass ~%.1f kg (steel)" % (vol, vol * 7.85e-6))
-    stl = os.path.join(os.path.dirname(out), "..", "STL", "VG-2026_31_00_blade_axle.stl")
-    b3d.export_stl(shape, os.path.abspath(stl))
-    print("STL:", os.path.abspath(stl))
-    return out
+def export():
+    """Write the assembly to CAD/STEP and CAD/STL."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    step_path = os.path.abspath(os.path.join(here, "..", "STEP", "VG-2026_31_00_blade_axle.step"))
+    stl_path = os.path.abspath(os.path.join(here, "..", "STL", "VG-2026_31_00_blade_axle.stl"))
+    for path in (step_path, stl_path):
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+    shape = blade_axle()
+    bd.export_step(shape, step_path)
+    bd.export_stl(shape, stl_path)
+    vol = sum(c.volume for c in shape.children) if shape.children else shape.volume
+    print("STEP:", step_path, "volume %.0f mm3, mass ~%.1f kg (steel)" % (vol, vol * 7.85e-6))
+    print("STL:", stl_path)
+    return step_path
 
 
 if __name__ == "__main__":
-    # cadgen's own STEP writer needs an OCP build that matches its pin; on
-    # this machine it does not, so the model is exported straight from
-    # build123d. `python blade_axle.py --cadgen` tries the cadgen path.
-    if "--cadgen" in sys.argv:
-        blade_axle()
-    else:
-        _fallback_export()
+    export()
