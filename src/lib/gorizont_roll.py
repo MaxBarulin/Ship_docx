@@ -45,7 +45,10 @@ BRANCH_Y = 5.26              # отстояние оси ветви от диа�
 DUCT_L = 10.52               # длина перепускного канала между ветвями, м
 DUCT_H = 0.50                # высота канала, м
 LEVEL = 0.45                 # рабочий уровень жидкости в ветви, м
-AREA_RATIO = 1.0             # A_r / A_d — ветвь и канал равного сечения
+#: Отношение сечений канал / ветвь. Длина канала ограничена шириной корпуса, поэтому
+#: цистерна настраивается на период качки судна сечением перепускного канала (заслонкой):
+#: при равных сечениях период был 4,79 с против 3,35 с у судна — расхождение 43 %.
+AREA_RATIO = 1.0             # исходное; рабочее — area_ratio(), считается по периоду качки при первом обращении
 
 # Состав системы раннего предупреждения: датчик, что меряет, зачем
 SENSORS = [
@@ -90,25 +93,45 @@ def branch_area():
     return BRANCH_B * (TANKS[0]["x1"] - TANKS[0]["x0"])
 
 
-def tank_period(level=LEVEL, duct_l=DUCT_L, ratio=AREA_RATIO):
+def tank_period(level=LEVEL, duct_l=DUCT_L, ratio=None):
     """Период собственных колебаний жидкости в U-образной цистерне, с."""
+    ratio = area_ratio() if ratio is None else ratio
     return 2.0 * math.pi * math.sqrt(
         (duct_l * ratio + 2.0 * level) / (2.0 * GRAV))
 
 
-def required_duct(level=LEVEL, ratio=AREA_RATIO):
+def required_duct(level=LEVEL, ratio=None):
     """Какой длины нужен канал, чтобы попасть в период качки судна.
 
     Период качки сам зависит от массы жидкости в цистернах, поэтому
     настройка — задача с обратной связью: изменил длину канала, поехала
     масса, поехал период судна. Функция даёт длину под текущий период.
     """
+    ratio = area_ratio() if ratio is None else ratio
     ts = H.roll_period()
     return round((2.0 * GRAV * (ts / (2.0 * math.pi)) ** 2 - 2.0 * level)
                  / ratio, 2)
 
 
-def tuning(level=LEVEL, duct_l=DUCT_L, ratio=AREA_RATIO):
+def required_ratio(level=LEVEL, duct_l=DUCT_L):
+    """Сечение канала к сечению ветви, при котором период цистерны равен периоду качки судна."""
+    ts = H.roll_period()
+    return round((2.0 * GRAV * (ts / (2.0 * math.pi)) ** 2 - 2.0 * level) / duct_l, 3)
+
+
+_RATIO = None
+
+
+def area_ratio():
+    """Рабочее отношение сечений — по периоду качки судна; лениво, чтобы не замыкать импорт с gorizont_hydro."""
+    global _RATIO
+    if _RATIO is None:
+        _RATIO = required_ratio()
+    return _RATIO
+
+
+def tuning(level=LEVEL, duct_l=DUCT_L, ratio=None):
+    ratio = area_ratio() if ratio is None else ratio
     """Сверка периода цистерны с периодом качки судна."""
     tt = tank_period(level, duct_l, ratio)
     ts = H.roll_period()
