@@ -16,9 +16,13 @@ from PIL import ImageFont
 F = r"C:\Windows\Fonts"
 INK = (24, 34, 52)
 INK2 = (86, 98, 120)
+#: вне Windows (облачная сессия) — DejaVu Sans той же гарнитурной группы, чуть шире Segoe
+_ЗАПАС = "/usr/share/fonts/truetype/dejavu"
 def font(sz, b=False, l=False):
     n = "segoeuib.ttf" if b else ("segoeuil.ttf" if l else "segoeui.ttf")
-    return ImageFont.truetype(os.path.join(F, n), sz)
+    if os.path.exists(os.path.join(F, n)):
+        return ImageFont.truetype(os.path.join(F, n), sz)
+    return ImageFont.truetype(os.path.join(_ЗАПАС, "DejaVuSans-Bold.ttf" if b else "DejaVuSans.ttf"), int(sz * 0.92))
 def text(d, xy, s, f, fill=INK, anchor="la"):
     d.text(xy, s, font=f, fill=fill, anchor=anchor)
 def tw(d, s, f):
@@ -92,7 +96,9 @@ y = 1330
 for p in ("2_главная","3_средняя","4_солнечная","1_трюм"):
     y = fit(os.path.join(R,"планы",p+".png"), 56, y, 1690) + 8
 
-ys = fit(os.path.join(R,"чертежи_dxf","ВГ-2026_ОР-05_продольный_разрез.png"), 1790, 1330, 1546) + 14
+ys = fit(os.path.join(R,"виды","10_у_причала.jpg"), 1790, 1330, 1546) + 10
+cap(1790, ys, "У причала порта приписки", "смена модуля краном 16 т на вылете 20,3 м, трап и аппарель — gorizont_berth")
+ys += 84
 ys = fit(os.path.join(R,"схемы","01_колесо_шарнирное_и_радиальное.png"), 1790, ys, 1546) + 14
 
 TX, TY = 1790, ys
@@ -101,7 +107,7 @@ d.rectangle([TX, TY, W-64, TY+TH], fill=(246,248,251), outline=(214,220,230))
 text(d,(TX+28, TY+18), "Основные характеристики", font(28,b=True), INK)
 ROWS = [("Длина / ширина","%.1f / %.1f м" % (G.LOA, G.BEAM)),
         ("Осадка в полном грузу","%.2f м, водоизмещение %.0f т" % (EQ["T"], EQ["D"])),
-        ("Габаритная высота от ВЛ","%.1f м с опущенной рубкой" % G.AIR_DRAFT),
+        ("Габаритная высота от ВЛ","%.1f м, рубка стационарная; мосты маршрута от 13,3 м" % G.AIR_DRAFT),
         ("Пассажиры","%d кают · %d мест" % (SUM["pass_cabins"], SUM["passengers"])),
         ("Каюты М4","%d, у лифтов" % SUM["accessible"]),
         ("Экипаж","%d каюты · %d мест" % (SUM["crew_cabins"], SUM["crew"])),
@@ -126,9 +132,10 @@ for k,v in ROWS:
     yy += 42
     d.line([TX+28, yy-10, W-92, yy-10], fill=(226,231,238))
 
-cy = TY+TH+26
-cap(1790, cy, "Интерьеры кают", "люкс, стандарт, эконом; все шесть типов — каюты/00_лист_кают.png, планировки — планы/5_каюты.png")
-cx = 1790; cw = (W-64-1790-2*18)//3
+# интерьеры — в левой колонке под планами: справа после колеса и таблицы места нет
+cy = y + 30
+cap(56, cy, "Интерьеры кают", "люкс, стандарт, эконом; все шесть типов — каюты/00_лист_кают.png, планировки — планы/5_каюты.png")
+cx = 56; cw = (1690-2*18)//3
 for p in ("люкс_1_от_входа", "стандарт_1_от_входа", "эконом_1_от_входа"):
     src = os.path.join(R, "каюты", p + ".jpg")
     if os.path.exists(src):
@@ -139,7 +146,7 @@ for p in ("люкс_1_от_входа", "стандарт_1_от_входа", "�
     cx += cw+18
 
 d.rectangle([0,H-64,W,H], fill=(18,30,48))
-text(d,(64,H-52), "blender/gorizont.blend · CAD/ВГ-2026_ОР-*.dxf · docs/проект/теория_корабля.md · docs/проект/узел_ось_плицы.md · renders/горизонт_2026/лист_расчётов_горизонт.png",
+text(d,(64,H-52), "blender/gorizont.blend · CAD/ВГ-2026_ОР-*.dxf · docs/проект/теория_корабля.md · docs/проект/узел_фундамент_twistlock.md · renders/горизонт_2026/лист_расчётов_горизонт.png",
      font(20), (150,168,196))
 img.save(os.path.join(R,"лист_проекта_горизонт.png"))
 print("ok", img.size)

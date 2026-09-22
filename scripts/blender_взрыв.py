@@ -94,6 +94,7 @@ def рендер(samples=96, res=(2400, 1500), cycles=False):
     look = Vector((62.0, 0.0, 13.0)) - cam.location
     cam.rotation_euler = look.to_track_quat("-Z", "Y").to_euler()
     cam.data.lens = 38
+    cam.data.clip_end = 80000.0       # вода до горизонта: при коротком clip_end под горизонтом тёмная полоса
     r = sc.render
     было_r = (r.resolution_x, r.resolution_y, r.filepath, r.engine)
     r.resolution_x, r.resolution_y = res

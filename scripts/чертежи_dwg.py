@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Чертежи ОР в DWG: пакетная конвертация DXF → DWG через AutoCAD Core Console.
 
-    python scripts/чертежи_dwg.py            # все CAD/ВГ-2026_ОР-*.dxf → CAD/DWG/*.dwg
+    python scripts/чертежи_dwg.py            # ОР, РТ, МР и КД узла ВГ-2026.46.00 → CAD/DWG/{,расчёты,модули,узел}
     python scripts/чертежи_dwg.py --все      # и узел ВГ-2026_31_00_СБ тоже
 
 Свободных библиотек, пишущих DWG, нет; AutoCAD 2023 на машине есть, а с ним —
@@ -55,10 +55,11 @@ def main(все=False):
         print("нет AutoCAD Core Console:", ACC); return 1
     os.makedirs(OUT, exist_ok=True)
     маска = "*.dxf" if все else "ВГ-2026_ОР-*.dxf"
-    # листы ОР — в CAD/DWG; листы РТ — в CAD/DWG/расчёты; листы МР (модульное решение) — в CAD/DWG/модули
+    # листы ОР — в CAD/DWG; листы РТ — в CAD/DWG/расчёты; листы МР (модульное решение) — в CAD/DWG/модули;
+    # КД узла ВГ-2026.46.00 — в CAD/DWG/узел
     задания = [(dxf, OUT) for dxf in sorted(glob.glob(os.path.join(SRC, маска)))]
-    задания += [(dxf, os.path.join(OUT, "расчёты")) for dxf in sorted(glob.glob(os.path.join(SRC, "расчёты", "*.dxf")))]
-    задания += [(dxf, os.path.join(OUT, "модули")) for dxf in sorted(glob.glob(os.path.join(SRC, "модули", "*.dxf")))]
+    for папка in ("расчёты", "модули", "узел"):
+        задания += [(dxf, os.path.join(OUT, папка)) for dxf in sorted(glob.glob(os.path.join(SRC, папка, "*.dxf")))]
     ошибок = 0
     for dxf, out_dir in задания:
         dwg = os.path.join(out_dir, os.path.splitext(os.path.basename(dxf))[0] + ".dwg")
