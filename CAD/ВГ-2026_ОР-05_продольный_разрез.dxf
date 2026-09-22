@@ -493,7 +493,7 @@ $SKPOLY
   9
 $TDCREATE
  40
-2461306.579525463
+2461306.7321412037
   9
 $TDUCREATE
  40
@@ -501,7 +501,7 @@ $TDUCREATE
   9
 $TDUPDATE
  40
-2461306.579525463
+2461306.7321412037
   9
 $TDUUPDATE
  40
@@ -933,11 +933,11 @@ $PSTYLEMODE
   9
 $FINGERPRINTGUID
   2
-{10D7D5A9-373D-4A20-AAC9-DFBE7F408823}
+{7849C39C-CB48-43B1-9D59-ED98FC003902}
   9
 $VERSIONGUID
   2
-{067E8EC4-3647-4D06-9ECB-AADF25E330E4}
+{518F3544-EF95-48DB-A1B4-67A02DA39B3F}
   9
 $EXTNAMES
 290
@@ -1327,9 +1327,9 @@ ISM
   0
 CLASS
   1
-ACDBPLACEHOLDER
+LAYOUT
   2
-AcDbPlaceHolder
+AcDbLayout
   3
 ObjectDBX Classes
  90
@@ -1343,9 +1343,9 @@ ObjectDBX Classes
   0
 CLASS
   1
-LAYOUT
+ACDBPLACEHOLDER
   2
-AcDbLayout
+AcDbPlaceHolder
   3
 ObjectDBX Classes
  90
@@ -17129,7 +17129,7 @@ AcDbText
  40
 625.0
   1
-2. Габаритная высота от ВЛ 9.90 м, рубка стационарная; самый низкий мост маршрута 13.8 м.
+2. Габаритная высота от ВЛ 9.90 м, рубка стационарная; самый низкий мост маршрута 13.3 м.
   7
 ГОСТ
  11
@@ -18347,7 +18347,7 @@ DictionaryVariables
 280
 0
   1
-1.4.4 @ 2026-09-22T10:54:31.119320+00:00
+1.4.4 @ 2026-09-22T14:34:17.354202+00:00
   0
 VISUALSTYLE
   5
@@ -24909,7 +24909,7 @@ DictionaryVariables
 280
 0
   1
-1.4.4 @ 2026-09-22T10:54:31.152543+00:00
+1.4.4 @ 2026-09-22T14:34:17.369977+00:00
   0
 ENDSEC
   0

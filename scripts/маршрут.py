@@ -22,6 +22,7 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, os.path.join(ROOT, "src"))
 from PIL import Image, ImageDraw, ImageFont
 from lib import gorizont_route as R
+from lib import gorizont as G
 
 КЭШ = os.path.join(os.environ.get("LOCALAPPDATA", tempfile.gettempdir()), "gorizont_cache")
 os.makedirs(os.path.join(КЭШ, "tiles"), exist_ok=True)
@@ -221,9 +222,14 @@ def карта(путь, плечи):
     pts = [(px(lon, lat)[0] - ox, px(lon, lat)[1] - oy) for lon, lat in путь]
     d.line(pts, fill=WHITE, width=13, joint="curve")
     d.line(pts, fill=ACC, width=7, joint="curve")
-    # порты
+    # порты; ходовой день — полый кружок без имени
     for p in R.ПОРТЫ:
         x, y = px(p["lon"], p["lat"]); x -= ox; y -= oy
+        if p.get("ход"):
+            f = font(26, True); лаб = "%d" % p["день"]; w = d.textlength(лаб, font=f)
+            d.ellipse([x - 22, y - 22, x + 22, y + 22], fill=(18, 30, 48), outline=WHITE, width=4)
+            d.text((x - w / 2, y - 17), лаб, font=f, fill=WHITE)
+            continue
         лаб = "%d" % p["день"] if not p.get("стоянка", 1) > 1 else "%d–%d" % (p["день"], p["день"] + p["стоянка"] - 1)
         f = font(26, True)
         w = d.textlength(лаб, font=f)
@@ -256,6 +262,8 @@ def карта(путь, плечи):
     d.text((x, y), "ПРОГРАММА ТУРА", font=font(44, True), fill=WHITE); y += 80
     for p in R.ПОРТЫ:
         дн = "День %d" % p["день"] if p.get("стоянка", 1) == 1 else "Дни %d–%d" % (p["день"], p["день"] + p["стоянка"] - 1)
+        if p.get("ход"):
+            дн = "День %d" % p["день"]
         d.text((x, y), дн, font=font(26), fill=(176, 190, 212))
         d.text((x + 190, y - 4), p["порт"], font=font(34, True), fill=WHITE)
         y += 44
@@ -264,8 +272,14 @@ def карта(путь, плечи):
         for s in _перенос(d, p["программа"], font(24), ширина)[:2]:
             d.text((x + 190, y), s, font=font(24), fill=(210, 218, 230)); y += 32
         y += 16
+    низкие = sorted([m for m in R.МОСТЫ if m["высота"] is not None], key=lambda m: m["высота"])[:6]
+    мосты_текст = "Самые низкие мосты, м: " + "; ".join("%s %s" % (m["мост"], ("%.1f" % m["высота"]).replace(".", ",")) for m in низкие) \
+        + "; габарит судна %s м" % ("%.1f" % G.AIR_DRAFT).replace(".", ",")
     плечи_текст = "Плечи по фарватеру, км: " + "; ".join("%s → %s %d" % (a, b, k) for a, b, k in плечи)
-    yy = H - 150
+    yy = H - 230
+    for s in _перенос(d, мосты_текст, font(20), панель - 80)[:3]:
+        d.text((x, yy), s, font=font(20), fill=(230, 200, 150)); yy += 27
+    yy += 8
     for s in _перенос(d, плечи_текст, font(20), панель - 80)[:4]:
         d.text((x, yy), s, font=font(20), fill=(150, 168, 196)); yy += 27
     d.text((40, H - 40), АТРИБУЦИЯ, font=font(20), fill=(230, 230, 230))
