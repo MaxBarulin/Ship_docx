@@ -1,0 +1,25078 @@
+  0
+SECTION
+  2
+HEADER
+  9
+$ACADVER
+  1
+AC1027
+  9
+$ACADMAINTVER
+ 70
+105
+  9
+$DWGCODEPAGE
+  3
+ANSI_1252
+  9
+$LASTSAVEDBY
+  1
+ezdxf
+  9
+$REQUIREDVERSIONS
+160
+0
+  9
+$INSBASE
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+  9
+$EXTMIN
+ 10
+1e+20
+ 20
+1e+20
+ 30
+1e+20
+  9
+$EXTMAX
+ 10
+-1e+20
+ 20
+-1e+20
+ 30
+-1e+20
+  9
+$LIMMIN
+ 10
+0.0
+ 20
+0.0
+  9
+$LIMMAX
+ 10
+420.0
+ 20
+297.0
+  9
+$ORTHOMODE
+ 70
+0
+  9
+$REGENMODE
+ 70
+1
+  9
+$FILLMODE
+ 70
+1
+  9
+$QTEXTMODE
+ 70
+0
+  9
+$MIRRTEXT
+ 70
+1
+  9
+$LTSCALE
+ 40
+1.0
+  9
+$ATTMODE
+ 70
+1
+  9
+$TEXTSIZE
+ 40
+2.5
+  9
+$TRACEWID
+ 40
+1.0
+  9
+$TEXTSTYLE
+  7
+OpenSans
+  9
+$CLAYER
+  8
+0
+  9
+$CELTYPE
+  6
+ByLayer
+  9
+$CECOLOR
+ 62
+256
+  9
+$CELTSCALE
+ 40
+1.0
+  9
+$DISPSILH
+ 70
+0
+  9
+$DIMSCALE
+ 40
+1.0
+  9
+$DIMASZ
+ 40
+0.175
+  9
+$DIMEXO
+ 40
+0.125
+  9
+$DIMDLI
+ 40
+3.75
+  9
+$DIMRND
+ 40
+0.0
+  9
+$DIMDLE
+ 40
+0.0
+  9
+$DIMEXE
+ 40
+0.375
+  9
+$DIMTP
+ 40
+0.0
+  9
+$DIMTM
+ 40
+0.0
+  9
+$DIMTXT
+ 40
+0.25
+  9
+$DIMCEN
+ 40
+2.5
+  9
+$DIMTSZ
+ 40
+0.0
+  9
+$DIMTOL
+ 70
+0
+  9
+$DIMLIM
+ 70
+0
+  9
+$DIMTIH
+ 70
+0
+  9
+$DIMTOH
+ 70
+0
+  9
+$DIMSE1
+ 70
+0
+  9
+$DIMSE2
+ 70
+0
+  9
+$DIMTAD
+ 70
+1
+  9
+$DIMZIN
+ 70
+12
+  9
+$DIMBLK
+  1
+ARCHTICK
+  9
+$DIMASO
+ 70
+1
+  9
+$DIMSHO
+ 70
+1
+  9
+$DIMPOST
+  1
+
+  9
+$DIMAPOST
+  1
+
+  9
+$DIMALT
+ 70
+0
+  9
+$DIMALTD
+ 70
+3
+  9
+$DIMALTF
+ 40
+0.03937007874
+  9
+$DIMLFAC
+ 40
+100.0
+  9
+$DIMTOFL
+ 70
+1
+  9
+$DIMTVP
+ 40
+0.0
+  9
+$DIMTIX
+ 70
+0
+  9
+$DIMSOXD
+ 70
+0
+  9
+$DIMSAH
+ 70
+0
+  9
+$DIMBLK1
+  1
+
+  9
+$DIMBLK2
+  1
+
+  9
+$DIMSTYLE
+  2
+EZDXF
+  9
+$DIMCLRD
+ 70
+0
+  9
+$DIMCLRE
+ 70
+0
+  9
+$DIMCLRT
+ 70
+0
+  9
+$DIMTFAC
+ 40
+0.5
+  9
+$DIMGAP
+ 40
+0.1
+  9
+$DIMJUST
+ 70
+0
+  9
+$DIMSD1
+ 70
+0
+  9
+$DIMSD2
+ 70
+0
+  9
+$DIMTOLJ
+ 70
+0
+  9
+$DIMTZIN
+ 70
+8
+  9
+$DIMALTZ
+ 70
+0
+  9
+$DIMALTTZ
+ 70
+0
+  9
+$DIMUPT
+ 70
+1
+  9
+$DIMDEC
+ 70
+2
+  9
+$DIMTDEC
+ 70
+2
+  9
+$DIMALTU
+ 70
+2
+  9
+$DIMALTTD
+ 70
+3
+  9
+$DIMTXSTY
+  7
+OpenSansCondensed-Light
+  9
+$DIMAUNIT
+ 70
+0
+  9
+$DIMADEC
+ 70
+2
+  9
+$DIMALTRND
+ 40
+0.0
+  9
+$DIMAZIN
+ 70
+3
+  9
+$DIMDSEP
+ 70
+46
+  9
+$DIMATFIT
+ 70
+3
+  9
+$DIMFRAC
+ 70
+0
+  9
+$DIMLDRBLK
+  1
+
+  9
+$DIMLUNIT
+ 70
+2
+  9
+$DIMLWD
+ 70
+-2
+  9
+$DIMLWE
+ 70
+-2
+  9
+$DIMTMOVE
+ 70
+2
+  9
+$DIMFXL
+ 40
+1.0
+  9
+$DIMFXLON
+ 70
+0
+  9
+$DIMJOGANG
+ 40
+0.785398163397
+  9
+$DIMTFILL
+ 70
+0
+  9
+$DIMTFILLCLR
+ 70
+0
+  9
+$DIMARCSYM
+ 70
+0
+  9
+$DIMLTYPE
+  6
+
+  9
+$DIMLTEX1
+  6
+
+  9
+$DIMLTEX2
+  6
+
+  9
+$DIMTXTDIRECTION
+ 70
+0
+  9
+$LUNITS
+ 70
+2
+  9
+$LUPREC
+ 70
+4
+  9
+$SKETCHINC
+ 40
+1.0
+  9
+$FILLETRAD
+ 40
+10.0
+  9
+$AUNITS
+ 70
+0
+  9
+$AUPREC
+ 70
+2
+  9
+$MENU
+  1
+.
+  9
+$ELEVATION
+ 40
+0.0
+  9
+$PELEVATION
+ 40
+0.0
+  9
+$THICKNESS
+ 40
+0.0
+  9
+$LIMCHECK
+ 70
+0
+  9
+$CHAMFERA
+ 40
+0.0
+  9
+$CHAMFERB
+ 40
+0.0
+  9
+$CHAMFERC
+ 40
+0.0
+  9
+$CHAMFERD
+ 40
+0.0
+  9
+$SKPOLY
+ 70
+0
+  9
+$TDCREATE
+ 40
+2461306.616203704
+  9
+$TDUCREATE
+ 40
+2458532.153996898
+  9
+$TDUPDATE
+ 40
+2461306.616215278
+  9
+$TDUUPDATE
+ 40
+2458532.1544311
+  9
+$TDINDWG
+ 40
+0.0
+  9
+$TDUSRTIMER
+ 40
+0.0
+  9
+$USRTIMER
+ 70
+1
+  9
+$ANGBASE
+ 50
+0.0
+  9
+$ANGDIR
+ 70
+0
+  9
+$PDMODE
+ 70
+0
+  9
+$PDSIZE
+ 40
+0.0
+  9
+$PLINEWID
+ 40
+0.0
+  9
+$SPLFRAME
+ 70
+0
+  9
+$SPLINETYPE
+ 70
+6
+  9
+$SPLINESEGS
+ 70
+8
+  9
+$HANDSEED
+  5
+1E6
+  9
+$SURFTAB1
+ 70
+6
+  9
+$SURFTAB2
+ 70
+6
+  9
+$SURFTYPE
+ 70
+6
+  9
+$SURFU
+ 70
+6
+  9
+$SURFV
+ 70
+6
+  9
+$UCSBASE
+  2
+
+  9
+$UCSNAME
+  2
+
+  9
+$UCSORG
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+  9
+$UCSXDIR
+ 10
+1.0
+ 20
+0.0
+ 30
+0.0
+  9
+$UCSYDIR
+ 10
+0.0
+ 20
+1.0
+ 30
+0.0
+  9
+$UCSORTHOREF
+  2
+
+  9
+$UCSORTHOVIEW
+ 70
+0
+  9
+$UCSORGTOP
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+  9
+$UCSORGBOTTOM
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+  9
+$UCSORGLEFT
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+  9
+$UCSORGRIGHT
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+  9
+$UCSORGFRONT
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+  9
+$UCSORGBACK
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+  9
+$PUCSBASE
+  2
+
+  9
+$PUCSNAME
+  2
+
+  9
+$PUCSORG
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+  9
+$PUCSXDIR
+ 10
+1.0
+ 20
+0.0
+ 30
+0.0
+  9
+$PUCSYDIR
+ 10
+0.0
+ 20
+1.0
+ 30
+0.0
+  9
+$PUCSORTHOREF
+  2
+
+  9
+$PUCSORTHOVIEW
+ 70
+0
+  9
+$PUCSORGTOP
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+  9
+$PUCSORGBOTTOM
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+  9
+$PUCSORGLEFT
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+  9
+$PUCSORGRIGHT
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+  9
+$PUCSORGFRONT
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+  9
+$PUCSORGBACK
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+  9
+$USERI1
+ 70
+0
+  9
+$USERI2
+ 70
+0
+  9
+$USERI3
+ 70
+0
+  9
+$USERI4
+ 70
+0
+  9
+$USERI5
+ 70
+0
+  9
+$USERR1
+ 40
+0.0
+  9
+$USERR2
+ 40
+0.0
+  9
+$USERR3
+ 40
+0.0
+  9
+$USERR4
+ 40
+0.0
+  9
+$USERR5
+ 40
+0.0
+  9
+$WORLDVIEW
+ 70
+1
+  9
+$SHADEDGE
+ 70
+3
+  9
+$SHADEDIF
+ 70
+70
+  9
+$TILEMODE
+ 70
+1
+  9
+$MAXACTVP
+ 70
+64
+  9
+$PINSBASE
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+  9
+$PLIMCHECK
+ 70
+0
+  9
+$PEXTMIN
+ 10
+1e+20
+ 20
+1e+20
+ 30
+1e+20
+  9
+$PEXTMAX
+ 10
+-1e+20
+ 20
+-1e+20
+ 30
+-1e+20
+  9
+$PLIMMIN
+ 10
+0.0
+ 20
+0.0
+  9
+$PLIMMAX
+ 10
+420.0
+ 20
+297.0
+  9
+$UNITMODE
+ 70
+0
+  9
+$VISRETAIN
+ 70
+1
+  9
+$PLINEGEN
+ 70
+0
+  9
+$PSLTSCALE
+ 70
+1
+  9
+$TREEDEPTH
+ 70
+3020
+  9
+$CMLSTYLE
+  2
+Standard
+  9
+$CMLJUST
+ 70
+0
+  9
+$CMLSCALE
+ 40
+20.0
+  9
+$PROXYGRAPHICS
+ 70
+1
+  9
+$MEASUREMENT
+ 70
+1
+  9
+$CELWEIGHT
+370
+-1
+  9
+$ENDCAPS
+280
+0
+  9
+$JOINSTYLE
+280
+0
+  9
+$LWDISPLAY
+290
+0
+  9
+$INSUNITS
+ 70
+4
+  9
+$HYPERLINKBASE
+  1
+
+  9
+$STYLESHEET
+  1
+
+  9
+$XEDIT
+290
+1
+  9
+$CEPSNTYPE
+380
+0
+  9
+$PSTYLEMODE
+290
+1
+  9
+$FINGERPRINTGUID
+  2
+{FD6AEA67-8B33-4AF7-9E6F-EED5E0B89F25}
+  9
+$VERSIONGUID
+  2
+{D7B95392-0AF9-4FE4-9F01-F467135B7C1F}
+  9
+$EXTNAMES
+290
+1
+  9
+$PSVPSCALE
+ 40
+0.0
+  9
+$OLESTARTUP
+290
+0
+  9
+$SORTENTS
+280
+127
+  9
+$INDEXCTL
+280
+0
+  9
+$HIDETEXT
+280
+1
+  9
+$XCLIPFRAME
+280
+1
+  9
+$HALOGAP
+280
+0
+  9
+$OBSCOLOR
+ 70
+257
+  9
+$OBSLTYPE
+280
+0
+  9
+$INTERSECTIONDISPLAY
+280
+0
+  9
+$INTERSECTIONCOLOR
+ 70
+257
+  9
+$DIMASSOC
+280
+2
+  9
+$PROJECTNAME
+  1
+
+  9
+$CAMERADISPLAY
+290
+0
+  9
+$LENSLENGTH
+ 40
+50.0
+  9
+$CAMERAHEIGHT
+ 40
+0.0
+  9
+$STEPSPERSEC
+ 40
+24.0
+  9
+$STEPSIZE
+ 40
+100.0
+  9
+$3DDWFPREC
+ 40
+2.0
+  9
+$PSOLWIDTH
+ 40
+0.005
+  9
+$PSOLHEIGHT
+ 40
+0.08
+  9
+$LOFTANG1
+ 40
+1.570796326795
+  9
+$LOFTANG2
+ 40
+1.570796326795
+  9
+$LOFTMAG1
+ 40
+0.0
+  9
+$LOFTMAG2
+ 40
+0.0
+  9
+$LOFTPARAM
+ 70
+7
+  9
+$LOFTNORMALS
+280
+1
+  9
+$LATITUDE
+ 40
+37.795
+  9
+$LONGITUDE
+ 40
+-122.394
+  9
+$NORTHDIRECTION
+ 40
+0.0
+  9
+$TIMEZONE
+ 70
+-8000
+  9
+$LIGHTGLYPHDISPLAY
+280
+1
+  9
+$TILEMODELIGHTSYNCH
+280
+1
+  9
+$CMATERIAL
+347
+20
+  9
+$SOLIDHIST
+280
+0
+  9
+$SHOWHIST
+280
+1
+  9
+$DWFFRAME
+280
+2
+  9
+$DGNFRAME
+280
+2
+  9
+$REALWORLDSCALE
+290
+1
+  9
+$INTERFERECOLOR
+ 62
+256
+  9
+$CSHADOW
+280
+0
+  9
+$SHADOWPLANELOCATION
+ 40
+0.0
+  0
+ENDSEC
+  0
+SECTION
+  2
+CLASSES
+  0
+CLASS
+  1
+ACDBDICTIONARYWDFLT
+  2
+AcDbDictionaryWithDefault
+  3
+ObjectDBX Classes
+ 90
+0
+ 91
+0
+280
+0
+281
+0
+  0
+CLASS
+  1
+SUN
+  2
+AcDbSun
+  3
+SCENEOE
+ 90
+1153
+ 91
+0
+280
+0
+281
+0
+  0
+CLASS
+  1
+VISUALSTYLE
+  2
+AcDbVisualStyle
+  3
+ObjectDBX Classes
+ 90
+4095
+ 91
+0
+280
+0
+281
+0
+  0
+CLASS
+  1
+MATERIAL
+  2
+AcDbMaterial
+  3
+ObjectDBX Classes
+ 90
+1153
+ 91
+0
+280
+0
+281
+0
+  0
+CLASS
+  1
+SCALE
+  2
+AcDbScale
+  3
+ObjectDBX Classes
+ 90
+1153
+ 91
+0
+280
+0
+281
+0
+  0
+CLASS
+  1
+TABLESTYLE
+  2
+AcDbTableStyle
+  3
+ObjectDBX Classes
+ 90
+4095
+ 91
+0
+280
+0
+281
+0
+  0
+CLASS
+  1
+MLEADERSTYLE
+  2
+AcDbMLeaderStyle
+  3
+ACDB_MLEADERSTYLE_CLASS
+ 90
+4095
+ 91
+0
+280
+0
+281
+0
+  0
+CLASS
+  1
+DICTIONARYVAR
+  2
+AcDbDictionaryVar
+  3
+ObjectDBX Classes
+ 90
+0
+ 91
+0
+280
+0
+281
+0
+  0
+CLASS
+  1
+CELLSTYLEMAP
+  2
+AcDbCellStyleMap
+  3
+ObjectDBX Classes
+ 90
+1152
+ 91
+0
+280
+0
+281
+0
+  0
+CLASS
+  1
+MENTALRAYRENDERSETTINGS
+  2
+AcDbMentalRayRenderSettings
+  3
+SCENEOE
+ 90
+1024
+ 91
+0
+280
+0
+281
+0
+  0
+CLASS
+  1
+ACDBDETAILVIEWSTYLE
+  2
+AcDbDetailViewStyle
+  3
+ObjectDBX Classes
+ 90
+1025
+ 91
+0
+280
+0
+281
+0
+  0
+CLASS
+  1
+ACDBSECTIONVIEWSTYLE
+  2
+AcDbSectionViewStyle
+  3
+ObjectDBX Classes
+ 90
+1025
+ 91
+0
+280
+0
+281
+0
+  0
+CLASS
+  1
+RASTERVARIABLES
+  2
+AcDbRasterVariables
+  3
+ISM
+ 90
+0
+ 91
+0
+280
+0
+281
+0
+  0
+CLASS
+  1
+LAYOUT
+  2
+AcDbLayout
+  3
+ObjectDBX Classes
+ 90
+0
+ 91
+0
+280
+0
+281
+0
+  0
+CLASS
+  1
+ACDBPLACEHOLDER
+  2
+AcDbPlaceHolder
+  3
+ObjectDBX Classes
+ 90
+0
+ 91
+0
+280
+0
+281
+0
+  0
+ENDSEC
+  0
+SECTION
+  2
+TABLES
+  0
+TABLE
+  2
+VPORT
+  5
+8
+330
+0
+100
+AcDbSymbolTable
+ 70
+1
+  0
+VPORT
+  5
+23
+330
+8
+100
+AcDbSymbolTableRecord
+100
+AcDbViewportTableRecord
+  2
+*Active
+ 70
+0
+ 10
+0.0
+ 20
+0.0
+ 11
+1.0
+ 21
+1.0
+ 12
+0.0
+ 22
+0.0
+ 13
+0.0
+ 23
+0.0
+ 14
+0.5
+ 24
+0.5
+ 15
+0.5
+ 25
+0.5
+ 16
+0.0
+ 26
+0.0
+ 36
+1.0
+ 17
+0.0
+ 27
+0.0
+ 37
+0.0
+ 40
+1000.0
+ 41
+1.34
+ 42
+50.0
+ 43
+0.0
+ 44
+0.0
+ 50
+0.0
+ 51
+0.0
+ 71
+0
+ 72
+1000
+ 73
+1
+ 74
+3
+ 75
+0
+ 76
+0
+ 77
+0
+ 78
+0
+281
+0
+ 65
+0
+146
+0.0
+  0
+ENDTAB
+  0
+TABLE
+  2
+LTYPE
+  5
+2
+330
+0
+100
+AcDbSymbolTable
+ 70
+21
+  0
+LTYPE
+  5
+24
+330
+2
+100
+AcDbSymbolTableRecord
+100
+AcDbLinetypeTableRecord
+  2
+ByBlock
+ 70
+0
+  3
+
+ 72
+65
+ 73
+0
+ 40
+0.0
+  0
+LTYPE
+  5
+25
+330
+2
+100
+AcDbSymbolTableRecord
+100
+AcDbLinetypeTableRecord
+  2
+ByLayer
+ 70
+0
+  3
+
+ 72
+65
+ 73
+0
+ 40
+0.0
+  0
+LTYPE
+  5
+26
+330
+2
+100
+AcDbSymbolTableRecord
+100
+AcDbLinetypeTableRecord
+  2
+Continuous
+ 70
+0
+  3
+
+ 72
+65
+ 73
+0
+ 40
+0.0
+  0
+LTYPE
+  5
+2F
+330
+2
+100
+AcDbSymbolTableRecord
+100
+AcDbLinetypeTableRecord
+  2
+CENTER
+ 70
+0
+  3
+Center ____ _ ____ _ ____ _ ____ _ ____ _ ____
+ 72
+65
+ 73
+4
+ 40
+5.08
+ 49
+3.175
+ 74
+0
+ 49
+-0.635
+ 74
+0
+ 49
+0.635
+ 74
+0
+ 49
+-0.635
+ 74
+0
+  0
+LTYPE
+  5
+30
+330
+2
+100
+AcDbSymbolTableRecord
+100
+AcDbLinetypeTableRecord
+  2
+CENTERX2
+ 70
+0
+  3
+Center (2x) ________  __  ________  __  ________
+ 72
+65
+ 73
+4
+ 40
+8.89
+ 49
+6.35
+ 74
+0
+ 49
+-0.635
+ 74
+0
+ 49
+1.27
+ 74
+0
+ 49
+-0.635
+ 74
+0
+  0
+LTYPE
+  5
+31
+330
+2
+100
+AcDbSymbolTableRecord
+100
+AcDbLinetypeTableRecord
+  2
+CENTER2
+ 70
+0
+  3
+Center (.5x) ____ _ ____ _ ____ _ ____ _ ____
+ 72
+65
+ 73
+4
+ 40
+2.54
+ 49
+1.587
+ 74
+0
+ 49
+-0.318
+ 74
+0
+ 49
+0.318
+ 74
+0
+ 49
+-0.318
+ 74
+0
+  0
+LTYPE
+  5
+32
+330
+2
+100
+AcDbSymbolTableRecord
+100
+AcDbLinetypeTableRecord
+  2
+DASHED
+ 70
+0
+  3
+Dashed __ __ __ __ __ __ __ __ __ __ __ __ __ _
+ 72
+65
+ 73
+2
+ 40
+1.524
+ 49
+1.27
+ 74
+0
+ 49
+-0.254
+ 74
+0
+  0
+LTYPE
+  5
+33
+330
+2
+100
+AcDbSymbolTableRecord
+100
+AcDbLinetypeTableRecord
+  2
+DASHEDX2
+ 70
+0
+  3
+Dashed (2x) ____  ____  ____  ____  ____  ____
+ 72
+65
+ 73
+2
+ 40
+3.048
+ 49
+2.54
+ 74
+0
+ 49
+-0.508
+ 74
+0
+  0
+LTYPE
+  5
+34
+330
+2
+100
+AcDbSymbolTableRecord
+100
+AcDbLinetypeTableRecord
+  2
+DASHED2
+ 70
+0
+  3
+Dashed (.5x) _ _ _ _ _ _ _ _ _ _ _ _ _ _
+ 72
+65
+ 73
+2
+ 40
+0.762
+ 49
+0.635
+ 74
+0
+ 49
+-0.127
+ 74
+0
+  0
+LTYPE
+  5
+35
+330
+2
+100
+AcDbSymbolTableRecord
+100
+AcDbLinetypeTableRecord
+  2
+PHANTOM
+ 70
+0
+  3
+Phantom ______  __  __  ______  __  __  ______
+ 72
+65
+ 73
+6
+ 40
+6.35
+ 49
+3.175
+ 74
+0
+ 49
+-0.635
+ 74
+0
+ 49
+0.635
+ 74
+0
+ 49
+-0.635
+ 74
+0
+ 49
+0.635
+ 74
+0
+ 49
+-0.635
+ 74
+0
+  0
+LTYPE
+  5
+36
+330
+2
+100
+AcDbSymbolTableRecord
+100
+AcDbLinetypeTableRecord
+  2
+PHANTOMX2
+ 70
+0
+  3
+Phantom (2x)____________    ____    ____    ____________
+ 72
+65
+ 73
+6
+ 40
+10.795
+ 49
+6.35
+ 74
+0
+ 49
+-0.635
+ 74
+0
+ 49
+1.27
+ 74
+0
+ 49
+-0.635
+ 74
+0
+ 49
+1.27
+ 74
+0
+ 49
+-0.635
+ 74
+0
+  0
+LTYPE
+  5
+37
+330
+2
+100
+AcDbSymbolTableRecord
+100
+AcDbLinetypeTableRecord
+  2
+PHANTOM2
+ 70
+0
+  3
+Phantom (.5x) ___ _ _ ___ _ _ ___ _ _ ___ _ _ ___
+ 72
+65
+ 73
+6
+ 40
+3.175
+ 49
+1.587
+ 74
+0
+ 49
+-0.318
+ 74
+0
+ 49
+0.318
+ 74
+0
+ 49
+-0.318
+ 74
+0
+ 49
+0.318
+ 74
+0
+ 49
+-0.318
+ 74
+0
+  0
+LTYPE
+  5
+38
+330
+2
+100
+AcDbSymbolTableRecord
+100
+AcDbLinetypeTableRecord
+  2
+DASHDOT
+ 70
+0
+  3
+Dash dot __ . __ . __ . __ . __ . __ . __ . __
+ 72
+65
+ 73
+4
+ 40
+3.556
+ 49
+2.54
+ 74
+0
+ 49
+-0.508
+ 74
+0
+ 49
+0.0
+ 74
+0
+ 49
+-0.508
+ 74
+0
+  0
+LTYPE
+  5
+39
+330
+2
+100
+AcDbSymbolTableRecord
+100
+AcDbLinetypeTableRecord
+  2
+DASHDOTX2
+ 70
+0
+  3
+Dash dot (2x) ____  .  ____  .  ____  .  ____
+ 72
+65
+ 73
+4
+ 40
+6.096
+ 49
+5.08
+ 74
+0
+ 49
+-0.508
+ 74
+0
+ 49
+0.0
+ 74
+0
+ 49
+-0.508
+ 74
+0
+  0
+LTYPE
+  5
+3A
+330
+2
+100
+AcDbSymbolTableRecord
+100
+AcDbLinetypeTableRecord
+  2
+DASHDOT2
+ 70
+0
+  3
+Dash dot (.5x) _ . _ . _ . _ . _ . _ . _ . _
+ 72
+65
+ 73
+4
+ 40
+1.778
+ 49
+1.27
+ 74
+0
+ 49
+-0.254
+ 74
+0
+ 49
+0.0
+ 74
+0
+ 49
+-0.254
+ 74
+0
+  0
+LTYPE
+  5
+3B
+330
+2
+100
+AcDbSymbolTableRecord
+100
+AcDbLinetypeTableRecord
+  2
+DOT
+ 70
+0
+  3
+Dot .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
+ 72
+65
+ 73
+2
+ 40
+0.508
+ 49
+0.0
+ 74
+0
+ 49
+-0.508
+ 74
+0
+  0
+LTYPE
+  5
+3C
+330
+2
+100
+AcDbSymbolTableRecord
+100
+AcDbLinetypeTableRecord
+  2
+DOTX2
+ 70
+0
+  3
+Dot (2x) .    .    .    .    .    .    .    . 
+ 72
+65
+ 73
+2
+ 40
+1.016
+ 49
+0.0
+ 74
+0
+ 49
+-1.016
+ 74
+0
+  0
+LTYPE
+  5
+3D
+330
+2
+100
+AcDbSymbolTableRecord
+100
+AcDbLinetypeTableRecord
+  2
+DOT2
+ 70
+0
+  3
+Dot (.5) . . . . . . . . . . . . . . . . . . . 
+ 72
+65
+ 73
+2
+ 40
+0.254
+ 49
+0.0
+ 74
+0
+ 49
+-0.254
+ 74
+0
+  0
+LTYPE
+  5
+3E
+330
+2
+100
+AcDbSymbolTableRecord
+100
+AcDbLinetypeTableRecord
+  2
+DIVIDE
+ 70
+0
+  3
+Divide __ . . __ . . __ . . __ . . __ . . __
+ 72
+65
+ 73
+6
+ 40
+4.064
+ 49
+2.54
+ 74
+0
+ 49
+-0.508
+ 74
+0
+ 49
+0.0
+ 74
+0
+ 49
+-0.508
+ 74
+0
+ 49
+0.0
+ 74
+0
+ 49
+-0.508
+ 74
+0
+  0
+LTYPE
+  5
+3F
+330
+2
+100
+AcDbSymbolTableRecord
+100
+AcDbLinetypeTableRecord
+  2
+DIVIDEX2
+ 70
+0
+  3
+Divide (2x) ____  . .  ____  . .  ____  . .  ____
+ 72
+65
+ 73
+6
+ 40
+6.604
+ 49
+5.08
+ 74
+0
+ 49
+-0.508
+ 74
+0
+ 49
+0.0
+ 74
+0
+ 49
+-0.508
+ 74
+0
+ 49
+0.0
+ 74
+0
+ 49
+-0.508
+ 74
+0
+  0
+LTYPE
+  5
+40
+330
+2
+100
+AcDbSymbolTableRecord
+100
+AcDbLinetypeTableRecord
+  2
+DIVIDE2
+ 70
+0
+  3
+Divide(.5x) _ . _ . _ . _ . _ . _ . _ . _
+ 72
+65
+ 73
+6
+ 40
+2.032
+ 49
+1.27
+ 74
+0
+ 49
+-0.254
+ 74
+0
+ 49
+0.0
+ 74
+0
+ 49
+-0.254
+ 74
+0
+ 49
+0.0
+ 74
+0
+ 49
+-0.254
+ 74
+0
+  0
+ENDTAB
+  0
+TABLE
+  2
+LAYER
+  5
+1
+330
+0
+100
+AcDbSymbolTable
+ 70
+10
+  0
+LAYER
+  5
+27
+330
+1
+100
+AcDbSymbolTableRecord
+100
+AcDbLayerTableRecord
+  2
+0
+ 70
+0
+ 62
+7
+  6
+Continuous
+370
+-3
+390
+13
+347
+21
+  0
+LAYER
+  5
+28
+330
+1
+100
+AcDbSymbolTableRecord
+100
+AcDbLayerTableRecord
+  2
+Defpoints
+ 70
+0
+ 62
+7
+  6
+Continuous
+290
+0
+370
+-3
+390
+13
+347
+21
+  0
+LAYER
+  5
+8A
+330
+1
+100
+AcDbSymbolTableRecord
+100
+AcDbLayerTableRecord
+  2
+00_РАМКА
+ 70
+0
+ 62
+7
+  6
+Continuous
+370
+-3
+390
+13
+347
+21
+  0
+LAYER
+  5
+8B
+330
+1
+100
+AcDbSymbolTableRecord
+100
+AcDbLayerTableRecord
+  2
+01_ЛИНИИ
+ 70
+0
+ 62
+7
+  6
+Continuous
+370
+-3
+390
+13
+347
+21
+  0
+LAYER
+  5
+8C
+330
+1
+100
+AcDbSymbolTableRecord
+100
+AcDbLayerTableRecord
+  2
+02_ОСИ
+ 70
+0
+ 62
+8
+  6
+Continuous
+370
+-3
+390
+13
+347
+21
+  0
+LAYER
+  5
+8D
+330
+1
+100
+AcDbSymbolTableRecord
+100
+AcDbLayerTableRecord
+  2
+03_СЕТКА
+ 70
+0
+ 62
+9
+  6
+Continuous
+370
+-3
+390
+13
+347
+21
+  0
+LAYER
+  5
+8E
+330
+1
+100
+AcDbSymbolTableRecord
+100
+AcDbLayerTableRecord
+  2
+04_ТЕКСТ
+ 70
+0
+ 62
+7
+  6
+Continuous
+370
+-3
+390
+13
+347
+21
+  0
+LAYER
+  5
+8F
+330
+1
+100
+AcDbSymbolTableRecord
+100
+AcDbLayerTableRecord
+  2
+05_ЗАЛИВКА
+ 70
+0
+ 62
+8
+  6
+Continuous
+370
+-3
+390
+13
+347
+21
+  0
+LAYER
+  5
+90
+330
+1
+100
+AcDbSymbolTableRecord
+100
+AcDbLayerTableRecord
+  2
+06_ТАБЛИЦА
+ 70
+0
+ 62
+7
+  6
+Continuous
+370
+-3
+390
+13
+347
+21
+  0
+LAYER
+  5
+91
+330
+1
+100
+AcDbSymbolTableRecord
+100
+AcDbLayerTableRecord
+  2
+07_ЛЕГЕНДА
+ 70
+0
+ 62
+8
+  6
+Continuous
+370
+-3
+390
+13
+347
+21
+  0
+ENDTAB
+  0
+TABLE
+  2
+STYLE
+  5
+5
+330
+0
+100
+AcDbSymbolTable
+ 70
+27
+  0
+STYLE
+  5
+29
+330
+5
+100
+AcDbSymbolTableRecord
+100
+AcDbTextStyleTableRecord
+  2
+Standard
+ 70
+0
+ 40
+0.0
+ 41
+1.0
+ 50
+0.0
+ 71
+0
+ 42
+2.5
+  3
+txt
+  4
+
+  0
+STYLE
+  5
+41
+330
+5
+100
+AcDbSymbolTableRecord
+100
+AcDbTextStyleTableRecord
+  2
+OpenSans-Light
+ 70
+0
+ 40
+0.0
+ 41
+1.0
+ 50
+0.0
+ 71
+0
+ 42
+2.5
+  3
+OpenSans-Light.ttf
+  4
+
+  0
+STYLE
+  5
+42
+330
+5
+100
+AcDbSymbolTableRecord
+100
+AcDbTextStyleTableRecord
+  2
+OpenSans-Light-Italic
+ 70
+0
+ 40
+0.0
+ 41
+1.0
+ 50
+0.0
+ 71
+0
+ 42
+2.5
+  3
+OpenSans-LightItalic.ttf
+  4
+
+  0
+STYLE
+  5
+43
+330
+5
+100
+AcDbSymbolTableRecord
+100
+AcDbTextStyleTableRecord
+  2
+OpenSans
+ 70
+0
+ 40
+0.0
+ 41
+1.0
+ 50
+0.0
+ 71
+0
+ 42
+2.5
+  3
+OpenSans-Regular.ttf
+  4
+
+  0
+STYLE
+  5
+44
+330
+5
+100
+AcDbSymbolTableRecord
+100
+AcDbTextStyleTableRecord
+  2
+OpenSans-Italic
+ 70
+0
+ 40
+0.0
+ 41
+1.0
+ 50
+0.0
+ 71
+0
+ 42
+2.5
+  3
+OpenSans-Italic.ttf
+  4
+
+  0
+STYLE
+  5
+45
+330
+5
+100
+AcDbSymbolTableRecord
+100
+AcDbTextStyleTableRecord
+  2
+OpenSans-SemiBold
+ 70
+0
+ 40
+0.0
+ 41
+1.0
+ 50
+0.0
+ 71
+0
+ 42
+2.5
+  3
+OpenSans-SemiBold.ttf
+  4
+
+  0
+STYLE
+  5
+46
+330
+5
+100
+AcDbSymbolTableRecord
+100
+AcDbTextStyleTableRecord
+  2
+OpenSans-SemiBoldItalic
+ 70
+0
+ 40
+0.0
+ 41
+1.0
+ 50
+0.0
+ 71
+0
+ 42
+2.5
+  3
+OpenSans-SemiBoldItalic.ttf
+  4
+
+  0
+STYLE
+  5
+47
+330
+5
+100
+AcDbSymbolTableRecord
+100
+AcDbTextStyleTableRecord
+  2
+OpenSans-Bold
+ 70
+0
+ 40
+0.0
+ 41
+1.0
+ 50
+0.0
+ 71
+0
+ 42
+2.5
+  3
+OpenSans-Bold.ttf
+  4
+
+  0
+STYLE
+  5
+48
+330
+5
+100
+AcDbSymbolTableRecord
+100
+AcDbTextStyleTableRecord
+  2
+OpenSans-BoldItalic
+ 70
+0
+ 40
+0.0
+ 41
+1.0
+ 50
+0.0
+ 71
+0
+ 42
+2.5
+  3
+OpenSans-BoldItalic.ttf
+  4
+
+  0
+STYLE
+  5
+49
+330
+5
+100
+AcDbSymbolTableRecord
+100
+AcDbTextStyleTableRecord
+  2
+OpenSans-ExtraBold
+ 70
+0
+ 40
+0.0
+ 41
+1.0
+ 50
+0.0
+ 71
+0
+ 42
+2.5
+  3
+OpenSans-ExtraBold.ttf
+  4
+
+  0
+STYLE
+  5
+4A
+330
+5
+100
+AcDbSymbolTableRecord
+100
+AcDbTextStyleTableRecord
+  2
+OpenSans-ExtraBoldItalic
+ 70
+0
+ 40
+0.0
+ 41
+1.0
+ 50
+0.0
+ 71
+0
+ 42
+2.5
+  3
+OpenSans-ExtraBoldItalic.ttf
+  4
+
+  0
+STYLE
+  5
+4B
+330
+5
+100
+AcDbSymbolTableRecord
+100
+AcDbTextStyleTableRecord
+  2
+OpenSansCondensed-Bold
+ 70
+0
+ 40
+0.0
+ 41
+1.0
+ 50
+0.0
+ 71
+0
+ 42
+2.5
+  3
+OpenSansCondensed-Bold.ttf
+  4
+
+  0
+STYLE
+  5
+4C
+330
+5
+100
+AcDbSymbolTableRecord
+100
+AcDbTextStyleTableRecord
+  2
+OpenSansCondensed-Light
+ 70
+0
+ 40
+0.0
+ 41
+1.0
+ 50
+0.0
+ 71
+0
+ 42
+2.5
+  3
+OpenSansCondensed-Light.ttf
+  4
+
+  0
+STYLE
+  5
+4D
+330
+5
+100
+AcDbSymbolTableRecord
+100
+AcDbTextStyleTableRecord
+  2
+OpenSansCondensed-Italic
+ 70
+0
+ 40
+0.0
+ 41
+1.0
+ 50
+0.0
+ 71
+0
+ 42
+2.5
+  3
+OpenSansCondensed-LightItalic.ttf
+  4
+
+  0
+STYLE
+  5
+4E
+330
+5
+100
+AcDbSymbolTableRecord
+100
+AcDbTextStyleTableRecord
+  2
+LiberationSans
+ 70
+0
+ 40
+0.0
+ 41
+1.0
+ 50
+0.0
+ 71
+0
+ 42
+2.5
+  3
+LiberationSans-Regular.ttf
+  4
+
+  0
+STYLE
+  5
+4F
+330
+5
+100
+AcDbSymbolTableRecord
+100
+AcDbTextStyleTableRecord
+  2
+LiberationSans-Bold
+ 70
+0
+ 40
+0.0
+ 41
+1.0
+ 50
+0.0
+ 71
+0
+ 42
+2.5
+  3
+LiberationSans-Bold.ttf
+  4
+
+  0
+STYLE
+  5
+50
+330
+5
+100
+AcDbSymbolTableRecord
+100
+AcDbTextStyleTableRecord
+  2
+LiberationSans-BoldItalic
+ 70
+0
+ 40
+0.0
+ 41
+1.0
+ 50
+0.0
+ 71
+0
+ 42
+2.5
+  3
+LiberationSans-BoldItalic.ttf
+  4
+
+  0
+STYLE
+  5
+51
+330
+5
+100
+AcDbSymbolTableRecord
+100
+AcDbTextStyleTableRecord
+  2
+LiberationSans-Italic
+ 70
+0
+ 40
+0.0
+ 41
+1.0
+ 50
+0.0
+ 71
+0
+ 42
+2.5
+  3
+LiberationSans-Italic.ttf
+  4
+
+  0
+STYLE
+  5
+52
+330
+5
+100
+AcDbSymbolTableRecord
+100
+AcDbTextStyleTableRecord
+  2
+LiberationSerif
+ 70
+0
+ 40
+0.0
+ 41
+1.0
+ 50
+0.0
+ 71
+0
+ 42
+2.5
+  3
+LiberationSerif-Regular.ttf
+  4
+
+  0
+STYLE
+  5
+53
+330
+5
+100
+AcDbSymbolTableRecord
+100
+AcDbTextStyleTableRecord
+  2
+LiberationSerif-Bold
+ 70
+0
+ 40
+0.0
+ 41
+1.0
+ 50
+0.0
+ 71
+0
+ 42
+2.5
+  3
+LiberationSerif-Bold.ttf
+  4
+
+  0
+STYLE
+  5
+54
+330
+5
+100
+AcDbSymbolTableRecord
+100
+AcDbTextStyleTableRecord
+  2
+LiberationSerif-BoldItalic
+ 70
+0
+ 40
+0.0
+ 41
+1.0
+ 50
+0.0
+ 71
+0
+ 42
+2.5
+  3
+LiberationSerif-BoldItalic.ttf
+  4
+
+  0
+STYLE
+  5
+55
+330
+5
+100
+AcDbSymbolTableRecord
+100
+AcDbTextStyleTableRecord
+  2
+LiberationSerif-Italic
+ 70
+0
+ 40
+0.0
+ 41
+1.0
+ 50
+0.0
+ 71
+0
+ 42
+2.5
+  3
+LiberationSerif-Italic.ttf
+  4
+
+  0
+STYLE
+  5
+56
+330
+5
+100
+AcDbSymbolTableRecord
+100
+AcDbTextStyleTableRecord
+  2
+LiberationMono
+ 70
+0
+ 40
+0.0
+ 41
+1.0
+ 50
+0.0
+ 71
+0
+ 42
+2.5
+  3
+LiberationMono-Regular.ttf
+  4
+
+  0
+STYLE
+  5
+57
+330
+5
+100
+AcDbSymbolTableRecord
+100
+AcDbTextStyleTableRecord
+  2
+LiberationMono-Bold
+ 70
+0
+ 40
+0.0
+ 41
+1.0
+ 50
+0.0
+ 71
+0
+ 42
+2.5
+  3
+LiberationMono-Bold.ttf
+  4
+
+  0
+STYLE
+  5
+58
+330
+5
+100
+AcDbSymbolTableRecord
+100
+AcDbTextStyleTableRecord
+  2
+LiberationMono-BoldItalic
+ 70
+0
+ 40
+0.0
+ 41
+1.0
+ 50
+0.0
+ 71
+0
+ 42
+2.5
+  3
+LiberationMono-BoldItalic.ttf
+  4
+
+  0
+STYLE
+  5
+59
+330
+5
+100
+AcDbSymbolTableRecord
+100
+AcDbTextStyleTableRecord
+  2
+LiberationMono-Italic
+ 70
+0
+ 40
+0.0
+ 41
+1.0
+ 50
+0.0
+ 71
+0
+ 42
+2.5
+  3
+LiberationMono-Italic.ttf
+  4
+
+  0
+STYLE
+  5
+92
+330
+5
+100
+AcDbSymbolTableRecord
+100
+AcDbTextStyleTableRecord
+  2
+ГОСТ
+ 70
+0
+ 40
+0.0
+ 41
+1.0
+ 50
+0.0
+ 71
+0
+ 42
+2.5
+  3
+ISOCPEUR.TTF
+  4
+
+  0
+ENDTAB
+  0
+TABLE
+  2
+VIEW
+  5
+7
+330
+0
+100
+AcDbSymbolTable
+ 70
+0
+  0
+ENDTAB
+  0
+TABLE
+  2
+UCS
+  5
+6
+330
+0
+100
+AcDbSymbolTable
+ 70
+0
+  0
+ENDTAB
+  0
+TABLE
+  2
+APPID
+  5
+3
+330
+0
+100
+AcDbSymbolTable
+ 70
+3
+  0
+APPID
+  5
+2A
+330
+3
+100
+AcDbSymbolTableRecord
+100
+AcDbRegAppTableRecord
+  2
+ACAD
+ 70
+0
+  0
+APPID
+  5
+1E3
+330
+3
+100
+AcDbSymbolTableRecord
+100
+AcDbRegAppTableRecord
+  2
+HATCHBACKGROUNDCOLOR
+ 70
+0
+  0
+APPID
+  5
+1E4
+330
+3
+100
+AcDbSymbolTableRecord
+100
+AcDbRegAppTableRecord
+  2
+EZDXF
+ 70
+0
+  0
+ENDTAB
+  0
+TABLE
+  2
+DIMSTYLE
+  5
+4
+330
+0
+100
+AcDbSymbolTable
+ 70
+12
+100
+AcDbDimStyleTable
+  0
+DIMSTYLE
+105
+2B
+330
+4
+100
+AcDbSymbolTableRecord
+100
+AcDbDimStyleTableRecord
+  2
+Standard
+ 70
+0
+ 40
+1.0
+ 41
+2.5
+ 42
+0.625
+ 43
+3.75
+ 44
+1.25
+ 45
+0.0
+ 46
+0.0
+ 47
+0.0
+ 48
+0.0
+ 49
+2.5
+140
+2.5
+141
+2.5
+142
+0.0
+143
+0.03937007874
+144
+1.0
+145
+0.0
+146
+1.0
+147
+0.625
+148
+0.0
+ 69
+0
+ 70
+0
+ 71
+0
+ 72
+0
+ 73
+0
+ 74
+0
+ 75
+0
+ 76
+0
+ 77
+1
+ 78
+8
+ 79
+3
+170
+0
+171
+3
+172
+1
+173
+0
+174
+0
+175
+0
+176
+0
+177
+0
+178
+0
+179
+2
+271
+2
+272
+2
+273
+2
+274
+3
+275
+0
+276
+0
+277
+2
+278
+44
+279
+0
+280
+0
+281
+0
+282
+0
+283
+0
+284
+8
+285
+0
+286
+0
+288
+0
+289
+3
+290
+0
+371
+-2
+372
+-2
+  0
+DIMSTYLE
+105
+73
+330
+4
+100
+AcDbSymbolTableRecord
+100
+AcDbDimStyleTableRecord
+  2
+EZDXF
+ 70
+0
+ 40
+1.0
+ 41
+0.175
+ 42
+0.125
+ 43
+3.75
+ 44
+0.375
+ 45
+0.0
+ 46
+0.0
+ 47
+0.0
+ 48
+0.0
+ 49
+2.5
+140
+0.25
+141
+2.5
+142
+0.0
+143
+0.03937007874
+144
+100.0
+145
+0.0
+146
+0.5
+147
+0.1
+148
+0.0
+ 69
+0
+ 70
+0
+ 71
+0
+ 72
+0
+ 73
+0
+ 74
+0
+ 75
+0
+ 76
+0
+ 77
+1
+ 78
+12
+ 79
+3
+170
+0
+171
+3
+172
+1
+173
+0
+174
+0
+175
+0
+176
+0
+177
+0
+178
+0
+179
+2
+271
+2
+272
+2
+273
+2
+274
+3
+275
+0
+276
+0
+277
+2
+278
+46
+279
+2
+280
+0
+281
+0
+282
+0
+283
+0
+284
+8
+285
+0
+286
+0
+288
+1
+289
+3
+290
+0
+340
+4C
+342
+74
+371
+-2
+372
+-2
+  0
+DIMSTYLE
+105
+7C
+330
+4
+100
+AcDbSymbolTableRecord
+100
+AcDbDimStyleTableRecord
+  2
+EZ_M_100_H25_CM
+ 70
+0
+ 40
+1.0
+ 41
+0.25
+ 42
+0.125
+ 43
+3.75
+ 44
+0.375
+ 45
+0.0
+ 46
+0.0
+ 47
+0.0
+ 48
+0.0
+ 49
+2.5
+140
+0.25
+141
+2.5
+142
+0.125
+143
+0.03937007874
+144
+100.0
+145
+0.0
+146
+0.5
+147
+0.1
+148
+0.0
+ 69
+0
+ 70
+0
+ 71
+0
+ 72
+0
+ 73
+0
+ 74
+0
+ 75
+0
+ 76
+0
+ 77
+1
+ 78
+12
+ 79
+3
+170
+0
+171
+3
+172
+1
+173
+0
+174
+0
+175
+0
+176
+0
+177
+0
+178
+0
+179
+2
+271
+2
+272
+2
+273
+2
+274
+3
+275
+0
+276
+0
+277
+2
+278
+46
+279
+2
+280
+0
+281
+0
+282
+0
+283
+0
+284
+8
+285
+0
+286
+0
+288
+1
+289
+3
+290
+0
+340
+4C
+371
+-2
+372
+-2
+  0
+DIMSTYLE
+105
+7D
+330
+4
+100
+AcDbSymbolTableRecord
+100
+AcDbDimStyleTableRecord
+  2
+EZ_M_50_H25_CM
+ 70
+0
+ 40
+1.0
+ 41
+0.125
+ 42
+0.0625
+ 43
+3.75
+ 44
+0.1875
+ 45
+0.0
+ 46
+0.0
+ 47
+0.0
+ 48
+0.0
+ 49
+2.5
+140
+0.125
+141
+2.5
+142
+0.0625
+143
+0.03937007874
+144
+100.0
+145
+0.0
+146
+0.5
+147
+0.05
+148
+0.0
+ 69
+0
+ 70
+0
+ 71
+0
+ 72
+0
+ 73
+0
+ 74
+0
+ 75
+0
+ 76
+0
+ 77
+1
+ 78
+12
+ 79
+3
+170
+0
+171
+3
+172
+1
+173
+0
+174
+0
+175
+0
+176
+0
+177
+0
+178
+0
+179
+2
+271
+2
+272
+2
+273
+2
+274
+3
+275
+0
+276
+0
+277
+2
+278
+46
+279
+2
+280
+0
+281
+0
+282
+0
+283
+0
+284
+8
+285
+0
+286
+0
+288
+1
+289
+3
+290
+0
+340
+4C
+371
+-2
+372
+-2
+  0
+DIMSTYLE
+105
+7E
+330
+4
+100
+AcDbSymbolTableRecord
+100
+AcDbDimStyleTableRecord
+  2
+EZ_M_25_H25_CM
+ 70
+0
+ 40
+1.0
+ 41
+0.0625
+ 42
+0.03125
+ 43
+3.75
+ 44
+0.09375
+ 45
+0.0
+ 46
+0.0
+ 47
+0.0
+ 48
+0.0
+ 49
+2.5
+140
+0.0625
+141
+2.5
+142
+0.03125
+143
+0.03937007874
+144
+100.0
+145
+0.0
+146
+0.5
+147
+0.025
+148
+0.0
+ 69
+0
+ 70
+0
+ 71
+0
+ 72
+0
+ 73
+0
+ 74
+0
+ 75
+0
+ 76
+0
+ 77
+1
+ 78
+12
+ 79
+3
+170
+0
+171
+3
+172
+1
+173
+0
+174
+0
+175
+0
+176
+0
+177
+0
+178
+0
+179
+2
+271
+2
+272
+2
+273
+2
+274
+3
+275
+0
+276
+0
+277
+2
+278
+46
+279
+2
+280
+0
+281
+0
+282
+0
+283
+0
+284
+8
+285
+0
+286
+0
+288
+1
+289
+3
+290
+0
+340
+4C
+371
+-2
+372
+-2
+  0
+DIMSTYLE
+105
+7F
+330
+4
+100
+AcDbSymbolTableRecord
+100
+AcDbDimStyleTableRecord
+  2
+EZ_M_20_H25_CM
+ 70
+0
+ 40
+1.0
+ 41
+0.05
+ 42
+0.025
+ 43
+3.75
+ 44
+0.07500000000000001
+ 45
+0.0
+ 46
+0.0
+ 47
+0.0
+ 48
+0.0
+ 49
+2.5
+140
+0.05
+141
+2.5
+142
+0.025
+143
+0.03937007874
+144
+100.0
+145
+0.0
+146
+0.5
+147
+0.020000000000000004
+148
+0.0
+ 69
+0
+ 70
+0
+ 71
+0
+ 72
+0
+ 73
+0
+ 74
+0
+ 75
+0
+ 76
+0
+ 77
+1
+ 78
+12
+ 79
+3
+170
+0
+171
+3
+172
+1
+173
+0
+174
+0
+175
+0
+176
+0
+177
+0
+178
+0
+179
+2
+271
+2
+272
+2
+273
+2
+274
+3
+275
+0
+276
+0
+277
+2
+278
+46
+279
+2
+280
+0
+281
+0
+282
+0
+283
+0
+284
+8
+285
+0
+286
+0
+288
+1
+289
+3
+290
+0
+340
+4C
+371
+-2
+372
+-2
+  0
+DIMSTYLE
+105
+80
+330
+4
+100
+AcDbSymbolTableRecord
+100
+AcDbDimStyleTableRecord
+  2
+EZ_M_10_H25_CM
+ 70
+0
+ 40
+1.0
+ 41
+0.025
+ 42
+0.0125
+ 43
+3.75
+ 44
+0.037500000000000006
+ 45
+0.0
+ 46
+0.0
+ 47
+0.0
+ 48
+0.0
+ 49
+2.5
+140
+0.025
+141
+2.5
+142
+0.0125
+143
+0.03937007874
+144
+100.0
+145
+0.0
+146
+0.5
+147
+0.010000000000000002
+148
+0.0
+ 69
+0
+ 70
+0
+ 71
+0
+ 72
+0
+ 73
+0
+ 74
+0
+ 75
+0
+ 76
+0
+ 77
+1
+ 78
+12
+ 79
+3
+170
+0
+171
+3
+172
+1
+173
+0
+174
+0
+175
+0
+176
+0
+177
+0
+178
+0
+179
+2
+271
+2
+272
+2
+273
+2
+274
+3
+275
+0
+276
+0
+277
+2
+278
+46
+279
+2
+280
+0
+281
+0
+282
+0
+283
+0
+284
+8
+285
+0
+286
+0
+288
+1
+289
+3
+290
+0
+340
+4C
+371
+-2
+372
+-2
+  0
+DIMSTYLE
+105
+81
+330
+4
+100
+AcDbSymbolTableRecord
+100
+AcDbDimStyleTableRecord
+  2
+EZ_M_5_H25_CM
+ 70
+0
+ 40
+1.0
+ 41
+0.0125
+ 42
+0.00625
+ 43
+3.75
+ 44
+0.018750000000000003
+ 45
+0.0
+ 46
+0.0
+ 47
+0.0
+ 48
+0.0
+ 49
+2.5
+140
+0.0125
+141
+2.5
+142
+0.00625
+143
+0.03937007874
+144
+100.0
+145
+0.0
+146
+0.5
+147
+0.005000000000000001
+148
+0.0
+ 69
+0
+ 70
+0
+ 71
+0
+ 72
+0
+ 73
+0
+ 74
+0
+ 75
+0
+ 76
+0
+ 77
+1
+ 78
+12
+ 79
+3
+170
+0
+171
+3
+172
+1
+173
+0
+174
+0
+175
+0
+176
+0
+177
+0
+178
+0
+179
+2
+271
+2
+272
+2
+273
+2
+274
+3
+275
+0
+276
+0
+277
+2
+278
+46
+279
+2
+280
+0
+281
+0
+282
+0
+283
+0
+284
+8
+285
+0
+286
+0
+288
+1
+289
+3
+290
+0
+340
+4C
+371
+-2
+372
+-2
+  0
+DIMSTYLE
+105
+82
+330
+4
+100
+AcDbSymbolTableRecord
+100
+AcDbDimStyleTableRecord
+  2
+EZ_M_1_H25_CM
+ 70
+0
+ 40
+1.0
+ 41
+0.0025
+ 42
+0.00125
+ 43
+3.75
+ 44
+0.00375
+ 45
+0.0
+ 46
+0.0
+ 47
+0.0
+ 48
+0.0
+ 49
+2.5
+140
+0.0025
+141
+2.5
+142
+0.00125
+143
+0.03937007874
+144
+100.0
+145
+0.0
+146
+0.5
+147
+0.001
+148
+0.0
+ 69
+0
+ 70
+0
+ 71
+0
+ 72
+0
+ 73
+0
+ 74
+0
+ 75
+0
+ 76
+0
+ 77
+1
+ 78
+12
+ 79
+3
+170
+0
+171
+3
+172
+1
+173
+0
+174
+0
+175
+0
+176
+0
+177
+0
+178
+0
+179
+2
+271
+2
+272
+2
+273
+2
+274
+3
+275
+0
+276
+0
+277
+2
+278
+46
+279
+2
+280
+0
+281
+0
+282
+0
+283
+0
+284
+8
+285
+0
+286
+0
+288
+1
+289
+3
+290
+0
+340
+4C
+371
+-2
+372
+-2
+  0
+DIMSTYLE
+105
+83
+330
+4
+100
+AcDbSymbolTableRecord
+100
+AcDbDimStyleTableRecord
+  2
+EZ_RADIUS
+ 70
+0
+ 40
+1.0
+ 41
+0.25
+ 42
+0.125
+ 43
+3.75
+ 44
+0.375
+ 45
+0.0
+ 46
+0.0
+ 47
+0.0
+ 48
+0.0
+ 49
+2.5
+140
+0.25
+141
+0.0
+142
+0.0
+143
+0.03937007874
+144
+100.0
+145
+0.0
+146
+0.5
+147
+0.1
+148
+0.0
+ 69
+0
+ 70
+0
+ 71
+0
+ 72
+0
+ 73
+0
+ 74
+0
+ 75
+0
+ 76
+0
+ 77
+1
+ 78
+12
+ 79
+3
+170
+0
+171
+3
+172
+0
+173
+0
+174
+0
+175
+0
+176
+0
+177
+0
+178
+0
+179
+2
+271
+2
+272
+2
+273
+2
+274
+3
+275
+0
+276
+0
+277
+2
+278
+46
+279
+1
+280
+0
+281
+0
+282
+0
+283
+0
+284
+8
+285
+0
+286
+0
+288
+1
+289
+3
+290
+0
+340
+4C
+342
+84
+371
+-2
+372
+-2
+  0
+DIMSTYLE
+105
+88
+330
+4
+100
+AcDbSymbolTableRecord
+100
+AcDbDimStyleTableRecord
+  2
+EZ_RADIUS_INSIDE
+ 70
+0
+ 40
+1.0
+ 41
+0.25
+ 42
+0.125
+ 43
+3.75
+ 44
+0.375
+ 45
+0.0
+ 46
+0.0
+ 47
+0.0
+ 48
+0.0
+ 49
+2.5
+140
+0.25
+141
+0.0
+142
+0.0
+143
+0.03937007874
+144
+100.0
+145
+0.0
+146
+0.5
+147
+0.1
+148
+0.0
+ 69
+0
+ 70
+0
+ 71
+0
+ 72
+0
+ 73
+0
+ 74
+0
+ 75
+0
+ 76
+0
+ 77
+0
+ 78
+12
+ 79
+3
+170
+0
+171
+3
+172
+0
+173
+0
+174
+1
+175
+0
+176
+0
+177
+0
+178
+0
+179
+2
+271
+2
+272
+2
+273
+2
+274
+3
+275
+0
+276
+0
+277
+2
+278
+46
+279
+0
+280
+0
+281
+0
+282
+0
+283
+0
+284
+8
+285
+0
+286
+0
+288
+1
+289
+0
+290
+0
+340
+4C
+342
+84
+371
+-2
+372
+-2
+  0
+DIMSTYLE
+105
+89
+330
+4
+100
+AcDbSymbolTableRecord
+100
+AcDbDimStyleTableRecord
+  2
+EZ_CURVED
+ 70
+0
+ 40
+1.0
+ 41
+0.25
+ 42
+0.125
+ 43
+3.75
+ 44
+0.375
+ 45
+0.0
+ 46
+0.0
+ 47
+0.0
+ 48
+0.0
+ 49
+2.5
+140
+0.25
+141
+2.5
+142
+0.0
+143
+0.03937007874
+144
+100.0
+145
+0.0
+146
+0.5
+147
+0.1
+148
+0.0
+ 69
+0
+ 70
+0
+ 71
+0
+ 72
+0
+ 73
+0
+ 74
+0
+ 75
+0
+ 76
+0
+ 77
+1
+ 78
+12
+ 79
+2
+ 90
+2
+170
+0
+171
+3
+172
+1
+173
+0
+174
+0
+175
+0
+176
+0
+177
+0
+178
+0
+179
+2
+271
+2
+272
+2
+273
+2
+274
+3
+275
+0
+276
+0
+277
+2
+278
+46
+279
+2
+280
+0
+281
+0
+282
+0
+283
+0
+284
+8
+285
+0
+286
+0
+288
+1
+289
+3
+290
+0
+340
+4C
+371
+-2
+372
+-2
+  0
+ENDTAB
+  0
+TABLE
+  2
+BLOCK_RECORD
+  5
+9
+330
+0
+100
+AcDbSymbolTable
+ 70
+5
+  0
+BLOCK_RECORD
+  5
+17
+330
+9
+100
+AcDbSymbolTableRecord
+100
+AcDbBlockTableRecord
+  2
+*Model_Space
+340
+1A
+ 70
+0
+280
+1
+281
+0
+  0
+BLOCK_RECORD
+  5
+1B
+330
+9
+100
+AcDbSymbolTableRecord
+100
+AcDbBlockTableRecord
+  2
+*Paper_Space
+340
+1E
+ 70
+0
+280
+1
+281
+0
+  0
+BLOCK_RECORD
+  5
+74
+330
+9
+100
+AcDbSymbolTableRecord
+100
+AcDbBlockTableRecord
+  2
+_ARCHTICK
+340
+0
+ 70
+0
+280
+1
+281
+0
+  0
+BLOCK_RECORD
+  5
+78
+330
+9
+100
+AcDbSymbolTableRecord
+100
+AcDbBlockTableRecord
+  2
+_CLOSEDFILLED
+340
+0
+ 70
+0
+280
+1
+281
+0
+  0
+BLOCK_RECORD
+  5
+84
+330
+9
+100
+AcDbSymbolTableRecord
+100
+AcDbBlockTableRecord
+  2
+_CLOSEDBLANK
+340
+0
+ 70
+0
+280
+1
+281
+0
+  0
+ENDTAB
+  0
+ENDSEC
+  0
+SECTION
+  2
+BLOCKS
+  0
+BLOCK
+  5
+18
+330
+17
+100
+AcDbEntity
+  8
+0
+100
+AcDbBlockBegin
+  2
+*Model_Space
+ 70
+0
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+  3
+*Model_Space
+  1
+
+  0
+ENDBLK
+  5
+19
+330
+17
+100
+AcDbEntity
+  8
+0
+100
+AcDbBlockEnd
+  0
+BLOCK
+  5
+1C
+330
+1B
+100
+AcDbEntity
+  8
+0
+100
+AcDbBlockBegin
+  2
+*Paper_Space
+ 70
+0
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+  3
+*Paper_Space
+  1
+
+  0
+ENDBLK
+  5
+1D
+330
+1B
+100
+AcDbEntity
+  8
+0
+100
+AcDbBlockEnd
+  0
+BLOCK
+  5
+75
+330
+74
+100
+AcDbEntity
+  8
+0
+100
+AcDbBlockBegin
+  2
+_ARCHTICK
+ 70
+0
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+  3
+_ARCHTICK
+  1
+
+  0
+LWPOLYLINE
+  5
+77
+330
+74
+100
+AcDbEntity
+  8
+0
+  6
+BYBLOCK
+ 62
+0
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 43
+0.15
+ 10
+-0.5
+ 20
+-0.5
+ 10
+0.5
+ 20
+0.5
+  0
+ENDBLK
+  5
+76
+330
+74
+100
+AcDbEntity
+  8
+0
+100
+AcDbBlockEnd
+  0
+BLOCK
+  5
+79
+330
+78
+100
+AcDbEntity
+  8
+0
+100
+AcDbBlockBegin
+  2
+_CLOSEDFILLED
+ 70
+0
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+  3
+_CLOSEDFILLED
+  1
+
+  0
+SOLID
+  5
+7B
+330
+78
+100
+AcDbEntity
+  8
+0
+  6
+BYBLOCK
+ 62
+0
+100
+AcDbTrace
+ 10
+-1.0
+ 20
+0.16439898372402537
+ 30
+0.0
+ 11
+0.0
+ 21
+0.0
+ 31
+0.0
+ 12
+-1.0
+ 22
+-0.16439898372402537
+ 32
+0.0
+ 13
+-1.0
+ 23
+-0.16439898372402537
+ 33
+0.0
+  0
+ENDBLK
+  5
+7A
+330
+78
+100
+AcDbEntity
+  8
+0
+100
+AcDbBlockEnd
+  0
+BLOCK
+  5
+85
+330
+84
+100
+AcDbEntity
+  8
+0
+100
+AcDbBlockBegin
+  2
+_CLOSEDBLANK
+ 70
+0
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+  3
+_CLOSEDBLANK
+  1
+
+  0
+LWPOLYLINE
+  5
+87
+330
+84
+100
+AcDbEntity
+  8
+0
+  6
+BYBLOCK
+ 62
+0
+100
+AcDbPolyline
+ 90
+3
+ 70
+1
+ 10
+-1.0
+ 20
+0.16439898372402537
+ 10
+0.0
+ 20
+0.0
+ 10
+-1.0
+ 20
+-0.16439898372402537
+  0
+ENDBLK
+  5
+86
+330
+84
+100
+AcDbEntity
+  8
+0
+100
+AcDbBlockEnd
+  0
+ENDSEC
+  0
+SECTION
+  2
+ENTITIES
+  0
+LWPOLYLINE
+  5
+93
+330
+17
+100
+AcDbEntity
+  8
+00_РАМКА
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+0.0
+ 20
+0.0
+ 10
+841.0
+ 20
+0.0
+ 10
+841.0
+ 20
+594.0
+ 10
+0.0
+ 20
+594.0
+  0
+LWPOLYLINE
+  5
+94
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+18
+420
+1450031
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+650.9999999999999
+ 20
+10.0
+ 10
+716.0
+ 20
+10.0
+  0
+LWPOLYLINE
+  5
+95
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+18
+420
+1450031
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+650.9999999999999
+ 20
+15.0
+ 10
+716.0
+ 20
+15.0
+  0
+LWPOLYLINE
+  5
+96
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+18
+420
+1450031
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+650.9999999999999
+ 20
+20.0
+ 10
+716.0
+ 20
+20.0
+  0
+LWPOLYLINE
+  5
+97
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+18
+420
+1450031
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+650.9999999999999
+ 20
+25.0
+ 10
+716.0
+ 20
+25.0
+  0
+LWPOLYLINE
+  5
+98
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+50
+420
+1450031
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+650.9999999999999
+ 20
+30.0
+ 10
+716.0
+ 20
+30.0
+  0
+LWPOLYLINE
+  5
+99
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+18
+420
+1450031
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+650.9999999999999
+ 20
+35.0
+ 10
+716.0
+ 20
+35.0
+  0
+LWPOLYLINE
+  5
+9A
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+18
+420
+1450031
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+650.9999999999999
+ 20
+40.0
+ 10
+716.0
+ 20
+40.0
+  0
+LWPOLYLINE
+  5
+9B
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+50
+420
+1450031
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+650.9999999999999
+ 20
+45.0
+ 10
+716.0
+ 20
+45.0
+  0
+LWPOLYLINE
+  5
+9C
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+18
+420
+1450031
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+650.9999999999999
+ 20
+50.0
+ 10
+716.0
+ 20
+50.0
+  0
+LWPOLYLINE
+  5
+9D
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+18
+420
+1450031
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+650.9999999999999
+ 20
+54.99999999999999
+ 10
+716.0
+ 20
+54.99999999999999
+  0
+LWPOLYLINE
+  5
+9E
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+18
+420
+1450031
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+658.0
+ 20
+5.0
+ 10
+658.0
+ 20
+60.0
+  0
+LWPOLYLINE
+  5
+9F
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+18
+420
+1450031
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+668.0
+ 20
+5.0
+ 10
+668.0
+ 20
+60.0
+  0
+LWPOLYLINE
+  5
+A0
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+18
+420
+1450031
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+691.0
+ 20
+5.0
+ 10
+691.0
+ 20
+60.0
+  0
+LWPOLYLINE
+  5
+A1
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+18
+420
+1450031
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+705.9999999999999
+ 20
+5.0
+ 10
+705.9999999999999
+ 20
+60.0
+  0
+LWPOLYLINE
+  5
+A2
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+50
+420
+1450031
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+716.0
+ 20
+5.0
+ 10
+716.0
+ 20
+60.0
+  0
+LWPOLYLINE
+  5
+A3
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+50
+420
+1450031
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+716.0
+ 20
+45.0
+ 10
+835.9999999999999
+ 20
+45.0
+  0
+LWPOLYLINE
+  5
+A4
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+50
+420
+1450031
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+716.0
+ 20
+20.0
+ 10
+835.9999999999999
+ 20
+20.0
+  0
+LWPOLYLINE
+  5
+A5
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+18
+420
+1450031
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+716.0
+ 20
+30.0
+ 10
+786.0
+ 20
+30.0
+  0
+LWPOLYLINE
+  5
+A6
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+18
+420
+1450031
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+786.0
+ 20
+20.0
+ 10
+786.0
+ 20
+45.0
+  0
+LWPOLYLINE
+  5
+A7
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+18
+420
+1450031
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+786.0
+ 20
+30.0
+ 10
+835.9999999999999
+ 20
+30.0
+  0
+LWPOLYLINE
+  5
+A8
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+18
+420
+1450031
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+786.0
+ 20
+37.0
+ 10
+835.9999999999999
+ 20
+37.0
+  0
+LWPOLYLINE
+  5
+A9
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+18
+420
+1450031
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+800.9999999999999
+ 20
+30.0
+ 10
+800.9999999999999
+ 20
+45.0
+  0
+LWPOLYLINE
+  5
+AA
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+18
+420
+1450031
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+819.0
+ 20
+30.0
+ 10
+819.0
+ 20
+45.0
+  0
+LWPOLYLINE
+  5
+AB
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+18
+420
+1450031
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+811.0
+ 20
+20.0
+ 10
+811.0
+ 20
+30.0
+  0
+LWPOLYLINE
+  5
+AC
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+18
+420
+1450031
+100
+AcDbPolyline
+ 90
+5
+ 70
+1
+ 10
+0.0
+ 20
+0.0
+ 10
+840.9999999999999
+ 20
+0.0
+ 10
+840.9999999999999
+ 20
+594.0
+ 10
+0.0
+ 20
+594.0
+ 10
+0.0
+ 20
+0.0
+  0
+LWPOLYLINE
+  5
+AD
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+50
+420
+1450031
+100
+AcDbPolyline
+ 90
+5
+ 70
+1
+ 10
+20.0
+ 20
+5.0
+ 10
+836.0000000000001
+ 20
+5.0
+ 10
+836.0000000000001
+ 20
+589.0
+ 10
+20.0
+ 20
+589.0
+ 10
+20.0
+ 20
+5.0
+  0
+LWPOLYLINE
+  5
+AE
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+50
+420
+1450031
+100
+AcDbPolyline
+ 90
+5
+ 70
+1
+ 10
+650.9999999999999
+ 20
+5.0
+ 10
+835.9999999999999
+ 20
+5.0
+ 10
+835.9999999999999
+ 20
+59.99999999999999
+ 10
+650.9999999999999
+ 20
+59.99999999999999
+ 10
+650.9999999999999
+ 20
+5.0
+  0
+TEXT
+  5
+AF
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+654.5
+ 20
+32.5
+ 30
+0.0
+ 40
+1.3679999999999999
+  1
+Изм.
+  7
+ГОСТ
+ 72
+1
+ 11
+654.5
+ 21
+32.5
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+B0
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+663.0
+ 20
+32.5
+ 30
+0.0
+ 40
+1.3679999999999999
+  1
+Лист
+  7
+ГОСТ
+ 72
+1
+ 11
+663.0
+ 21
+32.5
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+B1
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+679.5
+ 20
+32.5
+ 30
+0.0
+ 40
+1.3679999999999999
+  1
+№ докум.
+  7
+ГОСТ
+ 72
+1
+ 11
+679.5
+ 21
+32.5
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+B2
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+698.5
+ 20
+32.5
+ 30
+0.0
+ 40
+1.3679999999999999
+  1
+Подп.
+  7
+ГОСТ
+ 72
+1
+ 11
+698.5
+ 21
+32.5
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+B3
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+710.9999999999999
+ 20
+32.5
+ 30
+0.0
+ 40
+1.3679999999999999
+  1
+Дата
+  7
+ГОСТ
+ 72
+1
+ 11
+710.9999999999999
+ 21
+32.5
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+B4
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+655.81
+ 20
+27.499999999999996
+ 30
+0.0
+ 40
+1.3679999999999999
+  1
+Разраб.
+  7
+ГОСТ
+ 72
+1
+ 11
+655.81
+ 21
+27.499999999999996
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+B5
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+674.6726666666666
+ 20
+27.499999999999996
+ 30
+0.0
+ 40
+1.3679999999999999
+  1
+Барулин М.
+  7
+ГОСТ
+ 72
+1
+ 11
+674.6726666666666
+ 21
+27.499999999999996
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+B6
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+654.7093333333332
+ 20
+22.5
+ 30
+0.0
+ 40
+1.3679999999999999
+  1
+Пров.
+  7
+ГОСТ
+ 72
+1
+ 11
+654.7093333333332
+ 21
+22.5
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+B7
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+674.5033333333333
+ 20
+22.5
+ 30
+0.0
+ 40
+1.3679999999999999
+  1
+Соколов А.
+  7
+ГОСТ
+ 72
+1
+ 11
+674.5033333333333
+ 21
+22.5
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+B8
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+656.4873333333333
+ 20
+17.5
+ 30
+0.0
+ 40
+1.3679999999999999
+  1
+Т. контр.
+  7
+ГОСТ
+ 72
+1
+ 11
+656.4873333333333
+ 21
+17.5
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+B9
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+674.7573333333333
+ 20
+17.5
+ 30
+0.0
+ 40
+1.3679999999999999
+  1
+Игнатьев Г.
+  7
+ГОСТ
+ 72
+1
+ 11
+674.7573333333333
+ 21
+17.5
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+BA
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+656.572
+ 20
+12.5
+ 30
+0.0
+ 40
+1.3679999999999999
+  1
+Н. контр.
+  7
+ГОСТ
+ 72
+1
+ 11
+656.572
+ 21
+12.5
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+BB
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+673.9106666666667
+ 20
+12.5
+ 30
+0.0
+ 40
+1.3679999999999999
+  1
+Рябова М.
+  7
+ГОСТ
+ 72
+1
+ 11
+673.9106666666667
+ 21
+12.5
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+BC
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+653.9473333333333
+ 20
+7.5
+ 30
+0.0
+ 40
+1.3679999999999999
+  1
+Утв.
+  7
+ГОСТ
+ 72
+1
+ 11
+653.9473333333333
+ 21
+7.5
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+BD
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+674.5033333333333
+ 20
+7.5
+ 30
+0.0
+ 40
+1.3679999999999999
+  1
+Соколов А.
+  7
+ГОСТ
+ 72
+1
+ 11
+674.5033333333333
+ 21
+7.5
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+BE
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+752.5473333333333
+ 20
+52.49999999999999
+ 30
+0.0
+ 40
+3.42
+  1
+ВГ-2026.00.00 СБ
+  7
+ГОСТ
+ 72
+1
+ 11
+752.5473333333333
+ 21
+52.49999999999999
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+BF
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+750.9999999999999
+ 20
+41.1
+ 30
+0.0
+ 40
+2.3939999999999992
+  1
+Мидель-шпангоут
+  7
+ГОСТ
+ 72
+1
+ 11
+750.9999999999999
+ 21
+41.1
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+C0
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+750.9999999999999
+ 20
+36.89999999999999
+ 30
+0.0
+ 40
+2.3939999999999992
+  1
+конструктивный
+  7
+ГОСТ
+ 72
+1
+ 11
+750.9999999999999
+ 21
+36.89999999999999
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+C1
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+750.9999999999999
+ 20
+25.0
+ 30
+0.0
+ 40
+1.71
+  1
+Сталь 09Г2С ГОСТ 19281-2014
+  7
+ГОСТ
+ 72
+1
+ 11
+750.9999999999999
+ 21
+25.0
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+C2
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+793.5
+ 20
+41.0
+ 30
+0.0
+ 40
+1.3679999999999999
+  1
+Лит.
+  7
+ГОСТ
+ 72
+1
+ 11
+793.5
+ 21
+41.0
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+C3
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+810.0
+ 20
+41.0
+ 30
+0.0
+ 40
+1.3679999999999999
+  1
+Масса
+  7
+ГОСТ
+ 72
+1
+ 11
+810.0
+ 21
+41.0
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+C4
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+827.5
+ 20
+41.0
+ 30
+0.0
+ 40
+1.3679999999999999
+  1
+Масштаб
+  7
+ГОСТ
+ 72
+1
+ 11
+827.5
+ 21
+41.0
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+C5
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+793.5
+ 20
+33.5
+ 30
+0.0
+ 40
+2.3939999999999992
+  1
+У
+  7
+ГОСТ
+ 72
+1
+ 11
+793.5
+ 21
+33.5
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+C6
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+810.0
+ 20
+33.5
+ 30
+0.0
+ 40
+2.3939999999999992
+  1
+—
+  7
+ГОСТ
+ 72
+1
+ 11
+810.0
+ 21
+33.5
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+C7
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+827.5
+ 20
+33.5
+ 30
+0.0
+ 40
+2.3939999999999992
+  1
+1:25
+  7
+ГОСТ
+ 72
+1
+ 11
+827.5
+ 21
+33.5
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+C8
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+798.5
+ 20
+25.0
+ 30
+0.0
+ 40
+1.71
+  1
+Лист 1
+  7
+ГОСТ
+ 72
+1
+ 11
+798.5
+ 21
+25.0
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+C9
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+823.4999999999999
+ 20
+25.0
+ 30
+0.0
+ 40
+1.71
+  1
+Листов 1
+  7
+ГОСТ
+ 72
+1
+ 11
+823.4999999999999
+ 21
+25.0
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+CA
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+750.9999999999999
+ 20
+12.5
+ 30
+0.0
+ 40
+2.0519999999999996
+  1
+УЖЦ ОСК 2026 · «Волжский Горизонт»
+  7
+ГОСТ
+ 72
+1
+ 11
+750.9999999999999
+ 21
+12.5
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+CB
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+100
+420
+1450031
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+185.85705479452062
+ 20
+387.0560616438356
+ 10
+369.612089041096
+ 20
+387.0560616438356
+  0
+LWPOLYLINE
+  5
+CC
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+100
+420
+1450031
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+369.612089041096
+ 20
+387.0560616438356
+ 10
+390.97995176306017
+ 20
+407.9810188015593
+  0
+LWPOLYLINE
+  5
+CD
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+100
+420
+1450031
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+390.97995176306017
+ 20
+407.9810188015593
+ 10
+392.11270547945213
+ 20
+462.0581164383562
+  0
+LWPOLYLINE
+  5
+CE
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+100
+420
+1450031
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+185.85705479452062
+ 20
+409.5566780821918
+ 10
+383.47974628360805
+ 20
+409.5566780821918
+  0
+LWPOLYLINE
+  5
+CF
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+100
+420
+1450031
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+185.85705479452062
+ 20
+462.0581164383562
+ 10
+392.11270547945213
+ 20
+462.0581164383562
+  0
+LWPOLYLINE
+  5
+D0
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+  6
+DASHDOT
+370
+35
+420
+1450031
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+185.85705479452062
+ 20
+384.5559931506849
+ 10
+185.85705479452062
+ 20
+470.80835616438355
+  0
+LWPOLYLINE
+  5
+D1
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+100
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+185.85705479452062
+ 20
+387.0560616438356
+ 10
+185.85705479452062
+ 20
+409.5566780821918
+  0
+LWPOLYLINE
+  5
+D2
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+100
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+254.60893835616446
+ 20
+387.0560616438356
+ 10
+254.60893835616446
+ 20
+409.5566780821918
+  0
+LWPOLYLINE
+  5
+D3
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+100
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+323.3608219178083
+ 20
+387.0560616438356
+ 10
+323.3608219178083
+ 20
+409.5566780821918
+  0
+LWPOLYLINE
+  5
+D4
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+199.6074315068494
+ 20
+387.0560616438356
+ 10
+199.6074315068494
+ 20
+390.55615753424655
+  0
+LWPOLYLINE
+  5
+D5
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+200.35745205479458
+ 20
+390.55615753424655
+ 10
+198.85741095890418
+ 20
+390.55615753424655
+  0
+LWPOLYLINE
+  5
+D6
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+213.35780821917814
+ 20
+387.0560616438356
+ 10
+213.35780821917814
+ 20
+390.55615753424655
+  0
+LWPOLYLINE
+  5
+D7
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+214.10782876712338
+ 20
+390.55615753424655
+ 10
+212.60778767123293
+ 20
+390.55615753424655
+  0
+LWPOLYLINE
+  5
+D8
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+227.10818493150694
+ 20
+387.0560616438356
+ 10
+227.10818493150694
+ 20
+390.55615753424655
+  0
+LWPOLYLINE
+  5
+D9
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+227.85820547945215
+ 20
+390.55615753424655
+ 10
+226.3581643835617
+ 20
+390.55615753424655
+  0
+LWPOLYLINE
+  5
+DA
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+240.8585616438357
+ 20
+387.0560616438356
+ 10
+240.8585616438357
+ 20
+390.55615753424655
+  0
+LWPOLYLINE
+  5
+DB
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+241.6085821917809
+ 20
+390.55615753424655
+ 10
+240.1085410958905
+ 20
+390.55615753424655
+  0
+LWPOLYLINE
+  5
+DC
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+268.35931506849323
+ 20
+387.0560616438356
+ 10
+268.35931506849323
+ 20
+390.55615753424655
+  0
+LWPOLYLINE
+  5
+DD
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+269.1093356164384
+ 20
+390.55615753424655
+ 10
+267.6092945205481
+ 20
+390.55615753424655
+  0
+LWPOLYLINE
+  5
+DE
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+282.109691780822
+ 20
+387.0560616438356
+ 10
+282.109691780822
+ 20
+390.55615753424655
+  0
+LWPOLYLINE
+  5
+DF
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+282.8597123287672
+ 20
+390.55615753424655
+ 10
+281.35967123287685
+ 20
+390.55615753424655
+  0
+LWPOLYLINE
+  5
+E0
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+295.8600684931508
+ 20
+387.0560616438356
+ 10
+295.8600684931508
+ 20
+390.55615753424655
+  0
+LWPOLYLINE
+  5
+E1
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+296.610089041096
+ 20
+390.55615753424655
+ 10
+295.11004794520557
+ 20
+390.55615753424655
+  0
+LWPOLYLINE
+  5
+E2
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+309.61044520547955
+ 20
+387.0560616438356
+ 10
+309.61044520547955
+ 20
+390.55615753424655
+  0
+LWPOLYLINE
+  5
+E3
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+310.36046575342476
+ 20
+390.55615753424655
+ 10
+308.86042465753434
+ 20
+390.55615753424655
+  0
+LWPOLYLINE
+  5
+E4
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+337.1111986301371
+ 20
+387.0560616438356
+ 10
+337.1111986301371
+ 20
+390.55615753424655
+  0
+LWPOLYLINE
+  5
+E5
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+337.8612191780823
+ 20
+390.55615753424655
+ 10
+336.3611780821919
+ 20
+390.55615753424655
+  0
+LWPOLYLINE
+  5
+E6
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+350.8615753424658
+ 20
+387.0560616438356
+ 10
+350.8615753424658
+ 20
+390.55615753424655
+  0
+LWPOLYLINE
+  5
+E7
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+351.6115958904111
+ 20
+390.55615753424655
+ 10
+350.11155479452066
+ 20
+390.55615753424655
+  0
+LWPOLYLINE
+  5
+E8
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+199.6074315068494
+ 20
+409.5566780821918
+ 10
+199.6074315068494
+ 20
+406.5565958904109
+  0
+LWPOLYLINE
+  5
+E9
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+198.98241438356172
+ 20
+406.5565958904109
+ 10
+200.23244863013707
+ 20
+406.5565958904109
+  0
+LWPOLYLINE
+  5
+EA
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+213.35780821917814
+ 20
+409.5566780821918
+ 10
+213.35780821917814
+ 20
+406.5565958904109
+  0
+LWPOLYLINE
+  5
+EB
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+212.7327910958905
+ 20
+406.5565958904109
+ 10
+213.98282534246582
+ 20
+406.5565958904109
+  0
+LWPOLYLINE
+  5
+EC
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+227.10818493150694
+ 20
+409.5566780821918
+ 10
+227.10818493150694
+ 20
+406.5565958904109
+  0
+LWPOLYLINE
+  5
+ED
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+226.48316780821926
+ 20
+406.5565958904109
+ 10
+227.73320205479462
+ 20
+406.5565958904109
+  0
+LWPOLYLINE
+  5
+EE
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+240.8585616438357
+ 20
+409.5566780821918
+ 10
+240.8585616438357
+ 20
+406.5565958904109
+  0
+LWPOLYLINE
+  5
+EF
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+240.233544520548
+ 20
+406.5565958904109
+ 10
+241.48357876712333
+ 20
+406.5565958904109
+  0
+LWPOLYLINE
+  5
+F0
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+254.60893835616446
+ 20
+409.5566780821918
+ 10
+254.60893835616446
+ 20
+406.5565958904109
+  0
+LWPOLYLINE
+  5
+F1
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+253.98392123287678
+ 20
+406.5565958904109
+ 10
+255.23395547945213
+ 20
+406.5565958904109
+  0
+LWPOLYLINE
+  5
+F2
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+268.35931506849323
+ 20
+409.5566780821918
+ 10
+268.35931506849323
+ 20
+406.5565958904109
+  0
+LWPOLYLINE
+  5
+F3
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+267.7342979452056
+ 20
+406.5565958904109
+ 10
+268.9843321917809
+ 20
+406.5565958904109
+  0
+LWPOLYLINE
+  5
+F4
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+282.109691780822
+ 20
+409.5566780821918
+ 10
+282.109691780822
+ 20
+406.5565958904109
+  0
+LWPOLYLINE
+  5
+F5
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+281.48467465753436
+ 20
+406.5565958904109
+ 10
+282.7347089041097
+ 20
+406.5565958904109
+  0
+LWPOLYLINE
+  5
+F6
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+295.8600684931508
+ 20
+409.5566780821918
+ 10
+295.8600684931508
+ 20
+406.5565958904109
+  0
+LWPOLYLINE
+  5
+F7
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+295.23505136986313
+ 20
+406.5565958904109
+ 10
+296.4850856164385
+ 20
+406.5565958904109
+  0
+LWPOLYLINE
+  5
+F8
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+309.61044520547955
+ 20
+409.5566780821918
+ 10
+309.61044520547955
+ 20
+406.5565958904109
+  0
+LWPOLYLINE
+  5
+F9
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+308.98542808219185
+ 20
+406.5565958904109
+ 10
+310.23546232876726
+ 20
+406.5565958904109
+  0
+LWPOLYLINE
+  5
+FA
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+323.3608219178083
+ 20
+409.5566780821918
+ 10
+323.3608219178083
+ 20
+406.5565958904109
+  0
+LWPOLYLINE
+  5
+FB
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+322.7358047945207
+ 20
+406.5565958904109
+ 10
+323.98583904109597
+ 20
+406.5565958904109
+  0
+LWPOLYLINE
+  5
+FC
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+337.1111986301371
+ 20
+409.5566780821918
+ 10
+337.1111986301371
+ 20
+406.5565958904109
+  0
+LWPOLYLINE
+  5
+FD
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+336.4861815068494
+ 20
+406.5565958904109
+ 10
+337.7362157534248
+ 20
+406.5565958904109
+  0
+LWPOLYLINE
+  5
+FE
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+350.8615753424658
+ 20
+409.5566780821918
+ 10
+350.8615753424658
+ 20
+406.5565958904109
+  0
+LWPOLYLINE
+  5
+FF
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+350.23655821917816
+ 20
+406.5565958904109
+ 10
+351.4865924657536
+ 20
+406.5565958904109
+  0
+LWPOLYLINE
+  5
+100
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+364.61195205479464
+ 20
+409.5566780821918
+ 10
+364.61195205479464
+ 20
+406.5565958904109
+  0
+LWPOLYLINE
+  5
+101
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+363.986934931507
+ 20
+406.5565958904109
+ 10
+365.2369691780823
+ 20
+406.5565958904109
+  0
+LWPOLYLINE
+  5
+102
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+199.6074315068494
+ 20
+462.0581164383562
+ 10
+199.6074315068494
+ 20
+459.0580342465753
+  0
+LWPOLYLINE
+  5
+103
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+198.98241438356172
+ 20
+459.0580342465753
+ 10
+200.23244863013707
+ 20
+459.0580342465753
+  0
+LWPOLYLINE
+  5
+104
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+213.35780821917814
+ 20
+462.0581164383562
+ 10
+213.35780821917814
+ 20
+459.0580342465753
+  0
+LWPOLYLINE
+  5
+105
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+212.7327910958905
+ 20
+459.0580342465753
+ 10
+213.98282534246582
+ 20
+459.0580342465753
+  0
+LWPOLYLINE
+  5
+106
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+227.10818493150694
+ 20
+462.0581164383562
+ 10
+227.10818493150694
+ 20
+459.0580342465753
+  0
+LWPOLYLINE
+  5
+107
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+226.48316780821926
+ 20
+459.0580342465753
+ 10
+227.73320205479462
+ 20
+459.0580342465753
+  0
+LWPOLYLINE
+  5
+108
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+240.8585616438357
+ 20
+462.0581164383562
+ 10
+240.8585616438357
+ 20
+459.0580342465753
+  0
+LWPOLYLINE
+  5
+109
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+240.233544520548
+ 20
+459.0580342465753
+ 10
+241.48357876712333
+ 20
+459.0580342465753
+  0
+LWPOLYLINE
+  5
+10A
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+254.60893835616446
+ 20
+462.0581164383562
+ 10
+254.60893835616446
+ 20
+459.0580342465753
+  0
+LWPOLYLINE
+  5
+10B
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+253.98392123287678
+ 20
+459.0580342465753
+ 10
+255.23395547945213
+ 20
+459.0580342465753
+  0
+LWPOLYLINE
+  5
+10C
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+268.35931506849323
+ 20
+462.0581164383562
+ 10
+268.35931506849323
+ 20
+459.0580342465753
+  0
+LWPOLYLINE
+  5
+10D
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+267.7342979452056
+ 20
+459.0580342465753
+ 10
+268.9843321917809
+ 20
+459.0580342465753
+  0
+LWPOLYLINE
+  5
+10E
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+282.109691780822
+ 20
+462.0581164383562
+ 10
+282.109691780822
+ 20
+459.0580342465753
+  0
+LWPOLYLINE
+  5
+10F
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+281.48467465753436
+ 20
+459.0580342465753
+ 10
+282.7347089041097
+ 20
+459.0580342465753
+  0
+LWPOLYLINE
+  5
+110
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+295.8600684931508
+ 20
+462.0581164383562
+ 10
+295.8600684931508
+ 20
+459.0580342465753
+  0
+LWPOLYLINE
+  5
+111
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+295.23505136986313
+ 20
+459.0580342465753
+ 10
+296.4850856164385
+ 20
+459.0580342465753
+  0
+LWPOLYLINE
+  5
+112
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+309.61044520547955
+ 20
+462.0581164383562
+ 10
+309.61044520547955
+ 20
+459.0580342465753
+  0
+LWPOLYLINE
+  5
+113
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+308.98542808219185
+ 20
+459.0580342465753
+ 10
+310.23546232876726
+ 20
+459.0580342465753
+  0
+LWPOLYLINE
+  5
+114
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+323.3608219178083
+ 20
+462.0581164383562
+ 10
+323.3608219178083
+ 20
+459.0580342465753
+  0
+LWPOLYLINE
+  5
+115
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+322.7358047945207
+ 20
+459.0580342465753
+ 10
+323.98583904109597
+ 20
+459.0580342465753
+  0
+LWPOLYLINE
+  5
+116
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+337.1111986301371
+ 20
+462.0581164383562
+ 10
+337.1111986301371
+ 20
+459.0580342465753
+  0
+LWPOLYLINE
+  5
+117
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+336.4861815068494
+ 20
+459.0580342465753
+ 10
+337.7362157534248
+ 20
+459.0580342465753
+  0
+LWPOLYLINE
+  5
+118
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+350.8615753424658
+ 20
+462.0581164383562
+ 10
+350.8615753424658
+ 20
+459.0580342465753
+  0
+LWPOLYLINE
+  5
+119
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+350.23655821917816
+ 20
+459.0580342465753
+ 10
+351.4865924657536
+ 20
+459.0580342465753
+  0
+LWPOLYLINE
+  5
+11A
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+364.61195205479464
+ 20
+462.0581164383562
+ 10
+364.61195205479464
+ 20
+459.0580342465753
+  0
+LWPOLYLINE
+  5
+11B
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+90
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+363.986934931507
+ 20
+459.0580342465753
+ 10
+365.2369691780823
+ 20
+459.0580342465753
+  0
+LWPOLYLINE
+  5
+11C
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+100
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+185.85705479452062
+ 20
+447.057705479452
+ 10
+185.85705479452062
+ 20
+462.0581164383562
+  0
+LWPOLYLINE
+  5
+11D
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+100
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+183.60699315068499
+ 20
+447.057705479452
+ 10
+188.10711643835626
+ 20
+447.057705479452
+  0
+LWPOLYLINE
+  5
+11E
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+100
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+288.35986301369866
+ 20
+447.057705479452
+ 10
+288.35986301369866
+ 20
+462.0581164383562
+  0
+LWPOLYLINE
+  5
+11F
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+100
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+286.1098013698631
+ 20
+447.057705479452
+ 10
+290.6099246575343
+ 20
+447.057705479452
+  0
+LWPOLYLINE
+  5
+120
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+70
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+387.9798695712793
+ 20
+407.9810188015593
+ 10
+389.11262328767134
+ 20
+462.0581164383562
+  0
+LWPOLYLINE
+  5
+121
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+80
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+377.97959559867655
+ 20
+452.0578424657534
+ 10
+387.9798695712793
+ 20
+452.0578424657534
+  0
+LWPOLYLINE
+  5
+122
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+100
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+377.97959559867655
+ 20
+450.807808219178
+ 10
+377.97959559867655
+ 20
+453.3078767123287
+  0
+LWPOLYLINE
+  5
+123
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+  6
+DASHED
+370
+40
+420
+1858698
+100
+AcDbPolyline
+ 90
+2
+ 70
+0
+ 10
+180.85691780821926
+ 20
+418.46478463321915
+ 10
+402.1129794520549
+ 20
+418.46478463321915
+  0
+LWPOLYLINE
+  5
+124
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+60
+420
+11544116
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+387.9798695712793
+ 20
+409.5566780821918
+ 10
+387.9798695712793
+ 20
+430.8072602739726
+ 10
+364.72923258497786
+ 20
+409.5566780821918
+ 10
+387.9798695712793
+ 20
+409.5566780821918
+  0
+LWPOLYLINE
+  5
+125
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+60
+420
+11544116
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+388.86261643835627
+ 20
+462.0581164383562
+ 10
+388.86261643835627
+ 20
+442.05756849315065
+ 10
+367.1120205479453
+ 20
+462.0581164383562
+ 10
+388.86261643835627
+ 20
+462.0581164383562
+  0
+TEXT
+  5
+126
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+185.85705479452062
+ 20
+474.2248200568398
+ 30
+0.0
+ 40
+2.54
+  1
+ДП
+  7
+ГОСТ
+ 72
+1
+ 11
+185.85705479452062
+ 21
+474.2248200568398
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+127
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1858698
+100
+AcDbText
+ 10
+410.624381278539
+ 20
+418.46478463321915
+ 30
+0.0
+ 40
+2.159
+  1
+ВЛ 1.26
+  7
+ГОСТ
+ 72
+1
+ 11
+410.624381278539
+ 21
+418.46478463321915
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+128
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+35
+420
+9279398
+100
+AcDbPolyline
+ 90
+2
+ 70
+1
+ 10
+391.0125257620022
+ 20
+480.80863013698627
+ 10
+186.95638776785
+ 20
+480.80863013698627
+  0
+HATCH
+  5
+129
+330
+17
+100
+AcDbEntity
+  8
+05_ЗАЛИВКА
+ 62
+7
+420
+9279398
+100
+AcDbHatch
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+210
+0.0
+220
+0.0
+230
+1.0
+  2
+SOLID
+ 70
+1
+ 71
+0
+ 91
+1
+ 92
+3
+ 72
+0
+ 73
+1
+ 93
+3
+ 10
+389.74252576200223
+ 20
+481.4436301369862
+ 10
+391.0125257620022
+ 20
+480.80863013698627
+ 10
+389.74252576200223
+ 20
+480.1736301369863
+ 97
+0
+ 75
+0
+ 76
+1
+ 98
+0
+  0
+LWPOLYLINE
+  5
+12A
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+35
+420
+9279398
+100
+AcDbPolyline
+ 90
+3
+ 70
+1
+ 10
+389.74252576200223
+ 20
+481.4436301369862
+ 10
+391.0125257620022
+ 20
+480.80863013698627
+ 10
+389.74252576200223
+ 20
+480.1736301369863
+  0
+HATCH
+  5
+12B
+330
+17
+100
+AcDbEntity
+  8
+05_ЗАЛИВКА
+ 62
+7
+420
+9279398
+100
+AcDbHatch
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+210
+0.0
+220
+0.0
+230
+1.0
+  2
+SOLID
+ 70
+1
+ 71
+0
+ 91
+1
+ 92
+3
+ 72
+0
+ 73
+1
+ 93
+3
+ 10
+188.22638776785
+ 20
+480.1736301369863
+ 10
+186.95638776785
+ 20
+480.80863013698627
+ 10
+188.22638776785
+ 20
+481.4436301369862
+ 97
+0
+ 75
+0
+ 76
+1
+ 98
+0
+  0
+LWPOLYLINE
+  5
+12C
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+35
+420
+9279398
+100
+AcDbPolyline
+ 90
+3
+ 70
+1
+ 10
+188.22638776785
+ 20
+480.1736301369863
+ 10
+186.95638776785
+ 20
+480.80863013698627
+ 10
+188.22638776785
+ 20
+481.4436301369862
+  0
+TEXT
+  5
+12D
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+5661306
+100
+AcDbText
+ 10
+288.98488013698636
+ 20
+483.3376141716015
+ 30
+0.0
+ 40
+2.159
+  1
+полуширота 8.25 м
+  7
+ГОСТ
+ 72
+1
+ 11
+288.98488013698636
+ 21
+483.3376141716015
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+12E
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+35
+420
+9279398
+100
+AcDbPolyline
+ 90
+2
+ 70
+1
+ 10
+368.51179487959274
+ 20
+373.30568493150685
+ 10
+186.95743050997416
+ 20
+373.30568493150685
+  0
+HATCH
+  5
+12F
+330
+17
+100
+AcDbEntity
+  8
+05_ЗАЛИВКА
+ 62
+7
+420
+9279398
+100
+AcDbHatch
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+210
+0.0
+220
+0.0
+230
+1.0
+  2
+SOLID
+ 70
+1
+ 71
+0
+ 91
+1
+ 92
+3
+ 72
+0
+ 73
+1
+ 93
+3
+ 10
+367.24179487959276
+ 20
+373.94068493150684
+ 10
+368.51179487959274
+ 20
+373.30568493150685
+ 10
+367.24179487959276
+ 20
+372.67068493150686
+ 97
+0
+ 75
+0
+ 76
+1
+ 98
+0
+  0
+LWPOLYLINE
+  5
+130
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+35
+420
+9279398
+100
+AcDbPolyline
+ 90
+3
+ 70
+1
+ 10
+367.24179487959276
+ 20
+373.94068493150684
+ 10
+368.51179487959274
+ 20
+373.30568493150685
+ 10
+367.24179487959276
+ 20
+372.67068493150686
+  0
+HATCH
+  5
+131
+330
+17
+100
+AcDbEntity
+  8
+05_ЗАЛИВКА
+ 62
+7
+420
+9279398
+100
+AcDbHatch
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+210
+0.0
+220
+0.0
+230
+1.0
+  2
+SOLID
+ 70
+1
+ 71
+0
+ 91
+1
+ 92
+3
+ 72
+0
+ 73
+1
+ 93
+3
+ 10
+188.22743050997414
+ 20
+372.67068493150686
+ 10
+186.95743050997416
+ 20
+373.30568493150685
+ 10
+188.22743050997414
+ 20
+373.94068493150684
+ 97
+0
+ 75
+0
+ 76
+1
+ 98
+0
+  0
+LWPOLYLINE
+  5
+132
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+35
+420
+9279398
+100
+AcDbPolyline
+ 90
+3
+ 70
+1
+ 10
+188.22743050997414
+ 20
+372.67068493150686
+ 10
+186.95743050997416
+ 20
+373.30568493150685
+ 10
+188.22743050997414
+ 20
+373.94068493150684
+  0
+TEXT
+  5
+133
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+5661306
+100
+AcDbText
+ 10
+277.7345719178083
+ 20
+375.834668966122
+ 30
+0.0
+ 40
+2.159
+  1
+плоское днище 7.35 м
+  7
+ГОСТ
+ 72
+1
+ 11
+277.7345719178083
+ 21
+375.834668966122
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+134
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+35
+420
+9279398
+100
+AcDbPolyline
+ 90
+2
+ 70
+1
+ 10
+413.36328767123297
+ 20
+460.95815130350616
+ 10
+413.36328767123297
+ 20
+388.1561917102457
+  0
+HATCH
+  5
+135
+330
+17
+100
+AcDbEntity
+  8
+05_ЗАЛИВКА
+ 62
+7
+420
+9279398
+100
+AcDbHatch
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+210
+0.0
+220
+0.0
+230
+1.0
+  2
+SOLID
+ 70
+1
+ 71
+0
+ 91
+1
+ 92
+3
+ 72
+0
+ 73
+1
+ 93
+3
+ 10
+412.7282876712329
+ 20
+459.68815130350623
+ 10
+413.36328767123297
+ 20
+460.95815130350616
+ 10
+413.9982876712329
+ 20
+459.68815130350623
+ 97
+0
+ 75
+0
+ 76
+1
+ 98
+0
+  0
+LWPOLYLINE
+  5
+136
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+35
+420
+9279398
+100
+AcDbPolyline
+ 90
+3
+ 70
+1
+ 10
+412.7282876712329
+ 20
+459.68815130350623
+ 10
+413.36328767123297
+ 20
+460.95815130350616
+ 10
+413.9982876712329
+ 20
+459.68815130350623
+  0
+HATCH
+  5
+137
+330
+17
+100
+AcDbEntity
+  8
+05_ЗАЛИВКА
+ 62
+7
+420
+9279398
+100
+AcDbHatch
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+210
+0.0
+220
+0.0
+230
+1.0
+  2
+SOLID
+ 70
+1
+ 71
+0
+ 91
+1
+ 92
+3
+ 72
+0
+ 73
+1
+ 93
+3
+ 10
+413.9982876712329
+ 20
+389.4261917102457
+ 10
+413.36328767123297
+ 20
+388.1561917102457
+ 10
+412.7282876712329
+ 20
+389.4261917102457
+ 97
+0
+ 75
+0
+ 76
+1
+ 98
+0
+  0
+LWPOLYLINE
+  5
+138
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+35
+420
+9279398
+100
+AcDbPolyline
+ 90
+3
+ 70
+1
+ 10
+413.9982876712329
+ 20
+389.4261917102457
+ 10
+413.36328767123297
+ 20
+388.1561917102457
+ 10
+412.7282876712329
+ 20
+389.4261917102457
+  0
+TEXT
+  5
+139
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+5661306
+100
+AcDbText
+ 10
+417.3626617199393
+ 20
+424.5570890410958
+ 30
+0.0
+ 40
+2.159
+  1
+H = 3.00 м
+ 50
+90.0
+  7
+ГОСТ
+ 72
+1
+ 11
+417.3626617199393
+ 21
+424.5570890410958
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+13A
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+35
+420
+9279398
+100
+AcDbPolyline
+ 90
+2
+ 70
+1
+ 10
+403.3630136986302
+ 20
+408.45705627950184
+ 10
+403.3630136986302
+ 20
+388.15619611872364
+  0
+HATCH
+  5
+13B
+330
+17
+100
+AcDbEntity
+  8
+05_ЗАЛИВКА
+ 62
+7
+420
+9279398
+100
+AcDbHatch
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+210
+0.0
+220
+0.0
+230
+1.0
+  2
+SOLID
+ 70
+1
+ 71
+0
+ 91
+1
+ 92
+3
+ 72
+0
+ 73
+1
+ 93
+3
+ 10
+402.72801369863026
+ 20
+407.1870562795018
+ 10
+403.3630136986302
+ 20
+408.45705627950184
+ 10
+403.9980136986302
+ 20
+407.1870562795018
+ 97
+0
+ 75
+0
+ 76
+1
+ 98
+0
+  0
+LWPOLYLINE
+  5
+13C
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+35
+420
+9279398
+100
+AcDbPolyline
+ 90
+3
+ 70
+1
+ 10
+402.72801369863026
+ 20
+407.1870562795018
+ 10
+403.3630136986302
+ 20
+408.45705627950184
+ 10
+403.9980136986302
+ 20
+407.1870562795018
+  0
+HATCH
+  5
+13D
+330
+17
+100
+AcDbEntity
+  8
+05_ЗАЛИВКА
+ 62
+7
+420
+9279398
+100
+AcDbHatch
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+210
+0.0
+220
+0.0
+230
+1.0
+  2
+SOLID
+ 70
+1
+ 71
+0
+ 91
+1
+ 92
+3
+ 72
+0
+ 73
+1
+ 93
+3
+ 10
+403.9980136986302
+ 20
+389.4261961187236
+ 10
+403.3630136986302
+ 20
+388.15619611872364
+ 10
+402.72801369863026
+ 20
+389.4261961187236
+ 97
+0
+ 75
+0
+ 76
+1
+ 98
+0
+  0
+LWPOLYLINE
+  5
+13E
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+35
+420
+9279398
+100
+AcDbPolyline
+ 90
+3
+ 70
+1
+ 10
+403.9980136986302
+ 20
+389.4261961187236
+ 10
+403.3630136986302
+ 20
+388.15619611872364
+ 10
+402.72801369863026
+ 20
+389.4261961187236
+  0
+TEXT
+  5
+13F
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+5661306
+100
+AcDbText
+ 10
+400.1733016909248
+ 20
+398.3063698630137
+ 30
+0.0
+ 40
+2.0319999999999996
+  1
+h дв. дна 0.90
+ 50
+90.0
+  7
+ГОСТ
+ 72
+1
+ 11
+400.1733016909248
+ 21
+398.3063698630137
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+140
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+151.45870818852254
+ 20
+374.7037509298079
+ 30
+0.0
+ 40
+2.159
+  1
+Горизонтальный киль 1800×12
+  7
+ГОСТ
+ 72
+1
+ 11
+151.45870818852254
+ 21
+374.7037509298079
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+HATCH
+  5
+141
+330
+17
+100
+AcDbEntity
+  8
+05_ЗАЛИВКА
+ 62
+7
+420
+9279398
+100
+AcDbHatch
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+210
+0.0
+220
+0.0
+230
+1.0
+  2
+SOLID
+ 70
+1
+ 71
+0
+ 91
+1
+ 92
+3
+ 72
+0
+ 73
+1
+ 93
+3
+ 10
+138.20487239269804
+ 20
+366.38179656883705
+ 10
+167.323344156561
+ 20
+376.6021284678473
+ 10
+196.44181592042398
+ 20
+386.8224603668575
+ 97
+0
+ 75
+0
+ 76
+1
+ 98
+0
+  0
+LWPOLYLINE
+  5
+142
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+30
+420
+9279398
+100
+AcDbPolyline
+ 90
+3
+ 70
+1
+ 10
+138.20487239269804
+ 20
+366.38179656883705
+ 10
+167.323344156561
+ 20
+376.6021284678473
+ 10
+196.44181592042398
+ 20
+386.8224603668575
+  0
+TEXT
+  5
+143
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+293.616972973045
+ 20
+370.17920005535103
+ 30
+0.0
+ 40
+2.159
+  1
+Обшивка днища 9 мм
+  7
+ГОСТ
+ 72
+1
+ 11
+293.616972973045
+ 21
+370.17920005535103
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+HATCH
+  5
+144
+330
+17
+100
+AcDbEntity
+  8
+05_ЗАЛИВКА
+ 62
+7
+420
+9279398
+100
+AcDbHatch
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+210
+0.0
+220
+0.0
+230
+1.0
+  2
+SOLID
+ 70
+1
+ 71
+0
+ 91
+1
+ 92
+3
+ 72
+0
+ 73
+1
+ 93
+3
+ 10
+296.41703500449825
+ 20
+357.65798681661556
+ 10
+283.8696617081708
+ 20
+372.09079258029334
+ 10
+271.3222884118433
+ 20
+386.5235983439712
+ 97
+0
+ 75
+0
+ 76
+1
+ 98
+0
+  0
+LWPOLYLINE
+  5
+145
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+30
+420
+9279398
+100
+AcDbPolyline
+ 90
+3
+ 70
+1
+ 10
+296.41703500449825
+ 20
+357.65798681661556
+ 10
+283.8696617081708
+ 20
+372.09079258029334
+ 10
+271.3222884118433
+ 20
+386.5235983439712
+  0
+TEXT
+  5
+146
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+134.46783156408435
+ 20
+397.7857497007459
+ 30
+0.0
+ 40
+2.159
+  1
+Вертикальный киль 1200×12
+  7
+ГОСТ
+ 72
+1
+ 11
+134.46783156408435
+ 21
+397.7857497007459
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+HATCH
+  5
+147
+330
+17
+100
+AcDbEntity
+  8
+05_ЗАЛИВКА
+ 62
+7
+420
+9279398
+100
+AcDbHatch
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+210
+0.0
+220
+0.0
+230
+1.0
+  2
+SOLID
+ 70
+1
+ 71
+0
+ 91
+1
+ 92
+3
+ 72
+0
+ 73
+1
+ 93
+3
+ 10
+129.62717120702737
+ 20
+396.8825172131352
+ 10
+157.39097652832862
+ 20
+399.68406975271523
+ 10
+185.15478184962984
+ 20
+402.48562229229515
+ 97
+0
+ 75
+0
+ 76
+1
+ 98
+0
+  0
+LWPOLYLINE
+  5
+148
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+30
+420
+9279398
+100
+AcDbPolyline
+ 90
+3
+ 70
+1
+ 10
+129.62717120702737
+ 20
+396.8825172131352
+ 10
+157.39097652832862
+ 20
+399.68406975271523
+ 10
+185.15478184962984
+ 20
+402.48562229229515
+  0
+TEXT
+  5
+149
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+198.0315944285338
+ 20
+408.9908559382058
+ 30
+0.0
+ 40
+2.159
+  1
+Днищевые стрингеры 1200×10
+  7
+ГОСТ
+ 72
+1
+ 11
+198.0315944285338
+ 21
+408.9908559382058
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+HATCH
+  5
+14A
+330
+17
+100
+AcDbEntity
+  8
+05_ЗАЛИВКА
+ 62
+7
+420
+9279398
+100
+AcDbHatch
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+210
+0.0
+220
+0.0
+230
+1.0
+  2
+SOLID
+ 70
+1
+ 71
+0
+ 91
+1
+ 92
+3
+ 72
+0
+ 73
+1
+ 93
+3
+ 10
+184.23019580666886
+ 20
+411.63092954465225
+ 10
+219.0697459848362
+ 20
+407.1388129017479
+ 10
+253.90929616300357
+ 20
+402.6466962588436
+ 97
+0
+ 75
+0
+ 76
+1
+ 98
+0
+  0
+LWPOLYLINE
+  5
+14B
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+30
+420
+9279398
+100
+AcDbPolyline
+ 90
+3
+ 70
+1
+ 10
+184.23019580666886
+ 20
+411.63092954465225
+ 10
+219.0697459848362
+ 20
+407.1388129017479
+ 10
+253.90929616300357
+ 20
+402.6466962588436
+  0
+TEXT
+  5
+14C
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+327.5819857695483
+ 20
+374.7133222059744
+ 30
+0.0
+ 40
+2.159
+  1
+Рёбра днища 140×8/60×10, шаг 550
+  7
+ГОСТ
+ 72
+1
+ 11
+327.5819857695483
+ 21
+374.7133222059744
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+HATCH
+  5
+14D
+330
+17
+100
+AcDbEntity
+  8
+05_ЗАЛИВКА
+ 62
+7
+420
+9279398
+100
+AcDbHatch
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+210
+0.0
+220
+0.0
+230
+1.0
+  2
+SOLID
+ 70
+1
+ 71
+0
+ 91
+1
+ 92
+3
+ 72
+0
+ 73
+1
+ 93
+3
+ 10
+327.22400343260057
+ 20
+363.15812346130247
+ 10
+311.8078847461225
+ 20
+376.6249077107945
+ 10
+296.39176605964445
+ 20
+390.0916919602866
+ 97
+0
+ 75
+0
+ 76
+1
+ 98
+0
+  0
+LWPOLYLINE
+  5
+14E
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+30
+420
+9279398
+100
+AcDbPolyline
+ 90
+3
+ 70
+1
+ 10
+327.22400343260057
+ 20
+363.15812346130247
+ 10
+311.8078847461225
+ 20
+376.6249077107945
+ 10
+296.39176605964445
+ 20
+390.0916919602866
+  0
+TEXT
+  5
+14F
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+391.57440293585927
+ 20
+430.2440413442548
+ 30
+0.0
+ 40
+2.159
+  1
+Настил второго дна 8 мм
+  7
+ГОСТ
+ 72
+1
+ 11
+391.57440293585927
+ 21
+430.2440413442548
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+HATCH
+  5
+150
+330
+17
+100
+AcDbEntity
+  8
+05_ЗАЛИВКА
+ 62
+7
+420
+9279398
+100
+AcDbHatch
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+210
+0.0
+220
+0.0
+230
+1.0
+  2
+SOLID
+ 70
+1
+ 71
+0
+ 91
+1
+ 92
+3
+ 72
+0
+ 73
+1
+ 93
+3
+ 10
+412.3403315366284
+ 20
+446.88175170176095
+ 10
+379.4084979279177
+ 20
+428.39192650963895
+ 10
+346.476664319207
+ 20
+409.90210131751695
+ 97
+0
+ 75
+0
+ 76
+1
+ 98
+0
+  0
+LWPOLYLINE
+  5
+151
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+30
+420
+9279398
+100
+AcDbPolyline
+ 90
+3
+ 70
+1
+ 10
+412.3403315366284
+ 20
+446.88175170176095
+ 10
+379.4084979279177
+ 20
+428.39192650963895
+ 10
+346.476664319207
+ 20
+409.90210131751695
+  0
+TEXT
+  5
+152
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+163.03192245421553
+ 20
+415.0609258937936
+ 30
+0.0
+ 40
+2.159
+  1
+Рёбра второго дна 120×8/50×8
+  7
+ГОСТ
+ 72
+1
+ 11
+163.03192245421553
+ 21
+415.0609258937936
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+HATCH
+  5
+153
+330
+17
+100
+AcDbEntity
+  8
+05_ЗАЛИВКА
+ 62
+7
+420
+9279398
+100
+AcDbHatch
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+210
+0.0
+220
+0.0
+230
+1.0
+  2
+SOLID
+ 70
+1
+ 71
+0
+ 91
+1
+ 92
+3
+ 72
+0
+ 73
+1
+ 93
+3
+ 10
+138.83172056555208
+ 20
+420.13102345565596
+ 10
+182.6214185817404
+ 20
+413.1493716969642
+ 10
+226.4111165979287
+ 20
+406.1677199382721
+ 97
+0
+ 75
+0
+ 76
+1
+ 98
+0
+  0
+LWPOLYLINE
+  5
+154
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+30
+420
+9279398
+100
+AcDbPolyline
+ 90
+3
+ 70
+1
+ 10
+138.83172056555208
+ 20
+420.13102345565596
+ 10
+182.6214185817404
+ 20
+413.1493716969642
+ 10
+226.4111165979287
+ 20
+406.1677199382721
+  0
+TEXT
+  5
+155
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+440.41941545849664
+ 20
+390.23890567124295
+ 30
+0.0
+ 40
+2.159
+  1
+Скуловой пояс 10 мм
+  7
+ГОСТ
+ 72
+1
+ 11
+440.41941545849664
+ 21
+390.23890567124295
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+156
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+30
+420
+9279398
+100
+AcDbPolyline
+ 90
+2
+ 70
+1
+ 10
+464.7586418421817
+ 20
+386.8443205801281
+ 10
+380.99648174779185
+ 20
+397.430017298263
+  0
+TEXT
+  5
+157
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+452.1579909127532
+ 20
+416.0034540221309
+ 30
+0.0
+ 40
+2.159
+  1
+Обшивка борта 8 мм, пояс ВЛ 9 мм
+  7
+ГОСТ
+ 72
+1
+ 11
+452.1579909127532
+ 21
+416.0034540221309
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+HATCH
+  5
+158
+330
+17
+100
+AcDbEntity
+  8
+05_ЗАЛИВКА
+ 62
+7
+420
+9279398
+100
+AcDbHatch
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+210
+0.0
+220
+0.0
+230
+1.0
+  2
+SOLID
+ 70
+1
+ 71
+0
+ 91
+1
+ 92
+3
+ 72
+0
+ 73
+1
+ 93
+3
+ 10
+471.5653338881193
+ 20
+410.1592862165363
+ 10
+432.1854489527032
+ 20
+417.9149770689513
+ 10
+392.80556401728705
+ 20
+425.6706679213663
+ 97
+0
+ 75
+0
+ 76
+1
+ 98
+0
+  0
+LWPOLYLINE
+  5
+159
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+30
+420
+9279398
+100
+AcDbPolyline
+ 90
+3
+ 70
+1
+ 10
+471.5653338881193
+ 20
+410.1592862165363
+ 10
+432.1854489527032
+ 20
+417.9149770689513
+ 10
+392.80556401728705
+ 20
+425.6706679213663
+  0
+TEXT
+  5
+15A
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+448.69769418720546
+ 20
+453.52395737211793
+ 30
+0.0
+ 40
+2.159
+  1
+Шпангоут 120×8/50×8, шаг 550
+  7
+ГОСТ
+ 72
+1
+ 11
+448.69769418720546
+ 21
+453.52395737211793
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+HATCH
+  5
+15B
+330
+17
+100
+AcDbEntity
+  8
+05_ЗАЛИВКА
+ 62
+7
+420
+9279398
+100
+AcDbHatch
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+210
+0.0
+220
+0.0
+230
+1.0
+  2
+SOLID
+ 70
+1
+ 71
+0
+ 91
+1
+ 92
+3
+ 72
+0
+ 73
+1
+ 93
+3
+ 10
+466.29373010835707
+ 20
+450.0414658306263
+ 10
+428.05265627334745
+ 20
+455.376022280778
+ 10
+389.8115824383378
+ 20
+460.7105787309296
+ 97
+0
+ 75
+0
+ 76
+1
+ 98
+0
+  0
+LWPOLYLINE
+  5
+15C
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+30
+420
+9279398
+100
+AcDbPolyline
+ 90
+3
+ 70
+1
+ 10
+466.29373010835707
+ 20
+450.0414658306263
+ 10
+428.05265627334745
+ 20
+455.376022280778
+ 10
+389.8115824383378
+ 20
+460.7105787309296
+  0
+TEXT
+  5
+15D
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+305.863147648473
+ 20
+449.8138123763316
+ 30
+0.0
+ 40
+2.159
+  1
+Бортовой стрингер 400×9/100×10
+  7
+ГОСТ
+ 72
+1
+ 11
+305.863147648473
+ 21
+449.8138123763316
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+HATCH
+  5
+15E
+330
+17
+100
+AcDbEntity
+  8
+05_ЗАЛИВКА
+ 62
+7
+420
+9279398
+100
+AcDbHatch
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+210
+0.0
+220
+0.0
+230
+1.0
+  2
+SOLID
+ 70
+1
+ 71
+0
+ 91
+1
+ 92
+3
+ 72
+0
+ 73
+1
+ 93
+3
+ 10
+289.18295173951003
+ 20
+449.8305083658913
+ 10
+333.4787184129536
+ 20
+450.93538142933653
+ 10
+377.7744850863973
+ 20
+452.04025449278174
+ 97
+0
+ 75
+0
+ 76
+1
+ 98
+0
+  0
+LWPOLYLINE
+  5
+15F
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+30
+420
+9279398
+100
+AcDbPolyline
+ 90
+3
+ 70
+1
+ 10
+289.18295173951003
+ 20
+449.8305083658913
+ 10
+333.4787184129536
+ 20
+450.93538142933653
+ 10
+377.7744850863973
+ 20
+452.04025449278174
+  0
+TEXT
+  5
+160
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+403.74719845975164
+ 20
+472.33652891412873
+ 30
+0.0
+ 40
+2.159
+  1
+Настил главной палубы 8 мм
+  7
+ГОСТ
+ 72
+1
+ 11
+403.74719845975164
+ 21
+472.33652891412873
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+HATCH
+  5
+161
+330
+17
+100
+AcDbEntity
+  8
+05_ЗАЛИВКА
+ 62
+7
+420
+9279398
+100
+AcDbHatch
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+210
+0.0
+220
+0.0
+230
+1.0
+  2
+SOLID
+ 70
+1
+ 71
+0
+ 91
+1
+ 92
+3
+ 72
+0
+ 73
+1
+ 93
+3
+ 10
+422.38422652337755
+ 20
+478.6328216030603
+ 10
+386.96640304564124
+ 20
+470.42507242113834
+ 10
+351.54857956790505
+ 20
+462.21732323921646
+ 97
+0
+ 75
+0
+ 76
+1
+ 98
+0
+  0
+LWPOLYLINE
+  5
+162
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+30
+420
+9279398
+100
+AcDbPolyline
+ 90
+3
+ 70
+1
+ 10
+422.38422652337755
+ 20
+478.6328216030603
+ 10
+386.96640304564124
+ 20
+470.42507242113834
+ 10
+351.54857956790505
+ 20
+462.21732323921646
+  0
+TEXT
+  5
+163
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+166.89022117362276
+ 20
+466.9247961209647
+ 30
+0.0
+ 40
+2.159
+  1
+Рёбра палубы 120×8/50×8, шаг 550
+  7
+ГОСТ
+ 72
+1
+ 11
+166.89022117362276
+ 21
+466.9247961209647
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+HATCH
+  5
+164
+330
+17
+100
+AcDbEntity
+  8
+05_ЗАЛИВКА
+ 62
+7
+420
+9279398
+100
+AcDbHatch
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+210
+0.0
+220
+0.0
+230
+1.0
+  2
+SOLID
+ 70
+1
+ 71
+0
+ 91
+1
+ 92
+3
+ 72
+0
+ 73
+1
+ 93
+3
+ 10
+140.64957404024312
+ 20
+471.1324818982694
+ 10
+190.40429358187214
+ 20
+465.01327251530495
+ 10
+240.15901312350118
+ 20
+458.8940631323404
+ 97
+0
+ 75
+0
+ 76
+1
+ 98
+0
+  0
+LWPOLYLINE
+  5
+165
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+30
+420
+9279398
+100
+AcDbPolyline
+ 90
+3
+ 70
+1
+ 10
+140.64957404024312
+ 20
+471.1324818982694
+ 10
+190.40429358187214
+ 20
+465.01327251530495
+ 10
+240.15901312350118
+ 20
+458.8940631323404
+  0
+TEXT
+  5
+166
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+226.27032898489642
+ 20
+438.89741271199
+ 30
+0.0
+ 40
+2.159
+  1
+Карлингс 600×10/180×12
+  7
+ГОСТ
+ 72
+1
+ 11
+226.27032898489642
+ 21
+438.89741271199
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+167
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+30
+420
+9279398
+100
+AcDbPolyline
+ 90
+2
+ 70
+1
+ 10
+200.79359269515788
+ 20
+434.5410931784238
+ 10
+287.6617218967334
+ 20
+446.957914068208
+  0
+TEXT
+  5
+168
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+301.2622405372429
+ 20
+426.3490281217976
+ 30
+0.0
+ 40
+2.159
+  1
+Скуловая кница, лист 10 мм
+  7
+ГОСТ
+ 72
+1
+ 11
+301.2622405372429
+ 21
+426.3490281217976
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+HATCH
+  5
+169
+330
+17
+100
+AcDbEntity
+  8
+05_ЗАЛИВКА
+ 62
+7
+420
+9279398
+100
+AcDbHatch
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+210
+0.0
+220
+0.0
+230
+1.0
+  2
+SOLID
+ 70
+1
+ 71
+0
+ 91
+1
+ 92
+3
+ 72
+0
+ 73
+1
+ 93
+3
+ 10
+276.6825507312002
+ 20
+428.45431129134715
+ 10
+324.7291153637787
+ 20
+424.65844993128985
+ 10
+372.7756799963572
+ 20
+420.86258857123266
+ 97
+0
+ 75
+0
+ 76
+1
+ 98
+0
+  0
+LWPOLYLINE
+  5
+16A
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+30
+420
+9279398
+100
+AcDbPolyline
+ 90
+3
+ 70
+1
+ 10
+276.6825507312002
+ 20
+428.45431129134715
+ 10
+324.7291153637787
+ 20
+424.65844993128985
+ 10
+372.7756799963572
+ 20
+420.86258857123266
+  0
+TEXT
+  5
+16B
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+431.00721862527166
+ 20
+446.921568223444
+ 30
+0.0
+ 40
+2.159
+  1
+Палубная кница 10 мм
+  7
+ГОСТ
+ 72
+1
+ 11
+431.00721862527166
+ 21
+446.921568223444
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+16C
+330
+17
+100
+AcDbEntity
+  8
+01_ЛИНИИ
+370
+30
+420
+9279398
+100
+AcDbPolyline
+ 90
+2
+ 70
+1
+ 10
+443.90892437242496
+ 20
+446.0655826587865
+ 10
+380.31629341492675
+ 20
+450.75588947467764
+  0
+TEXT
+  5
+16D
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+605.7033333333334
+ 20
+537.1578785807291
+ 30
+0.0
+ 40
+2.7939999999999996
+  1
+Спецификация связей эквивалентного бруса
+  7
+ГОСТ
+ 72
+1
+ 11
+605.7033333333334
+ 21
+537.1578785807291
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+16E
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+554.4799999999999
+ 20
+520.1845333333332
+ 10
+729.5120000000001
+ 20
+520.1845333333332
+ 10
+729.5120000000001
+ 20
+525.1798666666666
+ 10
+554.4799999999999
+ 20
+525.1798666666666
+  0
+TEXT
+  5
+16F
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+587.5618666666666
+ 20
+522.6822
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+Горизонтальный киль
+  7
+ГОСТ
+ 72
+1
+ 11
+587.5618666666666
+ 21
+522.6822
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+170
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+729.5120000000001
+ 20
+520.1845333333332
+ 10
+777.248
+ 20
+520.1845333333332
+ 10
+777.248
+ 20
+525.1798666666666
+ 10
+729.5120000000001
+ 20
+525.1798666666666
+  0
+TEXT
+  5
+171
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+769.9344000000001
+ 20
+522.6822
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+198
+  7
+ГОСТ
+ 72
+1
+ 11
+769.9344000000001
+ 21
+522.6822
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+172
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+777.248
+ 20
+520.1845333333332
+ 10
+819.6800000000002
+ 20
+520.1845333333332
+ 10
+819.6800000000002
+ 20
+525.1798666666666
+ 10
+777.248
+ 20
+525.1798666666666
+  0
+TEXT
+  5
+173
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+812.4734666666667
+ 20
+522.6822
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+0.00
+  7
+ГОСТ
+ 72
+1
+ 11
+812.4734666666667
+ 21
+522.6822
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+174
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+554.4799999999999
+ 20
+515.1891999999999
+ 10
+729.5120000000001
+ 20
+515.1891999999999
+ 10
+729.5120000000001
+ 20
+520.1845333333332
+ 10
+554.4799999999999
+ 20
+520.1845333333332
+  0
+TEXT
+  5
+175
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+583.6672
+ 20
+517.6868666666666
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+Обшивка днища
+  7
+ГОСТ
+ 72
+1
+ 11
+583.6672
+ 21
+517.6868666666666
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+176
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+729.5120000000001
+ 20
+515.1891999999999
+ 10
+777.248
+ 20
+515.1891999999999
+ 10
+777.248
+ 20
+520.1845333333332
+ 10
+729.5120000000001
+ 20
+520.1845333333332
+  0
+TEXT
+  5
+177
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+769.9344000000001
+ 20
+517.6868666666666
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+967
+  7
+ГОСТ
+ 72
+1
+ 11
+769.9344000000001
+ 21
+517.6868666666666
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+178
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+777.248
+ 20
+515.1891999999999
+ 10
+819.6800000000002
+ 20
+515.1891999999999
+ 10
+819.6800000000002
+ 20
+520.1845333333332
+ 10
+777.248
+ 20
+520.1845333333332
+  0
+TEXT
+  5
+179
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+812.4734666666667
+ 20
+517.6868666666666
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+0.00
+  7
+ГОСТ
+ 72
+1
+ 11
+812.4734666666667
+ 21
+517.6868666666666
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+17A
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+554.4799999999999
+ 20
+510.19386666666657
+ 10
+729.5120000000001
+ 20
+510.19386666666657
+ 10
+729.5120000000001
+ 20
+515.1891999999999
+ 10
+554.4799999999999
+ 20
+515.1891999999999
+  0
+TEXT
+  5
+17B
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+582.3971999999999
+ 20
+512.6915333333333
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+Скуловой пояс
+  7
+ГОСТ
+ 72
+1
+ 11
+582.3971999999999
+ 21
+512.6915333333333
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+17C
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+729.5120000000001
+ 20
+510.19386666666657
+ 10
+777.248
+ 20
+510.19386666666657
+ 10
+777.248
+ 20
+515.1891999999999
+ 10
+729.5120000000001
+ 20
+515.1891999999999
+  0
+TEXT
+  5
+17D
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+769.9344000000001
+ 20
+512.6915333333333
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+203
+  7
+ГОСТ
+ 72
+1
+ 11
+769.9344000000001
+ 21
+512.6915333333333
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+17E
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+777.248
+ 20
+510.19386666666657
+ 10
+819.6800000000002
+ 20
+510.19386666666657
+ 10
+819.6800000000002
+ 20
+515.1891999999999
+ 10
+777.248
+ 20
+515.1891999999999
+  0
+TEXT
+  5
+17F
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+812.4734666666667
+ 20
+512.6915333333333
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+0.42
+  7
+ГОСТ
+ 72
+1
+ 11
+812.4734666666667
+ 21
+512.6915333333333
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+180
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+554.4799999999999
+ 20
+505.1985333333333
+ 10
+729.5120000000001
+ 20
+505.1985333333333
+ 10
+729.5120000000001
+ 20
+510.19386666666657
+ 10
+554.4799999999999
+ 20
+510.19386666666657
+  0
+TEXT
+  5
+181
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+586.4612
+ 20
+507.6961999999999
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+Борт ниже пояса ВЛ
+  7
+ГОСТ
+ 72
+1
+ 11
+586.4612
+ 21
+507.6961999999999
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+182
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+729.5120000000001
+ 20
+505.1985333333333
+ 10
+777.248
+ 20
+505.1985333333333
+ 10
+777.248
+ 20
+510.19386666666657
+ 10
+729.5120000000001
+ 20
+510.19386666666657
+  0
+TEXT
+  5
+183
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+769.9344000000001
+ 20
+507.6961999999999
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+135
+  7
+ГОСТ
+ 72
+1
+ 11
+769.9344000000001
+ 21
+507.6961999999999
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+184
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+777.248
+ 20
+505.1985333333333
+ 10
+819.6800000000002
+ 20
+505.1985333333333
+ 10
+819.6800000000002
+ 20
+510.19386666666657
+ 10
+777.248
+ 20
+510.19386666666657
+  0
+TEXT
+  5
+185
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+812.4734666666667
+ 20
+507.6961999999999
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+1.32
+  7
+ГОСТ
+ 72
+1
+ 11
+812.4734666666667
+ 21
+507.6961999999999
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+186
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+554.4799999999999
+ 20
+500.2032
+ 10
+729.5120000000001
+ 20
+500.2032
+ 10
+729.5120000000001
+ 20
+505.19853333333333
+ 10
+554.4799999999999
+ 20
+505.19853333333333
+  0
+TEXT
+  5
+187
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+593.4038666666667
+ 20
+502.7008666666666
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+Пояс переменных ватерлиний
+  7
+ГОСТ
+ 72
+1
+ 11
+593.4038666666667
+ 21
+502.7008666666666
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+188
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+729.5120000000001
+ 20
+500.2032
+ 10
+777.248
+ 20
+500.2032
+ 10
+777.248
+ 20
+505.19853333333333
+ 10
+729.5120000000001
+ 20
+505.19853333333333
+  0
+TEXT
+  5
+189
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+769.9344000000001
+ 20
+502.7008666666666
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+240
+  7
+ГОСТ
+ 72
+1
+ 11
+769.9344000000001
+ 21
+502.7008666666666
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+18A
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+777.248
+ 20
+500.2032
+ 10
+819.6800000000002
+ 20
+500.2032
+ 10
+819.6800000000002
+ 20
+505.19853333333333
+ 10
+777.248
+ 20
+505.19853333333333
+  0
+TEXT
+  5
+18B
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+812.4734666666667
+ 20
+502.7008666666666
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+2.60
+  7
+ГОСТ
+ 72
+1
+ 11
+812.4734666666667
+ 21
+502.7008666666666
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+18C
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+554.4799999999999
+ 20
+495.2078666666666
+ 10
+729.5120000000001
+ 20
+495.2078666666666
+ 10
+729.5120000000001
+ 20
+500.20319999999987
+ 10
+554.4799999999999
+ 20
+500.20319999999987
+  0
+TEXT
+  5
+18D
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+579.1798666666666
+ 20
+497.7055333333332
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+Ширстрек
+  7
+ГОСТ
+ 72
+1
+ 11
+579.1798666666666
+ 21
+497.7055333333332
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+18E
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+729.5120000000001
+ 20
+495.2078666666666
+ 10
+777.248
+ 20
+495.2078666666666
+ 10
+777.248
+ 20
+500.20319999999987
+ 10
+729.5120000000001
+ 20
+500.20319999999987
+  0
+TEXT
+  5
+18F
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+770.2730666666668
+ 20
+497.7055333333332
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+-80
+  7
+ГОСТ
+ 72
+1
+ 11
+770.2730666666668
+ 21
+497.7055333333332
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+190
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+777.248
+ 20
+495.2078666666666
+ 10
+819.6800000000002
+ 20
+495.2078666666666
+ 10
+819.6800000000002
+ 20
+500.20319999999987
+ 10
+777.248
+ 20
+500.20319999999987
+  0
+TEXT
+  5
+191
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+812.4734666666667
+ 20
+497.7055333333332
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+3.20
+  7
+ГОСТ
+ 72
+1
+ 11
+812.4734666666667
+ 21
+497.7055333333332
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+192
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+554.4799999999999
+ 20
+490.21253333333334
+ 10
+729.5120000000001
+ 20
+490.21253333333334
+ 10
+729.5120000000001
+ 20
+495.2078666666667
+ 10
+554.4799999999999
+ 20
+495.2078666666667
+  0
+TEXT
+  5
+193
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+586.1225333333333
+ 20
+492.7102
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+Настил второго дна
+  7
+ГОСТ
+ 72
+1
+ 11
+586.1225333333333
+ 21
+492.7102
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+194
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+729.5120000000001
+ 20
+490.21253333333334
+ 10
+777.248
+ 20
+490.21253333333334
+ 10
+777.248
+ 20
+495.2078666666667
+ 10
+729.5120000000001
+ 20
+495.2078666666667
+  0
+TEXT
+  5
+195
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+769.0877333333334
+ 20
+492.7102
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+1107
+  7
+ГОСТ
+ 72
+1
+ 11
+769.0877333333334
+ 21
+492.7102
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+196
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+777.248
+ 20
+490.21253333333334
+ 10
+819.6800000000002
+ 20
+490.21253333333334
+ 10
+819.6800000000002
+ 20
+495.2078666666667
+ 10
+777.248
+ 20
+495.2078666666667
+  0
+TEXT
+  5
+197
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+812.4734666666667
+ 20
+492.7102
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+0.90
+  7
+ГОСТ
+ 72
+1
+ 11
+812.4734666666667
+ 21
+492.7102
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+198
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+554.4799999999999
+ 20
+485.2171999999999
+ 10
+729.5120000000001
+ 20
+485.2171999999999
+ 10
+729.5120000000001
+ 20
+490.2125333333333
+ 10
+554.4799999999999
+ 20
+490.2125333333333
+  0
+TEXT
+  5
+199
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+588.8318666666667
+ 20
+487.71486666666664
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+Настил главной палубы
+  7
+ГОСТ
+ 72
+1
+ 11
+588.8318666666667
+ 21
+487.71486666666664
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+19A
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+729.5120000000001
+ 20
+485.2171999999999
+ 10
+777.248
+ 20
+485.2171999999999
+ 10
+777.248
+ 20
+490.2125333333333
+ 10
+729.5120000000001
+ 20
+490.2125333333333
+  0
+TEXT
+  5
+19B
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+769.0877333333334
+ 20
+487.71486666666664
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+1224
+  7
+ГОСТ
+ 72
+1
+ 11
+769.0877333333334
+ 21
+487.71486666666664
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+19C
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+777.248
+ 20
+485.2171999999999
+ 10
+819.6800000000002
+ 20
+485.2171999999999
+ 10
+819.6800000000002
+ 20
+490.2125333333333
+ 10
+777.248
+ 20
+490.2125333333333
+  0
+TEXT
+  5
+19D
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+812.4734666666667
+ 20
+487.71486666666664
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+3.00
+  7
+ГОСТ
+ 72
+1
+ 11
+812.4734666666667
+ 21
+487.71486666666664
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+19E
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+554.4799999999999
+ 20
+480.22186666666664
+ 10
+729.5120000000001
+ 20
+480.22186666666664
+ 10
+729.5120000000001
+ 20
+485.2172
+ 10
+554.4799999999999
+ 20
+485.2172
+  0
+TEXT
+  5
+19F
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+585.9531999999999
+ 20
+482.71953333333335
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+Палубный стрингер
+  7
+ГОСТ
+ 72
+1
+ 11
+585.9531999999999
+ 21
+482.71953333333335
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+1A0
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+729.5120000000001
+ 20
+480.22186666666664
+ 10
+777.248
+ 20
+480.22186666666664
+ 10
+777.248
+ 20
+485.2172
+ 10
+729.5120000000001
+ 20
+485.2172
+  0
+TEXT
+  5
+1A1
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+769.9344000000001
+ 20
+482.71953333333335
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+144
+  7
+ГОСТ
+ 72
+1
+ 11
+769.9344000000001
+ 21
+482.71953333333335
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+1A2
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+777.248
+ 20
+480.22186666666664
+ 10
+819.6800000000002
+ 20
+480.22186666666664
+ 10
+819.6800000000002
+ 20
+485.2172
+ 10
+777.248
+ 20
+485.2172
+  0
+TEXT
+  5
+1A3
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+812.4734666666667
+ 20
+482.71953333333335
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+3.00
+  7
+ГОСТ
+ 72
+1
+ 11
+812.4734666666667
+ 21
+482.71953333333335
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+1A4
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+554.4799999999999
+ 20
+475.2265333333333
+ 10
+729.5120000000001
+ 20
+475.2265333333333
+ 10
+729.5120000000001
+ 20
+480.2218666666666
+ 10
+554.4799999999999
+ 20
+480.2218666666666
+  0
+TEXT
+  5
+1A5
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+585.9531999999999
+ 20
+477.72419999999994
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+Рёбра днища 25 шт
+  7
+ГОСТ
+ 72
+1
+ 11
+585.9531999999999
+ 21
+477.72419999999994
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+1A6
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+729.5120000000001
+ 20
+475.2265333333333
+ 10
+777.248
+ 20
+475.2265333333333
+ 10
+777.248
+ 20
+480.2218666666666
+ 10
+729.5120000000001
+ 20
+480.2218666666666
+  0
+TEXT
+  5
+1A7
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+769.9344000000001
+ 20
+477.72419999999994
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+430
+  7
+ГОСТ
+ 72
+1
+ 11
+769.9344000000001
+ 21
+477.72419999999994
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+1A8
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+777.248
+ 20
+475.2265333333333
+ 10
+819.6800000000002
+ 20
+475.2265333333333
+ 10
+819.6800000000002
+ 20
+480.2218666666666
+ 10
+777.248
+ 20
+480.2218666666666
+  0
+TEXT
+  5
+1A9
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+812.4734666666667
+ 20
+477.72419999999994
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+0.10
+  7
+ГОСТ
+ 72
+1
+ 11
+812.4734666666667
+ 21
+477.72419999999994
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+1AA
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+554.4799999999999
+ 20
+470.23119999999994
+ 10
+729.5120000000001
+ 20
+470.23119999999994
+ 10
+729.5120000000001
+ 20
+475.22653333333335
+ 10
+554.4799999999999
+ 20
+475.22653333333335
+  0
+TEXT
+  5
+1AB
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+589.8478666666666
+ 20
+472.72886666666665
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+Рёбра второго дна 27 шт
+  7
+ГОСТ
+ 72
+1
+ 11
+589.8478666666666
+ 21
+472.72886666666665
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+1AC
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+729.5120000000001
+ 20
+470.23119999999994
+ 10
+777.248
+ 20
+470.23119999999994
+ 10
+777.248
+ 20
+475.22653333333335
+ 10
+729.5120000000001
+ 20
+475.22653333333335
+  0
+TEXT
+  5
+1AD
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+769.9344000000001
+ 20
+472.72886666666665
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+367
+  7
+ГОСТ
+ 72
+1
+ 11
+769.9344000000001
+ 21
+472.72886666666665
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+1AE
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+777.248
+ 20
+470.23119999999994
+ 10
+819.6800000000002
+ 20
+470.23119999999994
+ 10
+819.6800000000002
+ 20
+475.22653333333335
+ 10
+777.248
+ 20
+475.22653333333335
+  0
+TEXT
+  5
+1AF
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+812.4734666666667
+ 20
+472.72886666666665
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+0.82
+  7
+ГОСТ
+ 72
+1
+ 11
+812.4734666666667
+ 21
+472.72886666666665
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+1B0
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+554.4799999999999
+ 20
+465.2358666666666
+ 10
+729.5120000000001
+ 20
+465.2358666666666
+ 10
+729.5120000000001
+ 20
+470.2311999999999
+ 10
+554.4799999999999
+ 20
+470.2311999999999
+  0
+TEXT
+  5
+1B1
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+592.5572
+ 20
+467.73353333333324
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+Рёбра главной палубы 26 шт
+  7
+ГОСТ
+ 72
+1
+ 11
+592.5572
+ 21
+467.73353333333324
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+1B2
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+729.5120000000001
+ 20
+465.2358666666666
+ 10
+777.248
+ 20
+465.2358666666666
+ 10
+777.248
+ 20
+470.2311999999999
+ 10
+729.5120000000001
+ 20
+470.2311999999999
+  0
+TEXT
+  5
+1B3
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+769.9344000000001
+ 20
+467.73353333333324
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+354
+  7
+ГОСТ
+ 72
+1
+ 11
+769.9344000000001
+ 21
+467.73353333333324
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+1B4
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+777.248
+ 20
+465.2358666666666
+ 10
+819.6800000000002
+ 20
+465.2358666666666
+ 10
+819.6800000000002
+ 20
+470.2311999999999
+ 10
+777.248
+ 20
+470.2311999999999
+  0
+TEXT
+  5
+1B5
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+812.4734666666667
+ 20
+467.73353333333324
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+2.92
+  7
+ГОСТ
+ 72
+1
+ 11
+812.4734666666667
+ 21
+467.73353333333324
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+1B6
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+554.4799999999999
+ 20
+460.24053333333336
+ 10
+729.5120000000001
+ 20
+460.24053333333336
+ 10
+729.5120000000001
+ 20
+465.23586666666665
+ 10
+554.4799999999999
+ 20
+465.23586666666665
+  0
+TEXT
+  5
+1B7
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+586.0378666666667
+ 20
+462.7382
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+Вертикальный киль
+  7
+ГОСТ
+ 72
+1
+ 11
+586.0378666666667
+ 21
+462.7382
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+1B8
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+729.5120000000001
+ 20
+460.24053333333336
+ 10
+777.248
+ 20
+460.24053333333336
+ 10
+777.248
+ 20
+465.23586666666665
+ 10
+729.5120000000001
+ 20
+465.23586666666665
+  0
+TEXT
+  5
+1B9
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+769.9344000000001
+ 20
+462.7382
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+144
+  7
+ГОСТ
+ 72
+1
+ 11
+769.9344000000001
+ 21
+462.7382
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+1BA
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+777.248
+ 20
+460.24053333333336
+ 10
+819.6800000000002
+ 20
+460.24053333333336
+ 10
+819.6800000000002
+ 20
+465.23586666666665
+ 10
+777.248
+ 20
+465.23586666666665
+  0
+TEXT
+  5
+1BB
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+812.4734666666667
+ 20
+462.7382
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+0.60
+  7
+ГОСТ
+ 72
+1
+ 11
+812.4734666666667
+ 21
+462.7382
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+1BC
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+554.4799999999999
+ 20
+455.2451999999999
+ 10
+729.5120000000001
+ 20
+455.2451999999999
+ 10
+729.5120000000001
+ 20
+460.2405333333333
+ 10
+554.4799999999999
+ 20
+460.2405333333333
+  0
+TEXT
+  5
+1BD
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+591.2872
+ 20
+457.74286666666654
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+Днищевые стрингеры 4 шт
+  7
+ГОСТ
+ 72
+1
+ 11
+591.2872
+ 21
+457.74286666666654
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+1BE
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+729.5120000000001
+ 20
+455.2451999999999
+ 10
+777.248
+ 20
+455.2451999999999
+ 10
+777.248
+ 20
+460.2405333333333
+ 10
+729.5120000000001
+ 20
+460.2405333333333
+  0
+TEXT
+  5
+1BF
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+769.9344000000001
+ 20
+457.74286666666654
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+480
+  7
+ГОСТ
+ 72
+1
+ 11
+769.9344000000001
+ 21
+457.74286666666654
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+1C0
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+777.248
+ 20
+455.2451999999999
+ 10
+819.6800000000002
+ 20
+455.2451999999999
+ 10
+819.6800000000002
+ 20
+460.2405333333333
+ 10
+777.248
+ 20
+460.2405333333333
+  0
+TEXT
+  5
+1C1
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+812.4734666666667
+ 20
+457.74286666666654
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+0.60
+  7
+ГОСТ
+ 72
+1
+ 11
+812.4734666666667
+ 21
+457.74286666666654
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+1C2
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+554.4799999999999
+ 20
+450.24986666666666
+ 10
+729.5120000000001
+ 20
+450.24986666666666
+ 10
+729.5120000000001
+ 20
+455.24519999999995
+ 10
+554.4799999999999
+ 20
+455.24519999999995
+  0
+TEXT
+  5
+1C3
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+590.6098666666667
+ 20
+452.7475333333333
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+Бортовые стрингеры 4 шт
+  7
+ГОСТ
+ 72
+1
+ 11
+590.6098666666667
+ 21
+452.7475333333333
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+1C4
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+729.5120000000001
+ 20
+450.24986666666666
+ 10
+777.248
+ 20
+450.24986666666666
+ 10
+777.248
+ 20
+455.24519999999995
+ 10
+729.5120000000001
+ 20
+455.24519999999995
+  0
+TEXT
+  5
+1C5
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+769.9344000000001
+ 20
+452.7475333333333
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+184
+  7
+ГОСТ
+ 72
+1
+ 11
+769.9344000000001
+ 21
+452.7475333333333
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+1C6
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+777.248
+ 20
+450.24986666666666
+ 10
+819.6800000000002
+ 20
+450.24986666666666
+ 10
+819.6800000000002
+ 20
+455.24519999999995
+ 10
+777.248
+ 20
+455.24519999999995
+  0
+TEXT
+  5
+1C7
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+812.4734666666667
+ 20
+452.7475333333333
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+2.60
+  7
+ГОСТ
+ 72
+1
+ 11
+812.4734666666667
+ 21
+452.7475333333333
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+1C8
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+554.4799999999999
+ 20
+445.25453333333326
+ 10
+729.5120000000001
+ 20
+445.25453333333326
+ 10
+729.5120000000001
+ 20
+450.2498666666666
+ 10
+554.4799999999999
+ 20
+450.2498666666666
+  0
+TEXT
+  5
+1C9
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+583.4132
+ 20
+447.75219999999996
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+Карлингсы 3 шт
+  7
+ГОСТ
+ 72
+1
+ 11
+583.4132
+ 21
+447.75219999999996
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+1CA
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+729.5120000000001
+ 20
+445.25453333333326
+ 10
+777.248
+ 20
+445.25453333333326
+ 10
+777.248
+ 20
+450.2498666666666
+ 10
+729.5120000000001
+ 20
+450.2498666666666
+  0
+TEXT
+  5
+1CB
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+769.9344000000001
+ 20
+447.75219999999996
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+245
+  7
+ГОСТ
+ 72
+1
+ 11
+769.9344000000001
+ 21
+447.75219999999996
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+LWPOLYLINE
+  5
+1CC
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+777.248
+ 20
+445.25453333333326
+ 10
+819.6800000000002
+ 20
+445.25453333333326
+ 10
+819.6800000000002
+ 20
+450.2498666666666
+ 10
+777.248
+ 20
+450.2498666666666
+  0
+TEXT
+  5
+1CD
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+812.4734666666667
+ 20
+447.75219999999996
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+2.62
+  7
+ГОСТ
+ 72
+1
+ 11
+812.4734666666667
+ 21
+447.75219999999996
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+HATCH
+  5
+1CE
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+ 62
+7
+420
+15659509
+100
+AcDbHatch
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+210
+0.0
+220
+0.0
+230
+1.0
+  2
+SOLID
+ 70
+1
+ 71
+0
+ 91
+1
+ 92
+3
+ 72
+0
+ 73
+1
+ 93
+4
+ 10
+554.4799999999999
+ 20
+525.1798666666666
+ 10
+729.5120000000001
+ 20
+525.1798666666666
+ 10
+729.5120000000001
+ 20
+530.1751999999999
+ 10
+554.4799999999999
+ 20
+530.1751999999999
+ 97
+0
+ 75
+0
+ 76
+1
+ 98
+0
+  0
+LWPOLYLINE
+  5
+1CF
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+554.4799999999999
+ 20
+525.1798666666666
+ 10
+729.5120000000001
+ 20
+525.1798666666666
+ 10
+729.5120000000001
+ 20
+530.1751999999999
+ 10
+554.4799999999999
+ 20
+530.1751999999999
+  0
+TEXT
+  5
+1D0
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+641.996
+ 20
+527.6775333333333
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+связь
+  7
+ГОСТ
+ 72
+1
+ 11
+641.996
+ 21
+527.6775333333333
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+HATCH
+  5
+1D1
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+ 62
+7
+420
+15659509
+100
+AcDbHatch
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+210
+0.0
+220
+0.0
+230
+1.0
+  2
+SOLID
+ 70
+1
+ 71
+0
+ 91
+1
+ 92
+3
+ 72
+0
+ 73
+1
+ 93
+4
+ 10
+729.5120000000001
+ 20
+525.1798666666666
+ 10
+777.248
+ 20
+525.1798666666666
+ 10
+777.248
+ 20
+530.1751999999999
+ 10
+729.5120000000001
+ 20
+530.1751999999999
+ 97
+0
+ 75
+0
+ 76
+1
+ 98
+0
+  0
+LWPOLYLINE
+  5
+1D2
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+729.5120000000001
+ 20
+525.1798666666666
+ 10
+777.248
+ 20
+525.1798666666666
+ 10
+777.248
+ 20
+530.1751999999999
+ 10
+729.5120000000001
+ 20
+530.1751999999999
+  0
+TEXT
+  5
+1D3
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+767.9619312500001
+ 20
+527.6775333333333
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+A, см²
+  7
+ГОСТ
+ 72
+1
+ 11
+767.9619312500001
+ 21
+527.6775333333333
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+HATCH
+  5
+1D4
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+ 62
+7
+420
+15659509
+100
+AcDbHatch
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+210
+0.0
+220
+0.0
+230
+1.0
+  2
+SOLID
+ 70
+1
+ 71
+0
+ 91
+1
+ 92
+3
+ 72
+0
+ 73
+1
+ 93
+4
+ 10
+777.248
+ 20
+525.1798666666666
+ 10
+819.6800000000002
+ 20
+525.1798666666666
+ 10
+819.6800000000002
+ 20
+530.1751999999999
+ 10
+777.248
+ 20
+530.1751999999999
+ 97
+0
+ 75
+0
+ 76
+1
+ 98
+0
+  0
+LWPOLYLINE
+  5
+1D5
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+370
+18
+420
+13423581
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+777.248
+ 20
+525.1798666666666
+ 10
+819.6800000000002
+ 20
+525.1798666666666
+ 10
+819.6800000000002
+ 20
+530.1751999999999
+ 10
+777.248
+ 20
+530.1751999999999
+  0
+TEXT
+  5
+1D6
+330
+17
+100
+AcDbEntity
+  8
+06_ТАБЛИЦА
+420
+0
+100
+AcDbText
+ 10
+812.5581333333333
+ 20
+527.6775333333333
+ 30
+0.0
+ 40
+1.9303999999999994
+  1
+z, м
+  7
+ГОСТ
+ 72
+1
+ 11
+812.5581333333333
+ 21
+527.6775333333333
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+1D7
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+102.56133333333334
+ 20
+312.33287858072913
+ 30
+0.0
+ 40
+2.7939999999999996
+  1
+Результаты расчёта общей продольной прочности
+  7
+ГОСТ
+ 72
+1
+ 11
+102.56133333333334
+ 21
+312.33287858072913
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+1D8
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+97.14266666666667
+ 20
+293.90306536458326
+ 30
+0.0
+ 40
+2.2352
+  1
+Площадь сечения эквивалентного бруса A = 6342 см² = 0.634 м²
+  7
+ГОСТ
+ 72
+1
+ 11
+97.14266666666667
+ 21
+293.90306536458326
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+1D9
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+87.74466666666667
+ 20
+281.3789861979166
+ 30
+0.0
+ 40
+2.2352
+  1
+Нейтральная ось z₀ = 1.356 м от основной плоскости
+  7
+ГОСТ
+ 72
+1
+ 11
+87.74466666666667
+ 21
+281.3789861979166
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+1DA
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+67.93266666666668
+ 20
+268.86212795138886
+ 30
+0.0
+ 40
+2.2352
+  1
+Момент инерции I = 1.023 м⁴
+  7
+ГОСТ
+ 72
+1
+ 11
+67.93266666666668
+ 21
+268.86212795138886
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+1DB
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+1450031
+100
+AcDbText
+ 10
+98.24333333333334
+ 20
+256.3705153645833
+ 30
+0.0
+ 40
+2.2352
+  1
+Момент сопротивления палубы W = 0.622 м³, днища W = 0.754 м³
+  7
+ГОСТ
+ 72
+1
+ 11
+98.24333333333334
+ 21
+256.3705153645833
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+1DC
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+3819096
+100
+AcDbText
+ 10
+116.44666666666667
+ 20
+231.3488153645833
+ 30
+0.0
+ 40
+2.2352
+  1
+тихая вода     M =    -28.6 МН·м   σ палубы =  46.0 МПа   σ днища =  38.0 МПа   проходит
+  7
+ГОСТ
+ 72
+1
+ 11
+116.44666666666667
+ 21
+231.3488153645833
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+1DD
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+3819096
+100
+AcDbText
+ 10
+115.43066666666668
+ 20
+218.8379653645833
+ 30
+0.0
+ 40
+2.2352
+  1
+перегиб        M =     22.1 МН·м   σ палубы =  35.5 МПа   σ днища =  29.3 МПа   проходит
+  7
+ГОСТ
+ 72
+1
+ 11
+115.43066666666668
+ 21
+218.8379653645833
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+1DE
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+3819096
+100
+AcDbText
+ 10
+115.092
+ 20
+206.3271153645833
+ 30
+0.0
+ 40
+2.2352
+  1
+прогиб         M =    -48.8 МН·м   σ палубы =  78.4 МПа   σ днища =  64.7 МПа   проходит
+  7
+ГОСТ
+ 72
+1
+ 11
+115.092
+ 21
+206.3271153645833
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+1DF
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+3819096
+100
+AcDbText
+ 10
+116.19266666666668
+ 20
+181.29218619791664
+ 30
+0.0
+ 40
+2.2352
+  1
+Материал основных связей — сталь 09Г2С ГОСТ 19281-2014, предел текучести 325 МПа
+  7
+ГОСТ
+ 72
+1
+ 11
+116.19266666666668
+ 21
+181.29218619791664
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+1E0
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+3819096
+100
+AcDbText
+ 10
+99.01988541666667
+ 20
+168.77532795138885
+ 30
+0.0
+ 40
+2.2352
+  1
+Допускаемое напряжение 0.60·ReH = 195 МПа, использовано 40 %
+  7
+ГОСТ
+ 72
+1
+ 11
+99.01988541666667
+ 21
+168.77532795138885
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+1E1
+330
+17
+100
+AcDbEntity
+  8
+04_ТЕКСТ
+420
+3819096
+100
+AcDbText
+ 10
+92.232
+ 20
+156.2644779513889
+ 30
+0.0
+ 40
+2.2352
+  1
+Волна класса «О»: высота 2.0 м, длина равна длине судна
+  7
+ГОСТ
+ 72
+1
+ 11
+92.232
+ 21
+156.2644779513889
+ 31
+0.0
+100
+AcDbText
+ 73
+2
+  0
+TEXT
+  5
+1E2
+330
+17
+100
+AcDbEntity
+  8
+00_РАМКА
+100
+AcDbText
+ 10
+2.0
+ 20
+-4.5
+ 30
+0.0
+ 40
+2.5
+  1
+«Волжский Горизонт» · мидель-шпангоут · лист 841 × 594 мм, 1 мм = 1 мм листа; величины по осям — как на графике
+  7
+ГОСТ
+ 11
+2.0
+ 21
+-4.5
+ 31
+0.0
+100
+AcDbText
+  0
+ENDSEC
+  0
+SECTION
+  2
+OBJECTS
+  0
+DICTIONARY
+  5
+A
+330
+0
+100
+AcDbDictionary
+281
+1
+  3
+ACAD_COLOR
+350
+B
+  3
+ACAD_GROUP
+350
+C
+  3
+ACAD_LAYOUT
+350
+D
+  3
+ACAD_MATERIAL
+350
+E
+  3
+ACAD_MLEADERSTYLE
+350
+F
+  3
+ACAD_MLINESTYLE
+350
+10
+  3
+ACAD_PLOTSETTINGS
+350
+11
+  3
+ACAD_PLOTSTYLENAME
+350
+12
+  3
+ACAD_SCALELIST
+350
+14
+  3
+ACAD_TABLESTYLE
+350
+15
+  3
+ACAD_VISUALSTYLE
+350
+16
+  3
+EZDXF_META
+350
+2D
+  0
+DICTIONARY
+  5
+B
+330
+A
+100
+AcDbDictionary
+281
+1
+  0
+DICTIONARY
+  5
+C
+330
+A
+100
+AcDbDictionary
+281
+1
+  0
+DICTIONARY
+  5
+D
+330
+A
+100
+AcDbDictionary
+281
+1
+  3
+Model
+350
+1A
+  3
+Layout1
+350
+1E
+  0
+DICTIONARY
+  5
+E
+330
+A
+100
+AcDbDictionary
+281
+1
+  3
+ByBlock
+350
+1F
+  3
+ByLayer
+350
+20
+  3
+Global
+350
+21
+  0
+DICTIONARY
+  5
+F
+330
+A
+100
+AcDbDictionary
+281
+1
+  3
+Standard
+350
+2C
+  0
+DICTIONARY
+  5
+10
+330
+A
+100
+AcDbDictionary
+281
+1
+  3
+Standard
+350
+22
+  0
+DICTIONARY
+  5
+11
+330
+A
+100
+AcDbDictionary
+281
+1
+  0
+ACDBDICTIONARYWDFLT
+  5
+12
+330
+A
+100
+AcDbDictionary
+281
+1
+  3
+Normal
+350
+13
+100
+AcDbDictionaryWithDefault
+340
+13
+  0
+ACDBPLACEHOLDER
+  5
+13
+330
+12
+  0
+DICTIONARY
+  5
+14
+330
+A
+100
+AcDbDictionary
+281
+1
+  0
+DICTIONARY
+  5
+15
+330
+A
+100
+AcDbDictionary
+281
+1
+  0
+DICTIONARY
+  5
+16
+330
+A
+100
+AcDbDictionary
+281
+1
+  3
+2dWireframe
+350
+5A
+  3
+Basic
+350
+5B
+  3
+Brighten
+350
+5C
+  3
+ColorChange
+350
+5D
+  3
+Conceptual
+350
+5E
+  3
+Dim
+350
+5F
+  3
+EdgeColorOff
+350
+60
+  3
+Facepattern
+350
+61
+  3
+Flat
+350
+62
+  3
+FlatWithEdges
+350
+63
+  3
+Gouraud
+350
+64
+  3
+GouraudWithEdges
+350
+65
+  3
+Hidden
+350
+66
+  3
+JitterOff
+350
+67
+  3
+Linepattern
+350
+68
+  3
+Modeling
+350
+69
+  3
+OverhangOff
+350
+6A
+  3
+Realistic
+350
+6B
+  3
+Shaded
+350
+6C
+  3
+Shaded with edges
+350
+6D
+  3
+Shades of Gray
+350
+6E
+  3
+Sketchy
+350
+6F
+  3
+Thicken
+350
+70
+  3
+Wireframe
+350
+71
+  3
+X-Ray
+350
+72
+  0
+LAYOUT
+  5
+1A
+330
+D
+100
+AcDbPlotSettings
+  1
+
+  4
+A3
+  6
+
+ 40
+7.5
+ 41
+20.0
+ 42
+7.5
+ 43
+20.0
+ 44
+420.0
+ 45
+297.0
+ 46
+0.0
+ 47
+0.0
+ 48
+0.0
+ 49
+0.0
+140
+0.0
+141
+0.0
+142
+1.0
+143
+1.0
+ 70
+1024
+ 72
+1
+ 73
+0
+ 74
+5
+  7
+
+ 75
+16
+ 76
+0
+ 77
+2
+ 78
+300
+147
+1.0
+148
+0.0
+149
+0.0
+100
+AcDbLayout
+  1
+Model
+ 70
+1
+ 71
+0
+ 10
+0.0
+ 20
+0.0
+ 11
+420.0
+ 21
+297.0
+ 12
+0.0
+ 22
+0.0
+ 32
+0.0
+ 14
+1e+20
+ 24
+1e+20
+ 34
+1e+20
+ 15
+-1e+20
+ 25
+-1e+20
+ 35
+-1e+20
+146
+0.0
+ 13
+0.0
+ 23
+0.0
+ 33
+0.0
+ 16
+1.0
+ 26
+0.0
+ 36
+0.0
+ 17
+0.0
+ 27
+1.0
+ 37
+0.0
+ 76
+1
+330
+17
+  0
+LAYOUT
+  5
+1E
+330
+D
+100
+AcDbPlotSettings
+  1
+
+  4
+A3
+  6
+
+ 40
+7.5
+ 41
+20.0
+ 42
+7.5
+ 43
+20.0
+ 44
+420.0
+ 45
+297.0
+ 46
+0.0
+ 47
+0.0
+ 48
+0.0
+ 49
+0.0
+140
+0.0
+141
+0.0
+142
+1.0
+143
+1.0
+ 70
+0
+ 72
+1
+ 73
+0
+ 74
+5
+  7
+
+ 75
+16
+ 76
+0
+ 77
+2
+ 78
+300
+147
+1.0
+148
+0.0
+149
+0.0
+100
+AcDbLayout
+  1
+Layout1
+ 70
+1
+ 71
+1
+ 10
+0.0
+ 20
+0.0
+ 11
+420.0
+ 21
+297.0
+ 12
+0.0
+ 22
+0.0
+ 32
+0.0
+ 14
+1e+20
+ 24
+1e+20
+ 34
+1e+20
+ 15
+-1e+20
+ 25
+-1e+20
+ 35
+-1e+20
+146
+0.0
+ 13
+0.0
+ 23
+0.0
+ 33
+0.0
+ 16
+1.0
+ 26
+0.0
+ 36
+0.0
+ 17
+0.0
+ 27
+1.0
+ 37
+0.0
+ 76
+1
+330
+1B
+  0
+MATERIAL
+  5
+1F
+102
+{ACAD_REACTORS
+330
+E
+102
+}
+330
+E
+100
+AcDbMaterial
+  1
+ByBlock
+  2
+
+ 70
+0
+ 40
+1.0
+ 71
+1
+ 41
+1.0
+ 91
+-1023410177
+ 42
+1.0
+ 72
+1
+  3
+
+ 73
+1
+ 74
+1
+ 75
+1
+ 44
+0.5
+ 73
+0
+ 45
+1.0
+ 46
+1.0
+ 77
+1
+  4
+
+ 78
+1
+ 79
+1
+170
+1
+ 48
+1.0
+171
+1
+  6
+
+172
+1
+173
+1
+174
+1
+140
+1.0
+141
+1.0
+175
+1
+  7
+
+176
+1
+177
+1
+178
+1
+143
+1.0
+179
+1
+  8
+
+270
+1
+271
+1
+272
+1
+145
+1.0
+146
+1.0
+273
+1
+  9
+
+274
+1
+275
+1
+276
+1
+ 42
+1.0
+ 72
+1
+  3
+
+ 73
+1
+ 74
+1
+ 75
+1
+ 94
+63
+  0
+MATERIAL
+  5
+20
+102
+{ACAD_REACTORS
+330
+E
+102
+}
+330
+E
+100
+AcDbMaterial
+  1
+ByLayer
+  2
+
+ 70
+0
+ 40
+1.0
+ 71
+1
+ 41
+1.0
+ 91
+-1023410177
+ 42
+1.0
+ 72
+1
+  3
+
+ 73
+1
+ 74
+1
+ 75
+1
+ 44
+0.5
+ 73
+0
+ 45
+1.0
+ 46
+1.0
+ 77
+1
+  4
+
+ 78
+1
+ 79
+1
+170
+1
+ 48
+1.0
+171
+1
+  6
+
+172
+1
+173
+1
+174
+1
+140
+1.0
+141
+1.0
+175
+1
+  7
+
+176
+1
+177
+1
+178
+1
+143
+1.0
+179
+1
+  8
+
+270
+1
+271
+1
+272
+1
+145
+1.0
+146
+1.0
+273
+1
+  9
+
+274
+1
+275
+1
+276
+1
+ 42
+1.0
+ 72
+1
+  3
+
+ 73
+1
+ 74
+1
+ 75
+1
+ 94
+63
+  0
+MATERIAL
+  5
+21
+102
+{ACAD_REACTORS
+330
+E
+102
+}
+330
+E
+100
+AcDbMaterial
+  1
+Global
+  2
+
+ 70
+0
+ 40
+1.0
+ 71
+1
+ 41
+1.0
+ 91
+-1023410177
+ 42
+1.0
+ 72
+1
+  3
+
+ 73
+1
+ 74
+1
+ 75
+1
+ 44
+0.5
+ 73
+0
+ 45
+1.0
+ 46
+1.0
+ 77
+1
+  4
+
+ 78
+1
+ 79
+1
+170
+1
+ 48
+1.0
+171
+1
+  6
+
+172
+1
+173
+1
+174
+1
+140
+1.0
+141
+1.0
+175
+1
+  7
+
+176
+1
+177
+1
+178
+1
+143
+1.0
+179
+1
+  8
+
+270
+1
+271
+1
+272
+1
+145
+1.0
+146
+1.0
+273
+1
+  9
+
+274
+1
+275
+1
+276
+1
+ 42
+1.0
+ 72
+1
+  3
+
+ 73
+1
+ 74
+1
+ 75
+1
+ 94
+63
+  0
+MLINESTYLE
+  5
+22
+102
+{ACAD_REACTORS
+330
+10
+102
+}
+330
+10
+100
+AcDbMlineStyle
+  2
+Standard
+ 70
+0
+  3
+
+ 62
+256
+ 51
+90.0
+ 52
+90.0
+ 71
+2
+ 49
+0.5
+ 62
+256
+  6
+BYLAYER
+ 49
+-0.5
+ 62
+256
+  6
+BYLAYER
+  0
+MLEADERSTYLE
+  5
+2C
+102
+{ACAD_REACTORS
+330
+F
+102
+}
+330
+F
+100
+AcDbMLeaderStyle
+179
+2
+170
+2
+171
+1
+172
+0
+ 90
+2
+ 40
+0.0
+ 41
+0.0
+173
+1
+ 91
+-1056964608
+ 92
+-2
+290
+1
+ 42
+2.0
+291
+1
+ 43
+8.0
+  3
+Standard
+ 44
+4.0
+300
+
+342
+29
+174
+1
+175
+1
+176
+0
+178
+1
+ 93
+-1056964608
+ 45
+4.0
+292
+0
+297
+0
+ 46
+4.0
+ 94
+-1056964608
+ 47
+1.0
+ 49
+1.0
+140
+1.0
+294
+1
+141
+0.0
+177
+0
+142
+1.0
+295
+0
+296
+0
+143
+3.75
+271
+0
+272
+9
+273
+9
+  0
+DICTIONARY
+  5
+2D
+330
+A
+100
+AcDbDictionary
+280
+1
+281
+1
+  3
+CREATED_BY_EZDXF
+350
+2E
+  3
+WRITTEN_BY_EZDXF
+350
+1E5
+  0
+DICTIONARYVAR
+  5
+2E
+330
+2D
+100
+DictionaryVariables
+280
+0
+  1
+1.4.4 @ 2026-09-22T11:47:20.945138+00:00
+  0
+VISUALSTYLE
+  5
+5A
+102
+{ACAD_REACTORS
+330
+16
+102
+}
+330
+16
+100
+AcDbVisualStyle
+  2
+2dWireframe
+ 70
+4
+177
+3
+291
+0
+ 70
+58
+ 90
+2
+176
+1
+ 90
+2
+176
+1
+ 90
+0
+176
+1
+ 90
+0
+176
+1
+ 40
+0.6
+176
+1
+ 40
+30.0
+176
+1
+ 62
+7
+420
+16777215
+176
+1
+ 90
+1
+176
+1
+ 90
+4
+176
+1
+ 62
+7
+176
+1
+ 62
+257
+176
+1
+ 90
+1
+176
+1
+ 90
+1
+176
+1
+ 40
+1.0
+176
+1
+ 90
+8
+176
+1
+ 62
+7
+176
+1
+ 40
+1.0
+176
+1
+ 90
+1
+176
+1
+ 90
+6
+176
+1
+ 90
+2
+176
+1
+ 62
+7
+176
+1
+ 90
+5
+176
+1
+ 90
+0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+ 90
+1
+176
+1
+ 40
+0.0
+176
+1
+ 90
+0
+176
+1
+290
+1
+176
+1
+290
+1
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 40
+0.0
+176
+1
+ 40
+1.0
+176
+1
+ 90
+0
+176
+1
+ 62
+18
+420
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+3
+176
+1
+ 62
+5
+420
+255
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 62
+256
+176
+0
+ 40
+1.0
+176
+0
+ 90
+2
+176
+1
+  1
+strokes_ogs.tif
+176
+1
+290
+0
+176
+1
+ 40
+1.0
+176
+1
+ 40
+1.0
+176
+1
+  0
+VISUALSTYLE
+  5
+5B
+102
+{ACAD_REACTORS
+330
+16
+102
+}
+330
+16
+100
+AcDbVisualStyle
+  2
+Basic
+ 70
+7
+177
+3
+291
+1
+ 70
+58
+ 90
+2
+176
+1
+ 90
+2
+176
+1
+ 90
+0
+176
+1
+ 90
+1
+176
+1
+ 40
+0.6
+176
+1
+ 40
+30.0
+176
+1
+ 62
+7
+420
+16777215
+176
+1
+ 90
+1
+176
+1
+ 90
+4
+176
+1
+ 62
+7
+176
+1
+ 62
+257
+176
+1
+ 90
+1
+176
+1
+ 90
+1
+176
+1
+ 40
+1.0
+176
+1
+ 90
+8
+176
+1
+ 62
+7
+176
+1
+ 40
+1.0
+176
+1
+ 90
+1
+176
+1
+ 90
+6
+176
+1
+ 90
+2
+176
+1
+ 62
+7
+176
+1
+ 90
+5
+176
+1
+ 90
+0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+ 90
+1
+176
+1
+ 40
+0.0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+290
+1
+176
+1
+290
+1
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 40
+0.0
+176
+1
+ 40
+1.0
+176
+1
+ 90
+0
+176
+1
+ 62
+18
+420
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+3
+176
+1
+ 62
+5
+420
+255
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 62
+256
+176
+0
+ 40
+1.0
+176
+0
+ 90
+2
+176
+1
+  1
+strokes_ogs.tif
+176
+1
+290
+0
+176
+1
+ 40
+1.0
+176
+1
+ 40
+1.0
+176
+1
+  0
+VISUALSTYLE
+  5
+5C
+102
+{ACAD_REACTORS
+330
+16
+102
+}
+330
+16
+100
+AcDbVisualStyle
+  2
+Brighten
+ 70
+12
+177
+3
+291
+1
+ 70
+58
+ 90
+2
+176
+1
+ 90
+2
+176
+1
+ 90
+0
+176
+1
+ 90
+2
+176
+1
+ 40
+0.6
+176
+1
+ 40
+30.0
+176
+1
+ 62
+7
+420
+16777215
+176
+1
+ 90
+1
+176
+1
+ 90
+4
+176
+1
+ 62
+7
+176
+1
+ 62
+257
+176
+1
+ 90
+1
+176
+1
+ 90
+1
+176
+1
+ 40
+1.0
+176
+1
+ 90
+8
+176
+1
+ 62
+7
+176
+1
+ 40
+1.0
+176
+1
+ 90
+1
+176
+1
+ 90
+6
+176
+1
+ 90
+2
+176
+1
+ 62
+7
+176
+1
+ 90
+5
+176
+1
+ 90
+0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+ 90
+1
+176
+1
+ 40
+0.0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+290
+1
+176
+1
+290
+1
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 40
+0.0
+176
+1
+ 40
+1.0
+176
+1
+ 90
+0
+176
+1
+ 62
+18
+420
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+3
+176
+1
+ 62
+5
+420
+255
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 62
+256
+176
+0
+ 40
+1.0
+176
+0
+ 90
+2
+176
+1
+  1
+strokes_ogs.tif
+176
+1
+290
+0
+176
+1
+ 40
+1.0
+176
+1
+ 40
+1.0
+176
+1
+  0
+VISUALSTYLE
+  5
+5D
+102
+{ACAD_REACTORS
+330
+16
+102
+}
+330
+16
+100
+AcDbVisualStyle
+  2
+ColorChange
+ 70
+16
+177
+3
+291
+1
+ 70
+58
+ 90
+2
+176
+1
+ 90
+2
+176
+1
+ 90
+0
+176
+1
+ 90
+2
+176
+1
+ 40
+0.6
+176
+1
+ 40
+30.0
+176
+1
+ 62
+7
+420
+16777215
+176
+1
+ 90
+1
+176
+1
+ 90
+4
+176
+1
+ 62
+7
+176
+1
+ 62
+257
+176
+1
+ 90
+1
+176
+1
+ 90
+1
+176
+1
+ 40
+1.0
+176
+1
+ 90
+8
+176
+1
+ 62
+7
+176
+1
+ 40
+1.0
+176
+1
+ 90
+1
+176
+1
+ 90
+6
+176
+1
+ 90
+2
+176
+1
+ 62
+7
+176
+1
+ 90
+5
+176
+1
+ 90
+0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+ 90
+1
+176
+1
+ 40
+0.0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+290
+1
+176
+1
+290
+1
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 40
+0.0
+176
+1
+ 40
+1.0
+176
+1
+ 90
+0
+176
+1
+ 62
+18
+420
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+3
+176
+1
+ 62
+5
+420
+255
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 62
+256
+176
+0
+ 40
+1.0
+176
+0
+ 90
+2
+176
+1
+  1
+strokes_ogs.tif
+176
+1
+290
+0
+176
+1
+ 40
+1.0
+176
+1
+ 40
+1.0
+176
+1
+  0
+VISUALSTYLE
+  5
+5E
+102
+{ACAD_REACTORS
+330
+16
+102
+}
+330
+16
+100
+AcDbVisualStyle
+  2
+Conceptual
+ 70
+9
+177
+3
+291
+0
+ 70
+58
+ 90
+2
+176
+1
+ 90
+2
+176
+1
+ 90
+0
+176
+1
+ 90
+3
+176
+1
+ 40
+0.6
+176
+1
+ 40
+30.0
+176
+1
+ 62
+7
+420
+16777215
+176
+1
+ 90
+1
+176
+1
+ 90
+4
+176
+1
+ 62
+7
+176
+1
+ 62
+257
+176
+1
+ 90
+1
+176
+1
+ 90
+1
+176
+1
+ 40
+1.0
+176
+1
+ 90
+8
+176
+1
+ 62
+7
+176
+1
+ 40
+1.0
+176
+1
+ 90
+1
+176
+1
+ 90
+6
+176
+1
+ 90
+2
+176
+1
+ 62
+7
+176
+1
+ 90
+5
+176
+1
+ 90
+0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+ 90
+1
+176
+1
+ 40
+0.0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+290
+1
+176
+1
+290
+1
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 40
+0.0
+176
+1
+ 40
+1.0
+176
+1
+ 90
+0
+176
+1
+ 62
+18
+420
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+3
+176
+1
+ 62
+5
+420
+255
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 62
+256
+176
+0
+ 40
+1.0
+176
+0
+ 90
+2
+176
+1
+  1
+strokes_ogs.tif
+176
+1
+290
+0
+176
+1
+ 40
+1.0
+176
+1
+ 40
+1.0
+176
+1
+  0
+VISUALSTYLE
+  5
+5F
+102
+{ACAD_REACTORS
+330
+16
+102
+}
+330
+16
+100
+AcDbVisualStyle
+  2
+Dim
+ 70
+11
+177
+3
+291
+1
+ 70
+58
+ 90
+2
+176
+1
+ 90
+2
+176
+1
+ 90
+0
+176
+1
+ 90
+2
+176
+1
+ 40
+0.6
+176
+1
+ 40
+30.0
+176
+1
+ 62
+7
+420
+16777215
+176
+1
+ 90
+1
+176
+1
+ 90
+4
+176
+1
+ 62
+7
+176
+1
+ 62
+257
+176
+1
+ 90
+1
+176
+1
+ 90
+1
+176
+1
+ 40
+1.0
+176
+1
+ 90
+8
+176
+1
+ 62
+7
+176
+1
+ 40
+1.0
+176
+1
+ 90
+1
+176
+1
+ 90
+6
+176
+1
+ 90
+2
+176
+1
+ 62
+7
+176
+1
+ 90
+5
+176
+1
+ 90
+0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+ 90
+1
+176
+1
+ 40
+0.0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+290
+1
+176
+1
+290
+1
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 40
+0.0
+176
+1
+ 40
+1.0
+176
+1
+ 90
+0
+176
+1
+ 62
+18
+420
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+3
+176
+1
+ 62
+5
+420
+255
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 62
+256
+176
+0
+ 40
+1.0
+176
+0
+ 90
+2
+176
+1
+  1
+strokes_ogs.tif
+176
+1
+290
+0
+176
+1
+ 40
+1.0
+176
+1
+ 40
+1.0
+176
+1
+  0
+VISUALSTYLE
+  5
+60
+102
+{ACAD_REACTORS
+330
+16
+102
+}
+330
+16
+100
+AcDbVisualStyle
+  2
+EdgeColorOff
+ 70
+22
+177
+3
+291
+1
+ 70
+58
+ 90
+2
+176
+1
+ 90
+2
+176
+1
+ 90
+0
+176
+1
+ 90
+2
+176
+1
+ 40
+0.6
+176
+1
+ 40
+30.0
+176
+1
+ 62
+7
+420
+16777215
+176
+1
+ 90
+1
+176
+1
+ 90
+4
+176
+1
+ 62
+7
+176
+1
+ 62
+257
+176
+1
+ 90
+1
+176
+1
+ 90
+1
+176
+1
+ 40
+1.0
+176
+1
+ 90
+8
+176
+1
+ 62
+7
+176
+1
+ 40
+1.0
+176
+1
+ 90
+1
+176
+1
+ 90
+6
+176
+1
+ 90
+2
+176
+1
+ 62
+7
+176
+1
+ 90
+5
+176
+1
+ 90
+0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+ 90
+1
+176
+1
+ 40
+0.0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+290
+1
+176
+1
+290
+1
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 40
+0.0
+176
+1
+ 40
+1.0
+176
+1
+ 90
+0
+176
+1
+ 62
+18
+420
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+3
+176
+1
+ 62
+5
+420
+255
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 62
+256
+176
+0
+ 40
+1.0
+176
+0
+ 90
+2
+176
+1
+  1
+strokes_ogs.tif
+176
+1
+290
+0
+176
+1
+ 40
+1.0
+176
+1
+ 40
+1.0
+176
+1
+  0
+VISUALSTYLE
+  5
+61
+102
+{ACAD_REACTORS
+330
+16
+102
+}
+330
+16
+100
+AcDbVisualStyle
+  2
+Facepattern
+ 70
+15
+177
+3
+291
+1
+ 70
+58
+ 90
+2
+176
+1
+ 90
+2
+176
+1
+ 90
+0
+176
+1
+ 90
+2
+176
+1
+ 40
+0.6
+176
+1
+ 40
+30.0
+176
+1
+ 62
+7
+420
+16777215
+176
+1
+ 90
+1
+176
+1
+ 90
+4
+176
+1
+ 62
+7
+176
+1
+ 62
+257
+176
+1
+ 90
+1
+176
+1
+ 90
+1
+176
+1
+ 40
+1.0
+176
+1
+ 90
+8
+176
+1
+ 62
+7
+176
+1
+ 40
+1.0
+176
+1
+ 90
+1
+176
+1
+ 90
+6
+176
+1
+ 90
+2
+176
+1
+ 62
+7
+176
+1
+ 90
+5
+176
+1
+ 90
+0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+ 90
+1
+176
+1
+ 40
+0.0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+290
+1
+176
+1
+290
+1
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 40
+0.0
+176
+1
+ 40
+1.0
+176
+1
+ 90
+0
+176
+1
+ 62
+18
+420
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+3
+176
+1
+ 62
+5
+420
+255
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 62
+256
+176
+0
+ 40
+1.0
+176
+0
+ 90
+2
+176
+1
+  1
+strokes_ogs.tif
+176
+1
+290
+0
+176
+1
+ 40
+1.0
+176
+1
+ 40
+1.0
+176
+1
+  0
+VISUALSTYLE
+  5
+62
+102
+{ACAD_REACTORS
+330
+16
+102
+}
+330
+16
+100
+AcDbVisualStyle
+  2
+Flat
+ 70
+0
+177
+3
+291
+1
+ 70
+58
+ 90
+2
+176
+1
+ 90
+2
+176
+1
+ 90
+0
+176
+1
+ 90
+2
+176
+1
+ 40
+0.6
+176
+1
+ 40
+30.0
+176
+1
+ 62
+7
+420
+16777215
+176
+1
+ 90
+1
+176
+1
+ 90
+4
+176
+1
+ 62
+7
+176
+1
+ 62
+257
+176
+1
+ 90
+1
+176
+1
+ 90
+1
+176
+1
+ 40
+1.0
+176
+1
+ 90
+8
+176
+1
+ 62
+7
+176
+1
+ 40
+1.0
+176
+1
+ 90
+1
+176
+1
+ 90
+6
+176
+1
+ 90
+2
+176
+1
+ 62
+7
+176
+1
+ 90
+5
+176
+1
+ 90
+0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+ 90
+1
+176
+1
+ 40
+0.0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+290
+1
+176
+1
+290
+1
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 40
+0.0
+176
+1
+ 40
+1.0
+176
+1
+ 90
+0
+176
+1
+ 62
+18
+420
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+3
+176
+1
+ 62
+5
+420
+255
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 62
+256
+176
+0
+ 40
+1.0
+176
+0
+ 90
+2
+176
+1
+  1
+strokes_ogs.tif
+176
+1
+290
+0
+176
+1
+ 40
+1.0
+176
+1
+ 40
+1.0
+176
+1
+  0
+VISUALSTYLE
+  5
+63
+102
+{ACAD_REACTORS
+330
+16
+102
+}
+330
+16
+100
+AcDbVisualStyle
+  2
+FlatWithEdges
+ 70
+1
+177
+3
+291
+1
+ 70
+58
+ 90
+2
+176
+1
+ 90
+2
+176
+1
+ 90
+0
+176
+1
+ 90
+2
+176
+1
+ 40
+0.6
+176
+1
+ 40
+30.0
+176
+1
+ 62
+7
+420
+16777215
+176
+1
+ 90
+1
+176
+1
+ 90
+4
+176
+1
+ 62
+7
+176
+1
+ 62
+257
+176
+1
+ 90
+1
+176
+1
+ 90
+1
+176
+1
+ 40
+1.0
+176
+1
+ 90
+8
+176
+1
+ 62
+7
+176
+1
+ 40
+1.0
+176
+1
+ 90
+1
+176
+1
+ 90
+6
+176
+1
+ 90
+2
+176
+1
+ 62
+7
+176
+1
+ 90
+5
+176
+1
+ 90
+0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+ 90
+1
+176
+1
+ 40
+0.0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+290
+1
+176
+1
+290
+1
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 40
+0.0
+176
+1
+ 40
+1.0
+176
+1
+ 90
+0
+176
+1
+ 62
+18
+420
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+3
+176
+1
+ 62
+5
+420
+255
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 62
+256
+176
+0
+ 40
+1.0
+176
+0
+ 90
+2
+176
+1
+  1
+strokes_ogs.tif
+176
+1
+290
+0
+176
+1
+ 40
+1.0
+176
+1
+ 40
+1.0
+176
+1
+  0
+VISUALSTYLE
+  5
+64
+102
+{ACAD_REACTORS
+330
+16
+102
+}
+330
+16
+100
+AcDbVisualStyle
+  2
+Gouraud
+ 70
+2
+177
+3
+291
+1
+ 70
+58
+ 90
+2
+176
+1
+ 90
+2
+176
+1
+ 90
+0
+176
+1
+ 90
+2
+176
+1
+ 40
+0.6
+176
+1
+ 40
+30.0
+176
+1
+ 62
+7
+420
+16777215
+176
+1
+ 90
+1
+176
+1
+ 90
+4
+176
+1
+ 62
+7
+176
+1
+ 62
+257
+176
+1
+ 90
+1
+176
+1
+ 90
+1
+176
+1
+ 40
+1.0
+176
+1
+ 90
+8
+176
+1
+ 62
+7
+176
+1
+ 40
+1.0
+176
+1
+ 90
+1
+176
+1
+ 90
+6
+176
+1
+ 90
+2
+176
+1
+ 62
+7
+176
+1
+ 90
+5
+176
+1
+ 90
+0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+ 90
+1
+176
+1
+ 40
+0.0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+290
+1
+176
+1
+290
+1
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 40
+0.0
+176
+1
+ 40
+1.0
+176
+1
+ 90
+0
+176
+1
+ 62
+18
+420
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+3
+176
+1
+ 62
+5
+420
+255
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 62
+256
+176
+0
+ 40
+1.0
+176
+0
+ 90
+2
+176
+1
+  1
+strokes_ogs.tif
+176
+1
+290
+0
+176
+1
+ 40
+1.0
+176
+1
+ 40
+1.0
+176
+1
+  0
+VISUALSTYLE
+  5
+65
+102
+{ACAD_REACTORS
+330
+16
+102
+}
+330
+16
+100
+AcDbVisualStyle
+  2
+GouraudWithEdges
+ 70
+3
+177
+3
+291
+1
+ 70
+58
+ 90
+2
+176
+1
+ 90
+2
+176
+1
+ 90
+0
+176
+1
+ 90
+2
+176
+1
+ 40
+0.6
+176
+1
+ 40
+30.0
+176
+1
+ 62
+7
+420
+16777215
+176
+1
+ 90
+1
+176
+1
+ 90
+4
+176
+1
+ 62
+7
+176
+1
+ 62
+257
+176
+1
+ 90
+1
+176
+1
+ 90
+1
+176
+1
+ 40
+1.0
+176
+1
+ 90
+8
+176
+1
+ 62
+7
+176
+1
+ 40
+1.0
+176
+1
+ 90
+1
+176
+1
+ 90
+6
+176
+1
+ 90
+2
+176
+1
+ 62
+7
+176
+1
+ 90
+5
+176
+1
+ 90
+0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+ 90
+1
+176
+1
+ 40
+0.0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+290
+1
+176
+1
+290
+1
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 40
+0.0
+176
+1
+ 40
+1.0
+176
+1
+ 90
+0
+176
+1
+ 62
+18
+420
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+3
+176
+1
+ 62
+5
+420
+255
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 62
+256
+176
+0
+ 40
+1.0
+176
+0
+ 90
+2
+176
+1
+  1
+strokes_ogs.tif
+176
+1
+290
+0
+176
+1
+ 40
+1.0
+176
+1
+ 40
+1.0
+176
+1
+  0
+VISUALSTYLE
+  5
+66
+102
+{ACAD_REACTORS
+330
+16
+102
+}
+330
+16
+100
+AcDbVisualStyle
+  2
+Hidden
+ 70
+6
+177
+3
+291
+0
+ 70
+58
+ 90
+2
+176
+1
+ 90
+2
+176
+1
+ 90
+0
+176
+1
+ 90
+1
+176
+1
+ 40
+0.6
+176
+1
+ 40
+30.0
+176
+1
+ 62
+7
+420
+16777215
+176
+1
+ 90
+1
+176
+1
+ 90
+4
+176
+1
+ 62
+7
+176
+1
+ 62
+257
+176
+1
+ 90
+1
+176
+1
+ 90
+1
+176
+1
+ 40
+1.0
+176
+1
+ 90
+8
+176
+1
+ 62
+7
+176
+1
+ 40
+1.0
+176
+1
+ 90
+1
+176
+1
+ 90
+6
+176
+1
+ 90
+2
+176
+1
+ 62
+7
+176
+1
+ 90
+5
+176
+1
+ 90
+0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+ 90
+1
+176
+1
+ 40
+0.0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+290
+1
+176
+1
+290
+1
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 40
+0.0
+176
+1
+ 40
+1.0
+176
+1
+ 90
+0
+176
+1
+ 62
+18
+420
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+3
+176
+1
+ 62
+5
+420
+255
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 62
+256
+176
+0
+ 40
+1.0
+176
+0
+ 90
+2
+176
+1
+  1
+strokes_ogs.tif
+176
+1
+290
+0
+176
+1
+ 40
+1.0
+176
+1
+ 40
+1.0
+176
+1
+  0
+VISUALSTYLE
+  5
+67
+102
+{ACAD_REACTORS
+330
+16
+102
+}
+330
+16
+100
+AcDbVisualStyle
+  2
+JitterOff
+ 70
+20
+177
+3
+291
+1
+ 70
+58
+ 90
+2
+176
+1
+ 90
+2
+176
+1
+ 90
+0
+176
+1
+ 90
+2
+176
+1
+ 40
+0.6
+176
+1
+ 40
+30.0
+176
+1
+ 62
+7
+420
+16777215
+176
+1
+ 90
+1
+176
+1
+ 90
+4
+176
+1
+ 62
+7
+176
+1
+ 62
+257
+176
+1
+ 90
+1
+176
+1
+ 90
+1
+176
+1
+ 40
+1.0
+176
+1
+ 90
+8
+176
+1
+ 62
+7
+176
+1
+ 40
+1.0
+176
+1
+ 90
+1
+176
+1
+ 90
+6
+176
+1
+ 90
+2
+176
+1
+ 62
+7
+176
+1
+ 90
+5
+176
+1
+ 90
+0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+ 90
+1
+176
+1
+ 40
+0.0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+290
+1
+176
+1
+290
+1
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 40
+0.0
+176
+1
+ 40
+1.0
+176
+1
+ 90
+0
+176
+1
+ 62
+18
+420
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+3
+176
+1
+ 62
+5
+420
+255
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 62
+256
+176
+0
+ 40
+1.0
+176
+0
+ 90
+2
+176
+1
+  1
+strokes_ogs.tif
+176
+1
+290
+0
+176
+1
+ 40
+1.0
+176
+1
+ 40
+1.0
+176
+1
+  0
+VISUALSTYLE
+  5
+68
+102
+{ACAD_REACTORS
+330
+16
+102
+}
+330
+16
+100
+AcDbVisualStyle
+  2
+Linepattern
+ 70
+14
+177
+3
+291
+1
+ 70
+58
+ 90
+2
+176
+1
+ 90
+2
+176
+1
+ 90
+0
+176
+1
+ 90
+2
+176
+1
+ 40
+0.6
+176
+1
+ 40
+30.0
+176
+1
+ 62
+7
+420
+16777215
+176
+1
+ 90
+1
+176
+1
+ 90
+4
+176
+1
+ 62
+7
+176
+1
+ 62
+257
+176
+1
+ 90
+1
+176
+1
+ 90
+1
+176
+1
+ 40
+1.0
+176
+1
+ 90
+8
+176
+1
+ 62
+7
+176
+1
+ 40
+1.0
+176
+1
+ 90
+1
+176
+1
+ 90
+6
+176
+1
+ 90
+2
+176
+1
+ 62
+7
+176
+1
+ 90
+5
+176
+1
+ 90
+0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+ 90
+1
+176
+1
+ 40
+0.0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+290
+1
+176
+1
+290
+1
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 40
+0.0
+176
+1
+ 40
+1.0
+176
+1
+ 90
+0
+176
+1
+ 62
+18
+420
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+3
+176
+1
+ 62
+5
+420
+255
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 62
+256
+176
+0
+ 40
+1.0
+176
+0
+ 90
+2
+176
+1
+  1
+strokes_ogs.tif
+176
+1
+290
+0
+176
+1
+ 40
+1.0
+176
+1
+ 40
+1.0
+176
+1
+  0
+VISUALSTYLE
+  5
+69
+102
+{ACAD_REACTORS
+330
+16
+102
+}
+330
+16
+100
+AcDbVisualStyle
+  2
+Modeling
+ 70
+10
+177
+3
+291
+0
+ 70
+58
+ 90
+2
+176
+1
+ 90
+2
+176
+1
+ 90
+0
+176
+1
+ 90
+2
+176
+1
+ 40
+0.6
+176
+1
+ 40
+30.0
+176
+1
+ 62
+7
+420
+16777215
+176
+1
+ 90
+1
+176
+1
+ 90
+4
+176
+1
+ 62
+7
+176
+1
+ 62
+257
+176
+1
+ 90
+1
+176
+1
+ 90
+1
+176
+1
+ 40
+1.0
+176
+1
+ 90
+8
+176
+1
+ 62
+7
+176
+1
+ 40
+1.0
+176
+1
+ 90
+1
+176
+1
+ 90
+6
+176
+1
+ 90
+2
+176
+1
+ 62
+7
+176
+1
+ 90
+5
+176
+1
+ 90
+0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+ 90
+1
+176
+1
+ 40
+0.0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+290
+1
+176
+1
+290
+1
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 40
+0.0
+176
+1
+ 40
+1.0
+176
+1
+ 90
+0
+176
+1
+ 62
+18
+420
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+3
+176
+1
+ 62
+5
+420
+255
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 62
+256
+176
+0
+ 40
+1.0
+176
+0
+ 90
+2
+176
+1
+  1
+strokes_ogs.tif
+176
+1
+290
+0
+176
+1
+ 40
+1.0
+176
+1
+ 40
+1.0
+176
+1
+  0
+VISUALSTYLE
+  5
+6A
+102
+{ACAD_REACTORS
+330
+16
+102
+}
+330
+16
+100
+AcDbVisualStyle
+  2
+OverhangOff
+ 70
+21
+177
+3
+291
+1
+ 70
+58
+ 90
+2
+176
+1
+ 90
+2
+176
+1
+ 90
+0
+176
+1
+ 90
+2
+176
+1
+ 40
+0.6
+176
+1
+ 40
+30.0
+176
+1
+ 62
+7
+420
+16777215
+176
+1
+ 90
+1
+176
+1
+ 90
+4
+176
+1
+ 62
+7
+176
+1
+ 62
+257
+176
+1
+ 90
+1
+176
+1
+ 90
+1
+176
+1
+ 40
+1.0
+176
+1
+ 90
+8
+176
+1
+ 62
+7
+176
+1
+ 40
+1.0
+176
+1
+ 90
+1
+176
+1
+ 90
+6
+176
+1
+ 90
+2
+176
+1
+ 62
+7
+176
+1
+ 90
+5
+176
+1
+ 90
+0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+ 90
+1
+176
+1
+ 40
+0.0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+290
+1
+176
+1
+290
+1
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 40
+0.0
+176
+1
+ 40
+1.0
+176
+1
+ 90
+0
+176
+1
+ 62
+18
+420
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+3
+176
+1
+ 62
+5
+420
+255
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 62
+256
+176
+0
+ 40
+1.0
+176
+0
+ 90
+2
+176
+1
+  1
+strokes_ogs.tif
+176
+1
+290
+0
+176
+1
+ 40
+1.0
+176
+1
+ 40
+1.0
+176
+1
+  0
+VISUALSTYLE
+  5
+6B
+102
+{ACAD_REACTORS
+330
+16
+102
+}
+330
+16
+100
+AcDbVisualStyle
+  2
+Realistic
+ 70
+8
+177
+3
+291
+0
+ 70
+58
+ 90
+2
+176
+1
+ 90
+2
+176
+1
+ 90
+0
+176
+1
+ 90
+2
+176
+1
+ 40
+0.6
+176
+1
+ 40
+30.0
+176
+1
+ 62
+7
+420
+16777215
+176
+1
+ 90
+1
+176
+1
+ 90
+4
+176
+1
+ 62
+7
+176
+1
+ 62
+257
+176
+1
+ 90
+1
+176
+1
+ 90
+1
+176
+1
+ 40
+1.0
+176
+1
+ 90
+8
+176
+1
+ 62
+7
+176
+1
+ 40
+1.0
+176
+1
+ 90
+1
+176
+1
+ 90
+6
+176
+1
+ 90
+2
+176
+1
+ 62
+7
+176
+1
+ 90
+5
+176
+1
+ 90
+0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+ 90
+1
+176
+1
+ 40
+0.0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+290
+1
+176
+1
+290
+1
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 40
+0.0
+176
+1
+ 40
+1.0
+176
+1
+ 90
+0
+176
+1
+ 62
+18
+420
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+3
+176
+1
+ 62
+5
+420
+255
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 62
+256
+176
+0
+ 40
+1.0
+176
+0
+ 90
+2
+176
+1
+  1
+strokes_ogs.tif
+176
+1
+290
+0
+176
+1
+ 40
+1.0
+176
+1
+ 40
+1.0
+176
+1
+  0
+VISUALSTYLE
+  5
+6C
+102
+{ACAD_REACTORS
+330
+16
+102
+}
+330
+16
+100
+AcDbVisualStyle
+  2
+Shaded
+ 70
+27
+177
+3
+291
+0
+ 70
+58
+ 90
+2
+176
+1
+ 90
+2
+176
+1
+ 90
+0
+176
+1
+ 90
+2
+176
+1
+ 40
+0.6
+176
+1
+ 40
+30.0
+176
+1
+ 62
+7
+420
+16777215
+176
+1
+ 90
+1
+176
+1
+ 90
+4
+176
+1
+ 62
+7
+176
+1
+ 62
+257
+176
+1
+ 90
+1
+176
+1
+ 90
+1
+176
+1
+ 40
+1.0
+176
+1
+ 90
+8
+176
+1
+ 62
+7
+176
+1
+ 40
+1.0
+176
+1
+ 90
+1
+176
+1
+ 90
+6
+176
+1
+ 90
+2
+176
+1
+ 62
+7
+176
+1
+ 90
+5
+176
+1
+ 90
+0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+ 90
+1
+176
+1
+ 40
+0.0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+290
+1
+176
+1
+290
+1
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 40
+0.0
+176
+1
+ 40
+1.0
+176
+1
+ 90
+0
+176
+1
+ 62
+18
+420
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+3
+176
+1
+ 62
+5
+420
+255
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 62
+256
+176
+0
+ 40
+1.0
+176
+0
+ 90
+2
+176
+1
+  1
+strokes_ogs.tif
+176
+1
+290
+0
+176
+1
+ 40
+1.0
+176
+1
+ 40
+1.0
+176
+1
+  0
+VISUALSTYLE
+  5
+6D
+102
+{ACAD_REACTORS
+330
+16
+102
+}
+330
+16
+100
+AcDbVisualStyle
+  2
+Shaded with edges
+ 70
+26
+177
+3
+291
+0
+ 70
+58
+ 90
+2
+176
+1
+ 90
+2
+176
+1
+ 90
+0
+176
+1
+ 90
+2
+176
+1
+ 40
+0.6
+176
+1
+ 40
+30.0
+176
+1
+ 62
+7
+420
+16777215
+176
+1
+ 90
+1
+176
+1
+ 90
+4
+176
+1
+ 62
+7
+176
+1
+ 62
+257
+176
+1
+ 90
+1
+176
+1
+ 90
+1
+176
+1
+ 40
+1.0
+176
+1
+ 90
+8
+176
+1
+ 62
+7
+176
+1
+ 40
+1.0
+176
+1
+ 90
+1
+176
+1
+ 90
+6
+176
+1
+ 90
+2
+176
+1
+ 62
+7
+176
+1
+ 90
+5
+176
+1
+ 90
+0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+ 90
+1
+176
+1
+ 40
+0.0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+290
+1
+176
+1
+290
+1
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 40
+0.0
+176
+1
+ 40
+1.0
+176
+1
+ 90
+0
+176
+1
+ 62
+18
+420
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+3
+176
+1
+ 62
+5
+420
+255
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 62
+256
+176
+0
+ 40
+1.0
+176
+0
+ 90
+2
+176
+1
+  1
+strokes_ogs.tif
+176
+1
+290
+0
+176
+1
+ 40
+1.0
+176
+1
+ 40
+1.0
+176
+1
+  0
+VISUALSTYLE
+  5
+6E
+102
+{ACAD_REACTORS
+330
+16
+102
+}
+330
+16
+100
+AcDbVisualStyle
+  2
+Shades of Gray
+ 70
+23
+177
+3
+291
+0
+ 70
+58
+ 90
+2
+176
+1
+ 90
+2
+176
+1
+ 90
+0
+176
+1
+ 90
+2
+176
+1
+ 40
+0.6
+176
+1
+ 40
+30.0
+176
+1
+ 62
+7
+420
+16777215
+176
+1
+ 90
+1
+176
+1
+ 90
+4
+176
+1
+ 62
+7
+176
+1
+ 62
+257
+176
+1
+ 90
+1
+176
+1
+ 90
+1
+176
+1
+ 40
+1.0
+176
+1
+ 90
+8
+176
+1
+ 62
+7
+176
+1
+ 40
+1.0
+176
+1
+ 90
+1
+176
+1
+ 90
+6
+176
+1
+ 90
+2
+176
+1
+ 62
+7
+176
+1
+ 90
+5
+176
+1
+ 90
+0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+ 90
+1
+176
+1
+ 40
+0.0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+290
+1
+176
+1
+290
+1
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 40
+0.0
+176
+1
+ 40
+1.0
+176
+1
+ 90
+0
+176
+1
+ 62
+18
+420
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+3
+176
+1
+ 62
+5
+420
+255
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 62
+256
+176
+0
+ 40
+1.0
+176
+0
+ 90
+2
+176
+1
+  1
+strokes_ogs.tif
+176
+1
+290
+0
+176
+1
+ 40
+1.0
+176
+1
+ 40
+1.0
+176
+1
+  0
+VISUALSTYLE
+  5
+6F
+102
+{ACAD_REACTORS
+330
+16
+102
+}
+330
+16
+100
+AcDbVisualStyle
+  2
+Sketchy
+ 70
+24
+177
+3
+291
+0
+ 70
+58
+ 90
+2
+176
+1
+ 90
+2
+176
+1
+ 90
+0
+176
+1
+ 90
+1
+176
+1
+ 40
+0.6
+176
+1
+ 40
+30.0
+176
+1
+ 62
+7
+420
+16777215
+176
+1
+ 90
+1
+176
+1
+ 90
+4
+176
+1
+ 62
+7
+176
+1
+ 62
+257
+176
+1
+ 90
+1
+176
+1
+ 90
+1
+176
+1
+ 40
+1.0
+176
+1
+ 90
+8
+176
+1
+ 62
+7
+176
+1
+ 40
+1.0
+176
+1
+ 90
+1
+176
+1
+ 90
+6
+176
+1
+ 90
+2
+176
+1
+ 62
+7
+176
+1
+ 90
+5
+176
+1
+ 90
+0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+ 90
+1
+176
+1
+ 40
+0.0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+290
+1
+176
+1
+290
+1
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 40
+0.0
+176
+1
+ 40
+1.0
+176
+1
+ 90
+0
+176
+1
+ 62
+18
+420
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+3
+176
+1
+ 62
+5
+420
+255
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 62
+256
+176
+0
+ 40
+1.0
+176
+0
+ 90
+2
+176
+1
+  1
+strokes_ogs.tif
+176
+1
+290
+0
+176
+1
+ 40
+1.0
+176
+1
+ 40
+1.0
+176
+1
+  0
+VISUALSTYLE
+  5
+70
+102
+{ACAD_REACTORS
+330
+16
+102
+}
+330
+16
+100
+AcDbVisualStyle
+  2
+Thicken
+ 70
+13
+177
+3
+291
+1
+ 70
+58
+ 90
+2
+176
+1
+ 90
+2
+176
+1
+ 90
+0
+176
+1
+ 90
+2
+176
+1
+ 40
+0.6
+176
+1
+ 40
+30.0
+176
+1
+ 62
+7
+420
+16777215
+176
+1
+ 90
+1
+176
+1
+ 90
+4
+176
+1
+ 62
+7
+176
+1
+ 62
+257
+176
+1
+ 90
+1
+176
+1
+ 90
+1
+176
+1
+ 40
+1.0
+176
+1
+ 90
+8
+176
+1
+ 62
+7
+176
+1
+ 40
+1.0
+176
+1
+ 90
+1
+176
+1
+ 90
+6
+176
+1
+ 90
+2
+176
+1
+ 62
+7
+176
+1
+ 90
+5
+176
+1
+ 90
+0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+ 90
+1
+176
+1
+ 40
+0.0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+290
+1
+176
+1
+290
+1
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 40
+0.0
+176
+1
+ 40
+1.0
+176
+1
+ 90
+0
+176
+1
+ 62
+18
+420
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+3
+176
+1
+ 62
+5
+420
+255
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 62
+256
+176
+0
+ 40
+1.0
+176
+0
+ 90
+2
+176
+1
+  1
+strokes_ogs.tif
+176
+1
+290
+0
+176
+1
+ 40
+1.0
+176
+1
+ 40
+1.0
+176
+1
+  0
+VISUALSTYLE
+  5
+71
+102
+{ACAD_REACTORS
+330
+16
+102
+}
+330
+16
+100
+AcDbVisualStyle
+  2
+Wireframe
+ 70
+5
+177
+3
+291
+0
+ 70
+58
+ 90
+2
+176
+1
+ 90
+2
+176
+1
+ 90
+0
+176
+1
+ 90
+0
+176
+1
+ 40
+0.6
+176
+1
+ 40
+30.0
+176
+1
+ 62
+7
+420
+16777215
+176
+1
+ 90
+1
+176
+1
+ 90
+4
+176
+1
+ 62
+7
+176
+1
+ 62
+257
+176
+1
+ 90
+1
+176
+1
+ 90
+1
+176
+1
+ 40
+1.0
+176
+1
+ 90
+8
+176
+1
+ 62
+7
+176
+1
+ 40
+1.0
+176
+1
+ 90
+1
+176
+1
+ 90
+6
+176
+1
+ 90
+2
+176
+1
+ 62
+7
+176
+1
+ 90
+5
+176
+1
+ 90
+0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+ 90
+1
+176
+1
+ 40
+0.0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+290
+1
+176
+1
+290
+1
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 40
+0.0
+176
+1
+ 40
+1.0
+176
+1
+ 90
+0
+176
+1
+ 62
+18
+420
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+3
+176
+1
+ 62
+5
+420
+255
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 62
+256
+176
+0
+ 40
+1.0
+176
+0
+ 90
+2
+176
+1
+  1
+strokes_ogs.tif
+176
+1
+290
+0
+176
+1
+ 40
+1.0
+176
+1
+ 40
+1.0
+176
+1
+  0
+VISUALSTYLE
+  5
+72
+102
+{ACAD_REACTORS
+330
+16
+102
+}
+330
+16
+100
+AcDbVisualStyle
+  2
+X-Ray
+ 70
+25
+177
+3
+291
+0
+ 70
+58
+ 90
+2
+176
+1
+ 90
+2
+176
+1
+ 90
+0
+176
+1
+ 90
+2
+176
+1
+ 40
+0.5
+176
+1
+ 40
+30.0
+176
+1
+ 62
+7
+420
+16777215
+176
+1
+ 90
+1
+176
+1
+ 90
+4
+176
+1
+ 62
+7
+176
+1
+ 62
+257
+176
+1
+ 90
+1
+176
+1
+ 90
+1
+176
+1
+ 40
+1.0
+176
+1
+ 90
+8
+176
+1
+ 62
+7
+176
+1
+ 40
+1.0
+176
+1
+ 90
+1
+176
+1
+ 90
+6
+176
+1
+ 90
+2
+176
+1
+ 62
+7
+176
+1
+ 90
+5
+176
+1
+ 90
+0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+ 90
+1
+176
+1
+ 40
+0.0
+176
+1
+ 90
+0
+176
+1
+290
+0
+176
+1
+290
+1
+176
+1
+290
+1
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 40
+0.0
+176
+1
+ 40
+1.0
+176
+1
+ 90
+0
+176
+1
+ 62
+18
+420
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+3
+176
+1
+ 62
+5
+420
+255
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+ 90
+50
+176
+1
+290
+0
+176
+1
+ 90
+50
+176
+1
+ 62
+256
+176
+0
+ 40
+1.0
+176
+0
+ 90
+2
+176
+1
+  1
+strokes_ogs.tif
+176
+1
+290
+0
+176
+1
+ 40
+1.0
+176
+1
+ 40
+1.0
+176
+1
+  0
+DICTIONARYVAR
+  5
+1E5
+330
+2D
+100
+DictionaryVariables
+280
+0
+  1
+1.4.4 @ 2026-09-22T11:47:21.131689+00:00
+  0
+ENDSEC
+  0
+EOF

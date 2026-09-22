@@ -171,6 +171,9 @@ def draw():
     ax.set_ylim(-4.8, Y_PROF + 8.4)
     p = os.path.join(OUT, "01_теоретический_чертёж.png")
     fig.savefig(p, dpi=170, bbox_inches="tight", pad_inches=0.25)
+    from lib import fig2dxf
+    fig2dxf.save_dxf(fig, os.path.join(ROOT, "CAD", "расчёты", "01_теоретический_чертёж.dxf"),
+                     title="теоретический чертёж (три проекции)", note="в натуральную величину — лист ОР-07")
     plt.close(fig)
     return p
 

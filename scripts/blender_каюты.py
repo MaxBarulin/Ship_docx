@@ -630,6 +630,7 @@ def все(типы=ТИПЫ, samples=SAMPLES):
     out = []
     for т in типы:
         out += рендер(т, samples)
+    вернуть_сцену_судна()
     return out
 
 
@@ -646,10 +647,20 @@ def _записать_прогресс():
                   f, ensure_ascii=False, indent=1)
 
 
+def вернуть_сцену_судна():
+    """Окно обратно на сцену судна: сборка каюты делает активной сцену «Каюты»,
+    и после рендера пользователь видел одну каюту вместо судна."""
+    main = bpy.data.scenes.get("Scene")
+    win = bpy.context.window
+    if main is not None and win is not None and win.scene is not main:
+        win.scene = main
+
+
 def _шаг_очереди():
     if not _ОЧЕРЕДЬ["задачи"]:
         _ОЧЕРЕДЬ["активна"] = False
         _записать_прогресс()
+        вернуть_сцену_судна()
         return None
     тип, вид = _ОЧЕРЕДЬ["задачи"].pop(0)
     try:

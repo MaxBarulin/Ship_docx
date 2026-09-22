@@ -97,9 +97,28 @@ def mm(v):
 
 
 cols = ["ВЛ, м"] + ["%g" % r["n"] for r in ROWS]
+# Плазовые ватерлинии плюс две наши: фактическая посадка (из нагрузки масс)
+# и расчётная осадка, по которой построены обводы. Ординаты на них считаются
+# той же геометрией сечения, что и остальные строки, с нишей колеса.
+ДОП_ВЛ = [(T, "%.2f факт" % T), (G.DRAFT, "%.2f расч." % G.DRAFT)]
+
+
+def _орд(r, z):
+    """Полуширота шпангоута r на высоте z, м; None — ниже килевой линии."""
+    if z < r["z_kil"] - 1e-6:
+        return None
+    return min(H.half_breadth(r["x"], min(z, r["z_brt"])), H.niche_half(r["x"]))
+
+
+строки = [(z, "%.2f" % z, [r["y"][k] for r in ROWS]) for k, z in enumerate(WL)]
+for z, имя in ДОП_ВЛ:
+    if all(abs(z - w) > 0.005 for w in WL):
+        строки.append((z, имя, [_орд(r, z) for r in ROWS]))
+строки.sort(key=lambda t: t[0])
+ВЫДЕЛИТЬ = {i for i, (z, имя, _) in enumerate(строки) if "факт" in имя or "расч" in имя}
 body = []
-for k, z in enumerate(WL):
-    body.append(["%.2f" % z] + [mm(r["y"][k]) for r in ROWS])
+for z, имя, ys in строки:
+    body.append([имя] + [mm(y) for y in ys])
 body.append(["z киля, мм"] + ["%d" % round(r["z_kil"] * 1000) for r in ROWS])
 body.append(["полушир. днища"] + ["%d" % round(r["b_kil"] * 1000) for r in ROWS])
 body.append(["z борта, мм"] + ["%d" % round(r["z_brt"] * 1000) for r in ROWS])
@@ -112,7 +131,7 @@ tbl = ax2.table(cellText=body, colLabels=cols, loc="upper center",
 tbl.auto_set_font_size(False)
 tbl.set_fontsize(6.4)
 tbl.scale(1, 1.14)
-nw = len(WL)
+nw = len(строки)
 for (r, c), cell in tbl.get_celld().items():
     cell.set_edgecolor("#c8cfd9")
     cell.set_linewidth(0.5)
@@ -125,8 +144,12 @@ for (r, c), cell in tbl.get_celld().items():
     elif r > nw:
         cell.set_facecolor("#fbfcfd")
         cell.set_text_props(color="#3c4757")
+    if 1 <= r <= nw and (r - 1) in ВЫДЕЛИТЬ:
+        # наши ватерлинии: фактическая посадка и расчётная осадка — выделены
+        cell.set_facecolor("#e3eef7" if c else "#cfe0ef")
+        cell.set_text_props(color=SEA, fontweight="bold")
     if c == 0:
-        cell.set_width(0.062)
+        cell.set_width(0.072)
 ax2.text(0.0, 1.035,
          "Таблица плазовых ординат: строки — ватерлинии, столбцы — номера "
          "теоретических шпангоутов; теоретическая шпация L/20 = %.3f м" % (G.LOA / 20),
@@ -137,4 +160,8 @@ ax2.text(1.0, 1.035,
          transform=ax2.transAxes, fontsize=9.5, color="#56627a", ha="right")
 fig.savefig(os.path.join(OUT, "01б_корпус_и_ординаты.png"), dpi=165,
             bbox_inches="tight")
+from lib import fig2dxf
+fig2dxf.save_dxf(fig, os.path.join(ROOT, "CAD", "расчёты", "01б_корпус_и_ординаты.dxf"),
+                 title="проекция «корпус» и таблица плазовых ординат",
+                 note="выделенные строки — ватерлинии %.2f (факт) и %.2f (расчётная)" % (T, G.DRAFT))
 print(os.path.join(OUT, "01б_корпус_и_ординаты.png"))

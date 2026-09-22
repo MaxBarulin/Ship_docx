@@ -185,8 +185,9 @@ def борт(ax):
     ax.text(G.LOA + 3.5, G.DRAFT + 0.15, "ВЛ %.2f" % G.DRAFT, fontsize=6.5, color="#2f6f9a", ha="right")
     for имя, z in (("главная 3,00", G.DECKS["главная"]), ("средняя 5,80", G.DECKS["средняя"]), ("солнечная 8,60", G.DECKS["солнечная"])):
         ax.text(-3.5, z + 0.12, имя, fontsize=6.5, color=ЛИНИЯ, ha="left")
-    ax.annotate("габарит 8,5 м над водой", (G.LOA * 0.5, G.DRAFT + 8.5 + 0.1), fontsize=6.5, color="#7a1020", ha="center")
-    ax.plot([-4, G.LOA + 4], [G.DRAFT + 8.5] * 2, color="#7a1020", lw=0.6, ls=":", zorder=13)
+    ax.annotate("габарит %.1f м над водой, самый низкий мост маршрута %.1f м" % (G.AIR_DRAFT, G.BRIDGE_MIN),
+                (G.LOA * 0.5, G.DRAFT + G.AIR_DRAFT + 0.1), fontsize=6.5, color="#7a1020", ha="center")
+    ax.plot([-4, G.LOA + 4], [G.DRAFT + G.AIR_DRAFT] * 2, color="#7a1020", lw=0.6, ls=":", zorder=13)
     ax.annotate("нос →", (G.LOA - 4, 12.3), fontsize=7, color="#7d858f")
 
 

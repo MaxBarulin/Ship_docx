@@ -482,8 +482,17 @@ BALLAST_CAPACITY = G.BALLAST_M3
 _GROUPS = None
 
 
+#: Дополнительная нагрузка сверх штатной — то, что ставят на палубу поверх
+#: проекта: модульные номера, оборудование. Список кортежей
+#: (имя, масса т, x0, x1, z ЦТ, площадь парусности м², высота парусности м, z0 парусности).
+#: Заполняет `gorizont_deckload`, по умолчанию пуст: базовая посадка и
+#: остойчивость судна от этого списка не зависят.
+ДОПОЛНИТЕЛЬНО = []
+
+
 def groups():
-    """Нагрузка масс с пересчитанными по толщинам корпусом и надстройкой."""
+    """Нагрузка масс с пересчитанными по толщинам корпусом и надстройкой
+    плюс дополнительная нагрузка (ДОПОЛНИТЕЛЬНО) в конце списка — в дедвейте."""
     global _GROUPS
     if _GROUPS is None:
         from . import gorizont_struct as _S
@@ -513,7 +522,7 @@ def groups():
                         round(_R.TANKS[0]["z0"] + _R.LEVEL / 2.0, 2),
                         round(w["mfs"], 1))
         _GROUPS = g
-    return _GROUPS
+    return _GROUPS + [(n, m, x0, x1, z, 0.0) for (n, m, x0, x1, z, *_) in ДОПОЛНИТЕЛЬНО]
 
 
 def group_xcg(g):
@@ -569,8 +578,9 @@ _ECACHE = {}
 
 def equilibrium(step=0.5):
     """Осадка и дифферент из равенства водоизмещения и совпадения абсцисс."""
-    if step in _ECACHE:
-        return _ECACHE[step]
+    key = (step, tuple(ДОПОЛНИТЕЛЬНО))
+    if key in _ECACHE:
+        return _ECACHE[key]
     w = weight_summary()
     D = w["D"]
     lo, hi = 0.3, G.DEPTH
@@ -590,7 +600,7 @@ def equilibrium(step=0.5):
     Tf = T + trim * (h["Lw"] - h["xf"]) / h["Lw"]
     res = dict(T=T, trim=trim, Ta=Ta, Tf=Tf, D=D, xg=w["xg"], xc=h["xc"],
                zg=w["zg"], zm=h["zm"], hydro=h, weight=w)
-    _ECACHE[step] = res
+    _ECACHE[key] = res
     return res
 
 
@@ -726,6 +736,10 @@ def windage(T):
         (L2, d["солнечная"] - d["средняя"], d["средняя"]),    # ярус средней
         (11.0, G.WHEELHOUSE_ROOF - G.WHEELHOUSE_FLOOR, G.WHEELHOUSE_FLOOR),
     ]
+    # дополнительная нагрузка на палубе: её боковая площадь тоже парусит
+    for row in ДОПОЛНИТЕЛЬНО:
+        if len(row) >= 8 and row[5] > 0 and row[6] > 0:
+            parts.append((row[5] / row[6], row[6], row[7]))
     A = sum(l * h for l, h, z in parts)
     z = sum(l * h * (z0 + h / 2) for l, h, z0 in parts) / A
     return A, z - T
