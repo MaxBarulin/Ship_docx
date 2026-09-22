@@ -12,7 +12,8 @@ underside of the cast body. Outputs:
     CAD/STEP/VG-2026_46_01_body.step           cast body, machined
     CAD/STEP/VG-2026_46_01_casting.step        casting with allowances and riser (for the pattern)
     CAD/STEP/VG-2026_46_01_core.step           cavity core with the window print
-    CAD/STL/...                                 the same as STL for Blender
+    CAD/STL/...                                 the same as STL
+    CAD/GLB/VG-2026_46_00_twistlock_open.glb    assembly for Blender, parts as named nodes, lever open
 """
 import math
 import os
@@ -221,6 +222,12 @@ def main():
     for shape, name in out:
         bd.export_step(shape, os.path.join(step_dir, name + ".step"))
         bd.export_stl(shape, os.path.join(stl_dir, name + ".stl"), tolerance=0.05, angular_tolerance=0.2)
+    # GLB for Blender: every part a separate named node; "open" = lever at 135 deg, the reference pose
+    glb_dir = os.path.join(ROOT, "CAD", "GLB")
+    os.makedirs(glb_dir, exist_ok=True)
+    asm_open, _ = assembly(135.0)
+    for shape, name in ((asm_open, "VG-2026_46_00_twistlock_open"), (c, "VG-2026_46_01_casting"), (k, "VG-2026_46_01_core")):
+        bd.export_gltf(shape, os.path.join(glb_dir, name + ".glb"), binary=True, linear_deflection=0.05, angular_deflection=0.2)
     rho = T.МАТЕРИАЛЫ["20ГЛ"]["ρ"] * 1e-9
     m = T.массы()
     print("body  : volume %.0f mm3, mass %.2f kg (library %.2f, diff %+.1f %%)" % (b.volume, b.volume * rho, m["корпус"], 100.0 * (b.volume * rho / m["корпус"] - 1.0)))

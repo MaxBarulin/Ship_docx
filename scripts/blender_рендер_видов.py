@@ -6,18 +6,31 @@ r"""Внешние виды и палубные ракурсы судна.
 Рендер идёт в судовой сцене, поэтому солнце, небо и вода те же, что и
 в остальных кадрах; настройки сцены скрипт возвращает как было.
 
-    exec(open(r"E:\Ship_docx\scripts\blender_рендер_видов.py", encoding="utf-8").read())
-    render_views()
+    import blender_рендер_видов as РВ
+    РВ.render_views()                       # внешние виды 01…08
+    РВ.render_views(views=blender_причал.ВИДЫ)   # или через blender_причал.виды()
+
+Кадры у причала (10…12) живут в `blender_причал.ВИДЫ`: там же сцена, ради
+которой они снимаются. Рендер — GPU, если он есть, иначе процессор.
 """
 import bpy, os, sys, math
 from mathutils import Vector
 
-ROOT_SRC = r"E:\Ship_docx\src"
-if ROOT_SRC not in sys.path:
-    sys.path.insert(0, ROOT_SRC)
+
+def _корень():
+    for к in (os.path.dirname(os.path.dirname(os.path.abspath(__file__))) if "__file__" in globals() else None,
+              os.environ.get("GORIZONT_ROOT"), r"E:\Ship_docx"):
+        if к and os.path.isdir(os.path.join(к, "src", "lib")):
+            return к
+    raise RuntimeError("Не найден корень репозитория")
+
+
+ROOT = _корень()
+if os.path.join(ROOT, "src") not in sys.path:
+    sys.path.insert(0, os.path.join(ROOT, "src"))
 from lib import gorizont as G
 
-OUT = r"E:\Ship_docx\renders\горизонт_2026\виды"
+OUT = os.path.join(ROOT, "renders", "горизонт_2026", "виды")
 SAMPLES = 160
 EXPOSURE = -3.1
 RES = (2200, 1240)
@@ -48,15 +61,11 @@ VIEWS = [
      (2600, 430), False),
     ("08_три_четверти_с_кормы",
      (-L * 0.42, B * 4.4, 26.0), (L * 0.42, 0.0, 6.0), 42.0),
-    # камера отходит на воду и поднимается: с борта у самого причала за
-    # судном не видно ни кордона, ни домов, ради которых кадр и снимается
-    ("09_у_набережной",
-     (L * 1.25, -B * 4.5, 24.0), (L * 0.48, 3.0, 6.5), 35.0),
 ]
 
 # виды, где судно обязано быть в кадре целиком; корма и нос — крупные
 # планы оконечностей, их подгонять по всей длине нельзя
-FIT = ("01_общий_вид", "09_у_набережной", "08_три_четверти_с_кормы")
+FIT = ("01_общий_вид", "08_три_четверти_с_кормы")
 
 
 def _hide_env():
@@ -86,7 +95,7 @@ def _cam(name, loc, tgt, lens):
         d.lens = lens
     d.sensor_width = 36.0
     d.clip_start = 0.05
-    d.clip_end = 900.0
+    d.clip_end = 80000.0      # вода и дальний берег до горизонта; при 900 м под горизонтом шла тёмная полоса
     o = bpy.data.objects.new(name, d)
     o.location = loc
     o.rotation_euler = (Vector(tgt) - Vector(loc)).to_track_quat("-Z", "Y").to_euler()
@@ -129,8 +138,23 @@ def _autofit(sc, cam, margin=0.05, tries=8):
     return mx
 
 
-def render_views(only=None, verbose=True):
-    os.makedirs(OUT, exist_ok=True)
+def _устройство(sc):
+    """GPU, если Cycles его видит; иначе процессор (облачная сессия, фоновый Blender)."""
+    try:
+        prefs = bpy.context.preferences.addons["cycles"].preferences
+        prefs.get_devices()
+        if any(d.type != "CPU" for d in prefs.devices):
+            sc.cycles.device = "GPU"
+            return "GPU"
+    except Exception:
+        pass
+    sc.cycles.device = "CPU"
+    return "CPU"
+
+
+def render_views(only=None, verbose=True, views=None, samples=None, out=None):
+    out = out or OUT
+    os.makedirs(out, exist_ok=True)
     sc = bpy.context.scene
     keep = (sc.camera, sc.render.filepath, sc.render.resolution_x,
             sc.render.resolution_y, sc.render.resolution_percentage,
@@ -141,8 +165,8 @@ def render_views(only=None, verbose=True):
     made = []
     try:
         sc.render.engine = "CYCLES"
-        sc.cycles.device = "GPU"
-        sc.cycles.samples = SAMPLES
+        _устройство(sc)
+        sc.cycles.samples = samples or SAMPLES
         sc.cycles.use_denoising = True
         sc.render.resolution_x, sc.render.resolution_y = RES
         sc.render.resolution_percentage = 100
@@ -158,7 +182,7 @@ def render_views(only=None, verbose=True):
                 break
             except TypeError:
                 continue
-        for item in VIEWS:
+        for item in (views or VIEWS):
             name, loc, tgt, lens = item[:4]
             if only and name not in only:
                 continue
@@ -173,7 +197,7 @@ def render_views(only=None, verbose=True):
                 if verbose and mx is not None:
                     print("   %s: объектив %.1f мм, габарит занимает %.0f%% кадра"
                           % (name, cam.data.lens, mx * 200))
-            p = os.path.join(OUT, name + ".jpg")
+            p = os.path.join(out, name + ".jpg")
             sc.render.filepath = p
             bpy.ops.render.render(write_still=True)
             bpy.data.objects.remove(cam, do_unlink=True)
