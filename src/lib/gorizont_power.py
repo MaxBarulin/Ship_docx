@@ -26,7 +26,7 @@ from . import gorizont_mach as M
 
 # --- Что питаем -------------------------------------------------------------
 
-PEOPLE = GA.people_on_board()
+PEOPLE = GA.итоги()["пассажиров"] + G.CREW
 
 #: КПД цепи «шина ГРЩ → фланец гребного вала»
 ETA_VFD = 0.98          # преобразователь частоты
@@ -47,8 +47,11 @@ def conditioned_area():
     тем же интегралом, которым считаются площади в записке, а не оценкой
     «палуба × длина».
     """
+    from . import gorizont_super as SU
     total = 0.0
-    for zones in GA.DECKS.values():
+    for палуба, zones in GA.ЗОНЫ.items():
+        if палуба not in ("главная", "средняя"):
+            continue
         for x0, x1, kind, *_ in zones:
             if kind in ("tech", "open"):
                 continue
@@ -57,10 +60,7 @@ def conditioned_area():
                 xa = x0 + (x1 - x0) * i / n
                 xb = x0 + (x1 - x0) * (i + 1) / n
                 xm = 0.5 * (xa + xb)
-                if xm < G.SUPER_START or xm > G.SUPER_END:
-                    half = H.half_breadth(xm, G.DEPTH) - 0.6
-                else:
-                    half = H.super_half_breadth(xm)
+                half = SU.полуширота(xm, палуба, z=G.DECKS[палуба] + 1.0)
                 total += 2.0 * max(half, 0.0) * (xb - xa)
     return total
 
@@ -72,9 +72,9 @@ AREA = conditioned_area()
 # мощности на движителях. None — судно не идёт.
 
 MODES = [
-    ("ход", "Ходовой, 22 км/ч, глубокая вода", 22.0, None),
-    ("мелководье", "Ходовой, 22 км/ч, фарватер 8 м", 22.0, 8.0),
-    ("полный", "Полный ход, 24 км/ч", 24.0, None),
+    ("ход", "Ходовой, %.1f км/ч, глубокая вода" % G.SPEED_KMH, G.SPEED_KMH, None),
+    ("мелководье", "Ходовой, %.1f км/ч, фарватер 4 м" % G.SPEED_KMH, G.SPEED_KMH, 4.0),
+    ("полный", "Полный ход, %.1f км/ч" % G.SPEED_MAX_KMH, G.SPEED_MAX_KMH, None),
     ("манёвры", "Шлюзование и швартовка", None, None),
     ("стоянка", "Стоянка у причала с пассажирами", None, None),
     ("отстой", "Стоянка без пассажиров", None, None),
@@ -84,9 +84,9 @@ MODE_KEYS = [m[0] for m in MODES]
 
 #: Короткие подписи для графиков: полное название режима в столбец не влезает
 MODE_SHORT = {
-    "ход": "Ход\n22 км/ч",
-    "мелководье": "Ход\nмелк. 8 м",
-    "полный": "Полный\n24 км/ч",
+    "ход": "Ход\n%.1f км/ч" % G.SPEED_KMH,
+    "мелководье": "Ход\nмелк. 4 м",
+    "полный": "Полный\n%.1f км/ч" % G.SPEED_MAX_KMH,
     "манёвры": "Шлюз,\nшвартовка",
     "стоянка": "Стоянка\nс пасс.",
     "отстой": "Отстой",
@@ -185,8 +185,8 @@ def awts_consumers():
 
 def thruster_consumers():
     """Подруливающие: работают только на манёврах и не одновременно на полную."""
-    total = sum(t["power"] for t in G.THRUSTERS.values())
-    return [("ПУ", "Подруливающие устройства носовое и кормовое", float(total),
+    total = sum(t.get("power", t.get("kw", 0)) for t in G.THRUSTERS.values())
+    return [("ПУ", "Носовой водомёт", float(total),
              {"манёвры": (1.0, 0.55)})]
 
 

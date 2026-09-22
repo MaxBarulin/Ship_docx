@@ -28,11 +28,19 @@ from . import gorizont_struct as S
 
 GRAV = 9.81
 
+#: Длина расчётной волны по разряду бассейна. Волна разряда «О» (h 2,0 м)
+#: имеет длину 20…40 м — судно длиной 140 м стоит на нескольких волнах, и
+#: уравновешивать его на волне «длиной в корпус», как морское, нельзя:
+#: это давало бы момент, которого на реке не бывает. Берётся верхняя
+#: граница длин волны разряда (СПбГМТУ, курс строительной механики корабля,
+#: расчёт речных судов; Правила РРР, ч. I).
+WAVE_LENGTH = {"О": 40.0, "М": 60.0, "М-СП": 80.0}
+
 
 def _buoyancy(xs, z0, theta, wave_amp=0.0, wave_x0=0.0, wave_len=None):
     """Строевая сил поддержания, т/м."""
     if wave_len is None:
-        wave_len = G.LOA
+        wave_len = WAVE_LENGTH.get(H.CLASS, 40.0)
     out = []
     for x in xs:
         zw = z0 + theta * (x - G.LOA / 2.0)
@@ -42,12 +50,12 @@ def _buoyancy(xs, z0, theta, wave_amp=0.0, wave_x0=0.0, wave_len=None):
     return out
 
 
-def balance(xs, D, xg, wave_amp=0.0, wave_x0=0.0, iters=60):
+def balance(xs, D, xg, wave_amp=0.0, wave_x0=0.0, iters=60, wave_len=None):
     """Погружение и дифферент, при которых сходятся водоизмещение и ЦВ."""
     z0 = H.equilibrium()["T"]
     theta = 0.0
     for _ in range(iters):
-        b = _buoyancy(xs, z0, theta, wave_amp, wave_x0)
+        b = _buoyancy(xs, z0, theta, wave_amp, wave_x0, wave_len)
         V = H._trapz(b, xs)
         xc = H._trapz([q * x for q, x in zip(b, xs)], xs) / max(V, 1e-9)
         dV = D - V
@@ -57,7 +65,7 @@ def balance(xs, D, xg, wave_amp=0.0, wave_x0=0.0, iters=60):
         theta += 0.8 * dX * D / max(h["MCT"] * 100.0 * h["Lw"], 1.0)
         if abs(dV) < 0.3 and abs(dX) < 0.005:
             break
-    b = _buoyancy(xs, z0, theta, wave_amp, wave_x0)
+    b = _buoyancy(xs, z0, theta, wave_amp, wave_x0, wave_len)
     return b, z0, theta
 
 
@@ -79,6 +87,9 @@ def case(condition="тихая вода", step=0.5, cls=None):
     ws = H.weight_summary()
     D, xg = ws["D"], ws["xg"]
     hw = H.WAVE_HEIGHT[cls]
+    lam = WAVE_LENGTH.get(cls, 40.0)
+    # гребень (перегиб) или подошва (прогиб) волны ставится на мидель;
+    # положение по длине подбирается по худшему моменту
     if condition == "тихая вода":
         amp, x0 = 0.0, 0.0
     elif condition == "перегиб":
@@ -87,7 +98,7 @@ def case(condition="тихая вода", step=0.5, cls=None):
         amp, x0 = -hw / 2.0, G.LOA / 2.0
     else:
         raise ValueError(condition)
-    b, z0, theta = balance(xs, D, xg, amp, x0)
+    b, z0, theta = balance(xs, D, xg, amp, x0, wave_len=lam)
     q = [(wi - bi) * GRAV for wi, bi in zip(w, b)]
     N, M = _integrate(xs, q)
     n_end, m_end = N[-1], M[-1]
@@ -98,7 +109,8 @@ def case(condition="тихая вода", step=0.5, cls=None):
     return dict(condition=condition, xs=xs, w=w, b=b, q=q, N=N, M=M,
                 z0=z0, theta=theta, D=D, xg=xg,
                 M_max=M[i_max], x_M_max=xs[i_max],
-                N_max=max(N, key=abs), wave=hw if amp else 0.0)
+                N_max=max(N, key=abs), wave=hw if amp else 0.0,
+                wave_len=lam if amp else 0.0)
 
 
 def stresses(cls=None, grade="09Г2С"):
