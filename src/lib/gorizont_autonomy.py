@@ -112,8 +112,10 @@ FAILSAFE = [
 
 def stopping():
     """Торможение реверсом с полного хода."""
-    v = [x for x in P.VARIANTS if x.get("accepted")][0]
-    thrust = P.bollard_pull(v) * ASTERN * 1000.0
+    # Реверс шарнирного колеса: эксцентрик неподвижен, при обратном ходе
+    # плица входит в воду не кромкой, а под углом, — упор на заднем ходу
+    # берётся долей ASTERN от швартовного.
+    thrust = P.COUNT * P.bollard_thrust() * ASTERN * 1000.0
     m = H.equilibrium()["D"] * ADDED_MASS * 1000.0
     speed = G.SPEED_KMH / 3.6
     dist = m * speed * speed / (2.0 * thrust)

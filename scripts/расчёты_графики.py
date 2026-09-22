@@ -38,11 +38,11 @@ def save(fig, name):
 
 
 def hydro_curves():
-    ts = [0.8 + 0.2 * i for i in range(17)]
+    ts = [0.6 + 0.15 * i for i in range(17)]          # 0,6…3,0 — до высоты борта
     rows = [H.hydrostatics(t) for t in ts]
     fig, axs = plt.subplots(1, 4, figsize=(15.5, 5.6))
     head(fig, "Кривые элементов теоретического чертежа",
-         "Осадка от 0.8 до 4.0 м. Штриховая линия — расчётная осадка в полном грузу")
+         "Осадка от 0.6 м до высоты борта %.1f м. Штриховая линия — осадка в полном грузу" % G.DEPTH)
     fig.subplots_adjust(top=0.80, wspace=0.34, bottom=0.12)
     T = H.equilibrium()["T"]
     sets = [
@@ -93,13 +93,14 @@ def bonjean_and_load():
 
 
 def stability_plots():
+    zt = G.DECKS["средняя"]
     a = H.stability_summary()
-    b = H.stability_summary(z_top=7.00)
-    wa = H.weather_criterion("О")
-    wb = H.weather_criterion("О", z_top=7.00)
+    b = H.stability_summary(z_top=zt)
+    wa = H.weather_criterion(H.CLASS)
+    wb = H.weather_criterion(H.CLASS, z_top=zt)
     fig, axs = plt.subplots(1, 3, figsize=(15.5, 5.4))
     head(fig, "Остойчивость на больших углах крена",
-         "Сплошная — только корпус до 4.20 м, штриховая — с закрытой надстройкой до 7.00 м")
+         "Сплошная — только корпус до %.2f м, штриховая — с закрытым ярусом главной палубы до %.2f м" % (G.DEPTH, zt))
     fig.subplots_adjust(top=0.80, wspace=0.26, bottom=0.14)
     axs[0].plot(a["theta"], a["lk"], color=SEA, lw=2, label="корпус")
     axs[0].plot(b["theta"], b["lk"], color=SEA, lw=1.6, ls="--", label="с надстройкой")
@@ -130,7 +131,7 @@ def strength_plots():
     fig, axs = plt.subplots(3, 1, figsize=(15.5, 9.6), sharex=True)
     head(fig, "Общая продольная прочность",
          "Нагрузка, перерезывающие силы и изгибающие моменты на тихой воде "
-         "и на волне высотой 2.0 м, класс «О»")
+         "и на волне h = %.1f м, длина %.0f м, класс «%s»" % (H.WAVE_HEIGHT[H.CLASS], St.WAVE_LENGTH[H.CLASS], H.CLASS))
     fig.subplots_adjust(top=0.90, hspace=0.16, bottom=0.07)
     cols = {"тихая вода": SEA, "перегиб": ACC, "прогиб": GRN}
     for row in r["rows"]:
@@ -163,7 +164,7 @@ def strength_plots():
 
 
 def resistance_plots():
-    vs = [10 + 0.5 * i for i in range(35)]
+    vs = [8 + 0.5 * i for i in range(27)]
     deep = [H.power(v) for v in vs]
     fig, axs = plt.subplots(1, 2, figsize=(15.5, 5.4))
     head(fig, "Ходкость",
@@ -182,20 +183,20 @@ def resistance_plots():
 
     axs[1].plot(vs, [p["Pb"] for p in deep], color=SEA, lw=2, label="потребная мощность")
     axs[1].axhline(H.PROP_POWER, color=ACC, lw=1.6)
-    axs[1].annotate("установлено 2 x %d = %d кВт на ГЭД"
-                    % (G.PROP_MOTOR_POWER, H.PROP_POWER),
-                    (10.4, H.PROP_POWER - 220), color=ACC, fontsize=9)
-    P24 = H.power(24)["Pb"]
+    axs[1].annotate("установлено 2 x %d = %d кВт на ГЭД колёс"
+                    % (G.WHEEL_MOTOR_POWER, H.PROP_POWER),
+                    (10.4, H.PROP_POWER - 90), color=ACC, fontsize=9)
+    P24 = H.power(G.SPEED_MAX_KMH)["Pb"]
     axs[1].axhline(P24, color="#8a93a5", lw=1.2, ls="--")
-    axs[1].annotate("на 24 км/ч нужно %.0f кВт — 48 %% от установленной" % P24,
-                    (10.4, P24 + 90), color="#56627a", fontsize=9)
+    axs[1].annotate("на %.1f км/ч нужно %.0f кВт — %.0f %% от установленной" % (G.SPEED_MAX_KMH, P24, 100 * P24 / H.PROP_POWER),
+                    (10.4, P24 + 40), color="#56627a", fontsize=9)
     vmax = H.max_speed()
     axs[1].plot([vmax, vmax], [0, H.power(vmax)["Pb"]], color=ACC, lw=1.0, ls=":")
     axs[1].annotate("%.1f км/ч" % vmax, (vmax - 0.45, 250), color=ACC, fontsize=9, rotation=90)
-    for v, c, lab in ((22, GRN, "эксплуатационная 22"), (24, GRN, "по описанию 24")):
+    for v, c, lab in ((G.SPEED_KMH, GRN, "эксплуатационная %.1f" % G.SPEED_KMH), (G.SPEED_MAX_KMH, GRN, "максимальная %.1f" % G.SPEED_MAX_KMH)):
         axs[1].axvline(v, color=c, lw=1.2, ls=":")
-        axs[1].annotate(lab, (v + 0.2, 2450), color=c, fontsize=9, rotation=90)
-    axs[1].set_ylim(0, 4000)
+        axs[1].annotate(lab, (v + 0.2, H.PROP_POWER * 0.55), color=c, fontsize=9, rotation=90)
+    axs[1].set_ylim(0, H.PROP_POWER * 1.6)
     axs[1].set_xlabel("скорость, км/ч")
     axs[1].set_ylabel("мощность на движителях, кВт")
     axs[1].legend(fontsize=8, loc="upper left")
@@ -222,7 +223,7 @@ def power_balance():
                             gridspec_kw={"width_ratios": [1.45, 1]})
     head(fig, "Электробаланс по режимам и выбор единичной мощности ГДГ",
          "Слева — потребность на шинах ГРЩ; справа — проверка n−1 на "
-         "восьмиметровом фарватере, она и назначает мощность машины")
+         "фарватере 4 м, она и назначает мощность машины")
     fig.subplots_adjust(top=0.76, bottom=0.22, wspace=0.24)
 
     x = range(len(rows))
@@ -244,7 +245,7 @@ def power_balance():
     ax.set_title("Потребность по режимам", fontsize=10, loc="left")
 
     ax = axs[1]
-    units = (1200, 1400, 1600, 1800)
+    units = (400, 500, 600, 800)
     speeds = [P.redundancy("мелководье", unit=u, count=3)["speed"] for u in units]
     colors = [GRN if s >= G.SPEED_KMH else ACC for s in speeds]
     ax.bar([str(u) for u in units], speeds, color=colors, width=0.55)
@@ -253,18 +254,15 @@ def power_balance():
             fontsize=8.5, color=INK, ha="left")
     for i, s in enumerate(speeds):
         ax.text(i, s + 0.12, "%.1f" % s, ha="center", fontsize=9, color=INK)
-    ax.set_ylim(18, max(speeds) + 1.2)
+    ax.set_ylim(max(0.0, min(speeds) - 3.0), max(speeds) + 1.2)
     ax.set_xlabel("единичная мощность ГДГ, кВт (три машины)")
     ax.set_ylabel("достижимая скорость при отказе одного ГДГ, км/ч")
-    ax.set_title("Проверка n−1, фарватер 8 м", fontsize=10, loc="left")
+    ax.set_title("Проверка n−1, фарватер 4 м", fontsize=10, loc="left")
 
-    sh = P.single_shaft_comparison(22)
     fig.text(0.01, 0.012,
-             "Один вал при этой осадке невозможен: винт равной площади диска "
-             "D = %.2f м встал бы кромкой на %.2f м выше ватерлинии; "
-             "с винтом %.2f м потеря КПД %.0f %%."
-             % (sh["equal_diameter"], abs(sh["immersion"]),
-                G.PROP_DIAMETER, sh["power_penalty"]),
+             "Три ГДГ по %d кВт на метаноле, батарея %d кВт·ч, солнечные модули %.0f кВт; "
+             "гребные ГЭД колёс 2 x %d кВт; аварийный ДГ %d кВт."
+             % (G.DG_POWER, G.BATTERY_KWH, G.SOLAR_KW, G.WHEEL_MOTOR_POWER, G.EMERGENCY_DG),
              fontsize=8.5, color="#56627a")
     save(fig, "07_электробаланс.png")
 

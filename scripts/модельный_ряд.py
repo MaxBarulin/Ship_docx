@@ -7,14 +7,14 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
-from lib import gorizont as G, gorizont_range as R
+from lib import gorizont as G, gorizont_ga as GA, gorizont_range as R
 
 OUT = os.path.join(ROOT, "renders", "горизонт_2026", "схемы")
 os.makedirs(OUT, exist_ok=True)
 plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 9,
                      "figure.facecolor": "white", "savefig.facecolor": "white"})
 INK, ACC, SEA, GRY, GRN = "#16202f", "#b02634", "#1c5c8a", "#8d97a6", "#1f7a5a"
-COL = {"эконом": "#8fb8d8", "стандарт": "#4f8fbe", "бизнес": "#1c5c8a", "люкс": "#0d3350"}
+COL = {"эконом": "#8fb8d8", "семейная": "#a9c9e2", "стандарт": "#4f8fbe", "стандарт М4": "#3a7aae", "бизнес": "#1c5c8a", "люкс": "#0d3350"}
 
 rows = R.table()
 fig = plt.figure(figsize=(16.8, 9.6))
@@ -35,14 +35,14 @@ ax.invert_yaxis()
 ax.axis("off")
 for i, s in enumerate(rows):
     x, narrow = 0.0, 0
-    for k in ("эконом", "стандарт", "бизнес", "люкс"):
+    for k in ("эконом", "семейная", "стандарт", "стандарт М4", "бизнес", "люкс"):
         n = s["cabins"].get(k, 0)
         if not n:
             continue
-        w = n * G.CABIN_TYPES[k]["area"]
+        w = n * R._площадь(k)
         ax.add_patch(Rectangle((x, i - 0.26), w, 0.52, facecolor=COL[k],
                                edgecolor="white", lw=1.4))
-        lab = "%s: %d кают, %d мест" % (k, n, n * 2)
+        lab = "%s: %d кают, %d мест" % (k, n, n * GA.КАЮТЫ[k]["мест"])
         if w >= 215:
             ax.text(x + w / 2, i, lab.replace(": ", chr(10)).replace(", ", " · "),
                     ha="center", va="center", color="white", fontsize=9.5)
@@ -65,18 +65,19 @@ ax2 = fig.add_axes([0.70, 0.44, 0.275, 0.44])
 xs = range(len(rows))
 ax2.bar([i - 0.2 for i in xs], [s["berths"] for s in rows], width=0.38,
         color=SEA, label="пассажирских мест")
-ax2.bar([i + 0.2 for i in xs], [s["boats_per_side"] for s in rows], width=0.38,
-        color=GRN, alpha=0.75, label="вместимость шлюпок одного борта")
+ax2.bar([i + 0.2 for i in xs], [s["m4"] * 10 for s in rows], width=0.38,
+        color=GRN, alpha=0.75, label="мест М4 (x10)")
+ax2.axhline(200, color=ACC, lw=1.2, ls="--")
+ax2.text(len(rows) - 0.55, 206, "КЗ: не менее 200 мест", fontsize=8.5, color=ACC, ha="right")
 for i, s in enumerate(rows):
     ax2.text(i - 0.2, s["berths"] + 6, str(s["berths"]), ha="center", fontsize=9, color=SEA)
-    ax2.text(i + 0.2, s["boats_per_side"] + 6, str(s["boats_per_side"]),
-             ha="center", fontsize=9, color=GRN)
+    ax2.text(i + 0.2, s["m4"] * 10 + 6, str(s["m4"]), ha="center", fontsize=9, color=GRN)
     ax2.text(i, -34, "на борту %d" % s["onboard"], ha="center", fontsize=9, color=GRY)
 ax2.set_xticks(list(xs))
 ax2.set_xticklabels([s["name"] for s in rows], fontsize=10)
 ax2.set_ylim(0, 430)
 ax2.legend(fontsize=8.5, loc="upper left")
-ax2.set_title("Люди на борту и спасательные средства", fontsize=10, loc="left")
+ax2.set_title("Пассажирских мест и мест М4 (норма 5 %)", fontsize=10, loc="left")
 for sp in ("top", "right"):
     ax2.spines[sp].set_visible(False)
 
@@ -84,7 +85,7 @@ for sp in ("top", "right"):
 ax3 = fig.add_axes([0.035, 0.055, 0.94, 0.33])
 ax3.axis("off")
 head = ["Версия", "Шифр", "Кают", "Мест", "Экипаж", "На борту", "Площадь кают, м²",
-        "м² на место", "Общ. площадь, м²", "Шлюпки, чел/борт", "Запас, чел"]
+        "м² на место", "Δ площади, м²", "Мест М4", "КЗ ≥ 200"]
 w = [0.085, 0.075, 0.048, 0.048, 0.055, 0.062, 0.10, 0.075, 0.105, 0.10, 0.065]
 x0 = 0.0
 for hname, ww in zip(head, w):
@@ -95,8 +96,8 @@ for i, s in enumerate(rows):
     y = 0.80 - i * 0.115
     vals = [s["name"], s["code"], s["n_cabins"], s["berths"], s["crew"], s["onboard"],
             "%.1f" % s["cabin_area"], "%.2f" % s["area_per_berth"],
-            "%+.1f" % s["public_delta"], "%d (%d шт.)" % (s["boats_per_side"], s["boats_n"]),
-            "%+d" % s["margin"]]
+            "%+.1f" % s["area_delta"], "%d %s" % (s["m4"], "ок" if s["m4_ok"] else "мало"),
+            "да" if s["kz_ok"] else "НЕТ"]
     x0 = 0.0
     for v, ww in zip(vals, w):
         ax3.text(x0 + 0.004, y, str(v), fontsize=10,
@@ -109,8 +110,8 @@ ax3.set_xlim(0, sum(w))
 ax3.set_ylim(0.40, 1.0)
 fig.text(0.035, 0.030,
          "Базовая версия — «Классик»: по ней выполнены все чертежи, расчёты и рендеры. "
-         "У неё запас вместимости шлюпок всего один человек, поэтому любое увеличение "
-         "экипажа требует четвёртой пары шлюпок, как в версии «Эконом».",
+         "Спасательные средства — надувные плоты на всех, независимо от версии; "
+         "версии «Эконом» и «Премиум» отличаются только перегородками жилых палуб.",
          fontsize=9.5, color="#56627a")
 p = os.path.join(OUT, "модельный_ряд.png")
 fig.savefig(p, dpi=150)

@@ -23,6 +23,11 @@ plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 9,
                      "figure.facecolor": "white", "savefig.facecolor": "white"})
 INK, ACC, SEA = "#16202f", "#b02634", "#1c5c8a"
 ROWS = G.offsets_rows()
+# ординаты — с нишей колеса: на шпангоутах 9 и 10 борт срезан стенкой ниши
+for r in ROWS:
+    yn = H.niche_half(r["x"])
+    r["y"] = [None if y is None else min(y, yn) for y in r["y"]]
+    r["b_brt"] = min(r["b_brt"], yn)
 WL = list(G.WATERLINES)
 T = H.equilibrium()["T"]
 

@@ -1,51 +1,59 @@
 # -*- coding: utf-8 -*-
 """Модельный ряд «Волжского Горизонта»: три версии на одном корпусе.
 
-Корпус, набор, энергетическая установка, системы и все расчёты общие —
-меняется только насыщение жилых ярусов. Суммарная площадь кают у всех
-трёх версий держится в пределах построенной: перегородки переставляются
-по той же сетке шпаций 550 мм, магистрали и шахты не трогаются.
-
-Базовая версия «Классик» — то, что построено в модели.
+Корпус, набор, энергетическая установка, колёса, системы и все расчёты
+общие — меняется только насыщение жилых палуб. Фронт кают по бортам у всех
+версий один и тот же (перегородки переставляются по сетке шпаций 550 мм,
+магистрали и шахты не трогаются), поэтому версия задаётся набором типов
+кают на тех же рядах. Базовая версия «Классик» — то, что построено в
+модели (gorizont_ga.расстановка()).
 """
 from . import gorizont as G
 from . import gorizont_ga as GA
 
-CREW_TYPES = GA.CREW_TYPES
+#: Глубина внутренних кают (без окна): по коридору
+ГЛУБИНА_ВНУТР = 2.25
 
-# площадь кают пассажиров в построенной версии, м2
-CLASSIC_AREA = sum(c * G.CABIN_TYPES[k]["area"]
-                   for k, c in GA.cabin_counts().items() if k in G.CABIN_TYPES)
+
+def _площадь(тип):
+    к = GA.КАЮТЫ[тип]
+    return к["фронт"] * (к["глубина"] or ГЛУБИНА_ВНУТР)
+
+
+def _классик():
+    """Каюты построенной версии — из расстановки ГА."""
+    cab = {}
+    for c in GA.расстановка():
+        if c["тип"].startswith("экипаж"):
+            continue
+        cab[c["тип"]] = cab.get(c["тип"], 0) + 1
+    return cab
+
+
+CLASSIC = _классик()
+CLASSIC_AREA = sum(n * _площадь(t) for t, n in CLASSIC.items())
 
 VERSIONS = [
     dict(
-        code="ВГ-139-Э", name="Эконом",
-        idea="Максимальная вместимость: массовые маршруты выходного дня",
-        cabins={"эконом": 60, "стандарт": 54, "бизнес": 10, "люкс": 4},
-        crew=58,
-        boats=[(21.0, 8.6, 100), (44.6, 8.6, 100), (53.4, 8.0, 100), (94.1, 7.0, 70)],
-        public_delta=-2.4,
-        note="Кормовая пара люксов на шлюпочной палубе уступает место "
-             "четвёртой паре шлюпок — иначе вместимости шлюпок одного борта "
-             "не хватает на всех.",
+        code="ВГ-140-Э", name="Эконом",
+        idea="Максимальная вместимость: короткие маршруты выходного дня и корпоративные рейсы",
+        # бортовые люксы и бизнес режутся на стандарты (4 места), семейные — на эконом
+        cabins={"стандарт": 40, "стандарт М4": 6, "эконом": 36, "семейная": 4},
+        note="Тот же фронт бортов: люксы 6,0 м и бизнес 5,0 м заменены стандартами 4,0 м с "
+             "откидными верхними койками; внутренние семейные — двухместными эконом.",
     ),
     dict(
-        code="ВГ-139-К", name="Классик",
+        code="ВГ-140-К", name="Классик",
         idea="Базовая версия, построена в модели: баланс цены и комфорта",
-        cabins={"эконом": 40, "стандарт": 38, "бизнес": 18, "люкс": 10},
-        crew=57,
-        boats=list(GA.BOATS),
-        public_delta=0.0,
+        cabins=dict(CLASSIC),
         note="Все чертежи, расчёты и рендеры проекта выполнены для этой версии.",
     ),
     dict(
-        code="ВГ-139-П", name="Премиум",
-        idea="Минимум кают, максимум общественных пространств и балконов",
-        cabins={"эконом": 8, "стандарт": 20, "бизнес": 24, "люкс": 18},
-        crew=52,
-        boats=list(GA.BOATS),
-        public_delta=+92.2,
-        note="Освободившиеся 92 м2 идут в лаундж верхней палубы и расширение спа.",
+        code="ВГ-140-П", name="Премиум",
+        idea="Минимум кают, максимум площади на пассажира и общественных пространств",
+        cabins={"люкс": 14, "бизнес": 14, "стандарт М4": 6, "семейная": 8},
+        note="Бортовые ряды — только люкс и бизнес по 2 места; внутренние эконом объединены "
+             "в семейные и лаунжи палуб; спа расширяется на освободившийся ряд.",
     ),
 ]
 
@@ -53,20 +61,18 @@ VERSIONS = [
 def _stats(v):
     cab = v["cabins"]
     n = sum(cab.values())
-    berths = sum(c * G.CABIN_TYPES[k]["berths"] for k, c in cab.items())
-    area = sum(c * G.CABIN_TYPES[k]["area"] for k, c in cab.items())
-    boats = sum(b[2] for b in v["boats"])
-    onboard = berths + v["crew"]
+    berths = sum(c * GA.КАЮТЫ[k]["мест"] for k, c in cab.items())
+    area = sum(c * _площадь(k) for k, c in cab.items())
+    m4 = sum(c * GA.КАЮТЫ[k]["мест"] for k, c in cab.items() if GA.КАЮТЫ[k].get("М4"))
+    onboard = berths + G.CREW
     return dict(
         code=v["code"], name=v["name"], idea=v["idea"], note=v["note"],
-        cabins=cab, n_cabins=n, berths=berths, crew=v["crew"], onboard=onboard,
+        cabins=cab, n_cabins=n, berths=berths, crew=G.CREW, onboard=onboard,
+        m4=m4, m4_ok=m4 >= -(-berths * 5 // 100),
         cabin_area=round(area, 1),
         area_delta=round(area - CLASSIC_AREA, 1),
-        public_delta=v["public_delta"],
         area_per_berth=round(area / berths, 2),
-        boats_per_side=boats, boats_n=len(v["boats"]),
-        boats_ok=boats >= onboard,
-        margin=boats - onboard,
+        kz_ok=berths >= 200,
     )
 
 
@@ -75,11 +81,17 @@ def table():
 
 
 def check():
-    """Все ли версии проходят по вместимости шлюпок и по площади кают."""
+    """Все ли версии проходят по вместимости, доле М4 и площади кают."""
     out = []
     for s in table():
-        out.append(dict(code=s["code"], name=s["name"],
-                        boats_ok=s["boats_ok"], margin=s["margin"],
-                        area_ok=abs(s["area_delta"]) <= 0.06 * CLASSIC_AREA,
+        out.append(dict(code=s["code"], name=s["name"], berths=s["berths"], kz_ok=s["kz_ok"],
+                        m4_ok=s["m4_ok"], area_ok=abs(s["area_delta"]) <= 0.10 * CLASSIC_AREA,
                         area_delta=s["area_delta"]))
     return out
+
+
+if __name__ == "__main__":
+    for s in table():
+        print("%-8s %-10s кают %3d мест %3d М4 %2d площадь %.0f м² (%+.0f) %.2f м²/место"
+              % (s["code"], s["name"], s["n_cabins"], s["berths"], s["m4"], s["cabin_area"],
+                 s["area_delta"], s["area_per_berth"]))

@@ -18,7 +18,7 @@ from lib import gorizont_hydro as H, gorizont_struct as SS, gorizont_strength as
 R = ROOT_R
 CALC = os.path.join(R, "расчёты")
 DRW = os.path.join(R, "чертежи")
-W, Ht = 3400, 7300
+W, Ht = 3400, 14000
 img = Image.new("RGB", (W, Ht), (255, 255, 255))
 d = ImageDraw.Draw(img)
 
@@ -60,18 +60,20 @@ y = 226
 y = fit(os.path.join(CALC, "01_теоретический_чертёж.png"), 40, y, W - 80) + 18
 y = fit(os.path.join(CALC, "01б_корпус_и_ординаты.png"), 40, y, W - 80) + 18
 y = fit(os.path.join(CALC, "02_кривые_элементов.png"), 40, y, W - 80) + 18
+y = fit(os.path.join(CALC, "03_строевая_и_нагрузка.png"), 40, y, W - 80) + 18
 y = fit(os.path.join(CALC, "04_остойчивость.png"), 40, y, W - 80) + 18
-y = fit(os.path.join(CALC, "06_ходкость.png"), 40, y, W - 80) + 18
 y = fit(os.path.join(CALC, "05_продольная_прочность.png"), 40, y, W - 80) + 18
-y = fit(os.path.join(DRW, "06_фундамент_очистки.png"), 40, y, W - 80) + 18
-y2 = fit(os.path.join(DRW, "01_мидель_шпангоут.png"), 40, y, (W - 100) // 2)
-fit(os.path.join(DRW, "03_кница_спонсона.png"), 60 + (W - 100) // 2, y, (W - 100) // 2)
+y = fit(os.path.join(CALC, "06_ходкость.png"), 40, y, W - 80) + 18
+y = fit(os.path.join(CALC, "07_электробаланс.png"), 40, y, W - 80) + 18
+DXF = os.path.join(R, "чертежи_dxf")
+y2 = fit(os.path.join(DXF, "ВГ-2026_ОР-06_поперечные_сечения.png"), 40, y, (W - 100) // 2)
+fit(os.path.join(DXF, "ВГ-2026_ОР-07_теоретический_чертёж.png"), 60 + (W - 100) // 2, y, (W - 100) // 2)
 print("высота получилась", max(y2, y))
 img = img.crop((0, 0, W, min(Ht, max(y2, y) + 90)))
 d = ImageDraw.Draw(img)
 d.rectangle([0, img.size[1] - 70, W, img.size[1]], fill=(18, 30, 48))
 text(d, (64, img.size[1] - 52),
-     "docs/расчёты/теория_корабля.md · src/lib/gorizont_hydro.py, gorizont_struct.py, "
+     "docs/проект/теория_корабля.md · src/lib/gorizont_hydro.py, gorizont_struct.py, "
      "gorizont_strength.py · scripts/расчёты_графики.py",
      font(20), (150, 168, 196))
 img.save(os.path.join(R, "лист_расчётов_горизонт.png"))
