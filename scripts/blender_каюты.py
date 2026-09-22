@@ -8,9 +8,19 @@
 и подушками, санузел с душем, унитазом и раковиной, шкафы с дверями,
 стол со стулом и телевизором, диван, светильники, окно с видом на воду.
 
-    import blender_каюты as К; К.все()          # в открытой сессии Blender по MCP
+Отделка — по классу каюты из `gorizont_style.ИНТЕРЬЕР`: эконом — ламинат
+и берёза, стандарт — дуб, бизнес — орех, бархат и латунь, люкс — мрамор,
+венге и золото. Чем выше класс, тем дороже выглядит.
+
+Геометрия строится без операторов (`bpy.ops.mesh.*`), поэтому сборку и
+рендер можно гонять из таймера: `фоном()` ставит все кадры в очередь,
+возвращается сразу, а ход пишет в `renders/.../каюты/_прогресс.json`.
+Вызов по MCP не висит на рендере и не отваливается по таймауту.
+
+    import blender_каюты as К; К.все()          # синхронно, в открытой сессии Blender
+    К.фоном()                                    # то же по таймеру; ход — в _прогресс.json
 """
-import bpy, math, os, sys
+import bpy, bmesh, math, os, sys, json, time, traceback
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 for p in (os.path.join(ROOT, "src"), os.path.join(ROOT, "scripts")):
     if p not in sys.path:
@@ -18,6 +28,7 @@ for p in (os.path.join(ROOT, "src"), os.path.join(ROOT, "scripts")):
 from lib import gorizont as G, gorizont_ga as GA, gorizont_cabin_layout as ПК, gorizont_style as S
 
 OUT = os.path.join(ROOT, "renders", "горизонт_2026", "каюты")
+ПРОГРЕСС = os.path.join(OUT, "_прогресс.json")
 H = ПК.ВЫСОТА_В_СВЕТУ          # 2,33 м в свету
 СТЕНА = 0.06
 ПОДОКОННИК, ОКНО_ВЕРХ = 0.45, 2.20
@@ -28,6 +39,16 @@ H = ПК.ВЫСОТА_В_СВЕТУ          # 2,33 м в свету
            "стандарт М4": "Стандарт М4 6,0 x 3,0 м, 2 места, круг разворота 1,5 м, душ без порога",
            "семейная": "Семейная внутренняя 5,6 x 2,25 м, 4 места, виртуальное окно",
            "эконом": "Эконом внутренняя 3,8 x 2,25 м, 2 места, виртуальное окно"}
+РАЗРЕШЕНИЕ = (1200, 800)
+SAMPLES = 32
+
+
+def сцена():
+    sc = bpy.data.scenes.get("Каюты")
+    if sc is None:
+        sc = bpy.data.scenes.new("Каюты")
+    return sc
+
 
 # --- материалы ---------------------------------------------------------------
 МАТ = {}
@@ -50,51 +71,62 @@ def _мат(имя, цвет, rough=0.5, metal=0.0, emission=0.0, glass=False, a
             bsdf.inputs[имя_входа].default_value = rgb if emission else (0, 0, 0, 1)
     if "Emission Strength" in bsdf.inputs:
         bsdf.inputs["Emission Strength"].default_value = emission
+    for имя_входа in ("Transmission Weight", "Transmission"):
+        if имя_входа in bsdf.inputs:
+            bsdf.inputs[имя_входа].default_value = 1.0 if glass else 0.0
     if glass:
-        for имя_входа in ("Transmission Weight", "Transmission"):
-            if имя_входа in bsdf.inputs:
-                bsdf.inputs[имя_входа].default_value = 1.0
         bsdf.inputs["Roughness"].default_value = 0.02
-    if alpha < 1.0:
-        bsdf.inputs["Alpha"].default_value = alpha
-        m.blend_method = "BLEND" if hasattr(m, "blend_method") else m.blend_method
+    bsdf.inputs["Alpha"].default_value = alpha
     МАТ[имя] = m
     return m
 
 
-def материалы():
-    _мат("пол", "#c9b189", 0.45)
-    _мат("ковёр", "#4a5560", 0.9)
-    _мат("стена", "#efece6", 0.6)
-    _мат("потолок", "#f7f6f2", 0.7)
-    _мат("дерево", "#8a6a48", 0.4)
-    _мат("дерево_светлое", "#bfa27d", 0.45)
+def материалы(тип="стандарт"):
+    """Материалы каюты по классу: `gorizont_style.ИНТЕРЬЕР` — единственный источник цвета."""
+    и = S.интерьер(тип)
+    дорогой = тип in ("люкс", "бизнес")
+    мет, мет_r = и["металл"]
+    _мат("пол", и["пол"], S.ШЕРОХОВАТОСТЬ_ПОЛА[тип])
+    _мат("ковёр", и["ковёр"], 0.9)
+    _мат("стена", и["стена"], 0.6)
+    _мат("потолок", и["потолок"], 0.7)
+    _мат("дерево", и["дерево"], 0.3 if дорогой else 0.45)
+    _мат("дерево_светлое", и["дерево_светлое"], 0.35 if дорогой else 0.45)
     _мат("матрас", "#f4f1ea", 0.8)
-    _мат("одеяло", "#3b4450", 0.85)
-    _мат("подушка", "#b02634", 0.8)
-    _мат("ткань", "#5b6470", 0.85)
-    _мат("плитка", "#f2f4f6", 0.15)
-    _мат("керамика", "#fbfbfb", 0.1)
-    _мат("хром", "#d9dde2", 0.2, 1.0)
+    _мат("одеяло", и["одеяло"], 0.55 if дорогой else 0.85)
+    _мат("подушка", и["подушка"], 0.6 if дорогой else 0.8)
+    _мат("ткань", и["ткань"], 0.5 if дорогой else 0.85)
+    _мат("плитка", и["плитка"], 0.08 if дорогой else 0.15)
+    _мат("керамика", и["керамика"], 0.1)
+    _мат("хром", мет, мет_r, 1.0)
     _мат("стекло", "#dfe7ee", 0.02, glass=True, alpha=0.25)
     _мат("экран", "#1a1e23", 0.3)
     _мат("свет", "#fff6e8", 0.5, emission=9.0)
     _мат("виртуальное_окно", "#8fb7d9", 0.5, emission=2.4)
     _мат("вода", "#1b3350", 0.03, 0.1)
     _мат("берег", "#6b7a63", 0.9)
-    _мат("панель", "#4f5966", 0.6)
+    _мат("панель", и["панель"], 0.4 if дорогой else 0.6)
     _мат("рама", "#a9afb5", 0.3, 0.8)
 
 
 # --- примитивы ---------------------------------------------------------------
 def _кол():
-    sc = bpy.context.scene
+    sc = сцена()
     к = bpy.data.collections.get("Каюта")
     if к is None:
         к = bpy.data.collections.new("Каюта")
     if к.name not in sc.collection.children:
         sc.collection.children.link(к)
     return к
+
+
+def _объект(имя, me, мат, location=(0, 0, 0), rotation=(0, 0, 0)):
+    ob = bpy.data.objects.new(имя, me)
+    _кол().objects.link(ob)
+    ob.location = location
+    ob.rotation_euler = rotation
+    ob.data.materials.append(МАТ[мат])
+    return ob
 
 
 def короб(имя, x0, x1, y0, y1, z0, z1, мат):
@@ -104,26 +136,36 @@ def короб(имя, x0, x1, y0, y1, z0, z1, мат):
     me = bpy.data.meshes.new(имя)
     me.from_pydata(verts, [], faces)
     me.validate(verbose=False); me.update()
-    ob = bpy.data.objects.new(имя, me)
-    _кол().objects.link(ob)
-    ob.location = (x0 + dx, y0 + dy, z0 + dz)
-    ob.data.materials.append(МАТ[мат])
-    return ob
+    return _объект(имя, me, мат, (x0 + dx, y0 + dy, z0 + dz))
 
 
 def цилиндр(имя, x, y, z0, z1, r, мат, сег=32, ось="z"):
-    bpy.ops.mesh.primitive_cylinder_add(vertices=сег, radius=r, depth=z1 - z0, location=(x, y, (z0 + z1) / 2.0))
-    ob = bpy.context.active_object
-    ob.name = имя
-    for c in list(ob.users_collection):
-        c.objects.unlink(ob)
-    _кол().objects.link(ob)
-    if ось == "x":
-        ob.rotation_euler = (0, math.pi / 2, 0)
-    elif ось == "y":
-        ob.rotation_euler = (math.pi / 2, 0, 0)
-    ob.data.materials.append(МАТ[мат])
-    return ob
+    """Цилиндр без операторов: bmesh, поэтому работает и из таймера."""
+    bm = bmesh.new()
+    bmesh.ops.create_cone(bm, cap_ends=True, cap_tris=False, segments=сег, radius1=r, radius2=r, depth=z1 - z0)
+    me = bpy.data.meshes.new(имя)
+    bm.to_mesh(me); bm.free()
+    rot = (0, math.pi / 2, 0) if ось == "x" else ((math.pi / 2, 0, 0) if ось == "y" else (0, 0, 0))
+    return _объект(имя, me, мат, (x, y, (z0 + z1) / 2.0), rot)
+
+
+def кольцо(имя, cx, cy, z, R, w, мат, сег=64):
+    """Плоское кольцо на полу (круг разворота М4) — замкнутая сетка."""
+    verts, faces = [], []
+    for i in range(сег):
+        a = 2 * math.pi * i / сег
+        for r in (R - w, R):
+            for zz in (0.0, 0.01):
+                verts.append((r * math.cos(a), r * math.sin(a), zz))
+    for i in range(сег):
+        j = (i + 1) % сег
+        b, n = 4 * i, 4 * j
+        faces += [[b + 1, n + 1, n + 3, b + 3], [b + 0, b + 2, n + 2, n + 0],
+                  [b + 2, b + 3, n + 3, n + 2], [b + 0, n + 0, n + 1, b + 1]]
+    me = bpy.data.meshes.new(имя)
+    me.from_pydata(verts, [], faces)
+    me.validate(verbose=False); me.update()
+    return _объект(имя, me, мат, (cx, cy, z))
 
 
 # --- комната -----------------------------------------------------------------
@@ -355,7 +397,6 @@ def санузел(имя, lx, ly, w, h, ф, гл, м4=False):
     цилиндр("Унитаз_" + имя, x1 - 0.42, y0 + 0.35, 0.012, 0.42, 0.19, "керамика", 24)
     короб("Унитаз_сиденье_" + имя, x1 - 0.62, x1 - 0.22, y0 + 0.15, y0 + 0.55, 0.42, 0.45, "керамика")
     # раковина с зеркалом на стене x1 у двери
-    rx0 = x1 - 0.5 - 0.08
     ry1 = y1 - 0.08
     короб("Раковина_тумба_" + имя, x1 - 0.45, x1 - 0.03, ry1 - 0.5, ry1, 0.35, 0.82, "дерево_светлое")
     короб("Раковина_" + имя, x1 - 0.42, x1 - 0.06, ry1 - 0.45, ry1 - 0.05, 0.82, 0.9, "керамика")
@@ -381,13 +422,13 @@ def очистить():
 
 
 def каюта(тип):
-    """Собрать каюту типа в сцене «Каюты»; возвращает (ф, гл)."""
-    sc = bpy.data.scenes.get("Каюты")
-    if sc is None:
-        sc = bpy.data.scenes.new("Каюты")
-    bpy.context.window.scene = sc
+    """Собрать каюту типа в сцене «Каюты»; возвращает (ф, гл, lx двери)."""
+    sc = сцена()
+    win = bpy.context.window
+    if win is not None:
+        win.scene = sc
     очистить()
-    материалы()
+    материалы(тип)
     к = GA.КАЮТЫ[тип]
     ф, гл, м = ПК.мебель(тип)
     lxд, дв = ПК.дверь(тип)
@@ -410,16 +451,7 @@ def каюта(тип):
             кресло("кр", lx, ly, w, h, ф, гл)
     if к.get("М4"):
         # круг разворота кресла-коляски 1,5 м — тонкое кольцо на полу в свободной зоне
-        cx, cy = ф * 0.5, гл * 0.5
-        for имя_, lx, ly, w, h, кл in м:
-            pass
-        bpy.ops.mesh.primitive_torus_add(major_radius=0.75, minor_radius=0.01, location=(cx, cy, 0.013), major_segments=64, minor_segments=8)
-        ob = bpy.context.active_object
-        ob.name = "Круг_разворота_1500"
-        for c in list(ob.users_collection):
-            c.objects.unlink(ob)
-        _кол().objects.link(ob)
-        ob.data.materials.append(МАТ["подушка"])
+        кольцо("Круг_разворота_1500", ф * 0.5, гл * 0.5, 0.013, 0.76, 0.02, "подушка")
     # тумбы у двуспальных кроватей
     for имя, lx, ly, w, h, кл in м:
         if кл == "койка" and h >= 1.2 and w >= 1.9:
@@ -435,19 +467,89 @@ def _свободно(x, y, запас=0.2):
     return True
 
 
-def _точка(кандидаты):
-    for x, y in кандидаты:
-        if _свободно(x, y):
-            return x, y
-    return кандидаты[0]
+_ВЫСОКОЕ = ("санузел", "шкаф")
+
+
+def _видно(x, y, цель, шаг=0.1):
+    """Прямая видимость от (x, y) до цели: луч не проходит сквозь высокую мебель
+    (санузел, шкаф, двухъярусные койки). Низкий стол камере на 1,5 м не мешает."""
+    tx, ty = цель
+    n = max(2, int(math.hypot(tx - x, ty - y) / шаг))
+    for i in range(1, n):
+        px, py = x + (tx - x) * i / n, y + (ty - y) * i / n
+        for имя, lx, ly, w, h, кл in _МЕБЕЛЬ:
+            высокая = кл in _ВЫСОКОЕ or (кл == "койка" and "2-яр" in имя)
+            if высокая and lx - 0.05 <= px <= lx + w + 0.05 and ly - 0.05 <= py <= ly + h + 0.05:
+                return False
+    return True
+
+
+def _свободно_от_высокого(x, y, запас=0.1, койки=True):
+    """Нет ли в точке шкафа, санузла (и, если койки=True, двухъярусной койки).
+    Камере под подволоком на 2,15 м койка не мешает — её верх 1,85."""
+    for имя, lx, ly, w, h, кл in _МЕБЕЛЬ:
+        высокая = кл in _ВЫСОКОЕ or (койки and кл == "койка" and "2-яр" in имя)
+        if высокая and lx - запас <= x <= lx + w + запас and ly - запас <= y <= ly + h + запас:
+            return False
+    return True
+
+
+def _угловой_кадр(ф, гл):
+    """Тесная каюта (< 13 м²): камера под подволоком в углу у окна, над шкафом и
+    койками, смотрит по диагонали на дверную стену — так видна вся каюта.
+    Поиск точки на полу тут не работает: любая точка зажата между койкой,
+    шкафом и санузлом, и в кадре две плоскости. В длинной каюте снимаем с
+    торца, противоположного санузлу, иначе его стенка закрывает половину."""
+    су = next(((lx, ly, w, h) for _, lx, ly, w, h, кл in _МЕБЕЛЬ if кл == "санузел"), None)
+    if ф > 1.8 * гл and су and су[0] > ф / 2.0:
+        угол, цель = (0.25, гл - 0.25), (ф - 0.5, 0.3, 0.4)
+    else:
+        угол, цель = (ф - 0.25, гл - 0.25), (0.5, 0.3, 0.4)
+        if not _свободно_от_высокого(*угол, койки=False):
+            угол, цель = (0.25, гл - 0.25), (ф - 0.5, 0.3, 0.4)
+    return (угол[0], угол[1], 2.15), цель
+
+
+def _точка_обзора(ф, гл, дверь_x):
+    """Свободная точка пола для камеры «от окна»: подальше от двери, ближе к
+    дальней стене и с прямой видимостью до двери. Перебор сетки 0,1 м, чтобы
+    камера не оказалась внутри койки или шкафа (так получался чёрный кадр) и
+    не смотрела в стенку шкафа."""
+    лучшая, балл = None, -1e9
+    y = гл - 0.35
+    while y > 0.4:
+        x = 0.35
+        while x < ф - 0.3:
+            цель = _цель_обзора(ф, гл, x, y)
+            дист = math.hypot(x - цель[0], y - цель[1])
+            if дист >= 2.0 and _свободно(x, y, 0.3):
+                # простор вокруг точки: камера, зажатая между шкафом и койкой,
+                # даёт кадр из двух плоскостей, а не комнату
+                простор = sum(1 for dx_ in (-0.5, 0.0, 0.5) for dy_ in (-0.5, 0.0, 0.5)
+                              if 0.1 < x + dx_ < ф - 0.1 and 0.1 < y + dy_ < гл - 0.1
+                              and _свободно(x + dx_, y + dy_, 0.12))
+                b = 1.5 * дист + 0.2 * простор + (1.5 if _видно(x, y, цель[:2]) else 0.0)
+                if b > балл:
+                    лучшая, балл = (x, y), b
+            x += 0.1
+        y -= 0.1
+    return лучшая or (ф / 2.0, гл / 2.0)
+
+
+def _цель_обзора(ф, гл, x, y):
+    """Куда смотрит камера «от окна»: по диагонали в дальний угол у входной стены.
+    Смотреть в дверь нельзя — из дальнего конца её закрывает шкаф, и кадр
+    выходил вплотную и сверху; диагональ даёт самую длинную линию взгляда."""
+    return (0.25 if x > ф / 2.0 else ф - 0.25, 0.3, 1.0)
 
 
 def камеры(ф, гл, lxд):
     """Кадры: от двери в комнату, из дальнего свободного угла к двери, план без потолка."""
-    sc = bpy.context.scene
+    sc = сцена()
     cam = bpy.data.objects.get("Каюта_камера")
     if cam is None:
         cam = bpy.data.objects.new("Каюта_камера", bpy.data.cameras.new("Каюта_камера"))
+    if cam.name not in sc.collection.objects:
         sc.collection.objects.link(cam)
     sc.camera = cam
     cam.data.clip_start = 0.03
@@ -464,10 +566,20 @@ def камеры(ф, гл, lxд):
     return навести
 
 
-def рендер(тип, samples=64, res=(1500, 1000), виды=(1, 2, 3)):
+def _снять(sc, путь):
+    sc.render.filepath = путь
+    try:
+        with bpy.context.temp_override(scene=sc):
+            bpy.ops.render.render(write_still=True)
+    except Exception:
+        bpy.ops.render.render(write_still=True, scene=sc.name)
+    return путь
+
+
+def рендер(тип, samples=SAMPLES, res=РАЗРЕШЕНИЕ, виды=(1, 2, 3)):
     os.makedirs(OUT, exist_ok=True)
     ф, гл, lxд = каюта(тип)
-    sc = bpy.context.scene
+    sc = сцена()
     главная = [s for s in bpy.data.scenes if s.name not in ("Каюты", "Узел")]
     if главная and главная[0].world and sc.world is None:
         sc.world = главная[0].world
@@ -484,21 +596,22 @@ def рендер(тип, samples=64, res=(1500, 1000), виды=(1, 2, 3)):
     навести = камеры(ф, гл, lxд)
     сделано = []
     имя = тип.replace(" ", "_")
-    # 1: из дверного проёма в комнату
     lxд_, дв_ = ПК.дверь(тип)
-    # санузел стоит справа от двери, свободная зона — слева: смотрим туда
+    дверь_x = lxд_ + дв_ / 2.0
+    # 1: из дверного проёма в комнату; санузел справа от двери, свободная зона слева
     су = next((lx for _, lx, ly, w, h, кл in _МЕБЕЛЬ if кл == "санузел"), ф)
-    p1 = (lxд_ + дв_ / 2.0, 0.22, 1.6)
     if 1 in виды:
-        навести(p1, (max(0.6, су * 0.45), гл * 0.7, 0.95), 14)
-        sc.render.filepath = os.path.join(OUT, "%s_1_от_входа.jpg" % имя)
-        bpy.ops.render.render(write_still=True); сделано.append(sc.render.filepath)
-    # 2: из дальнего свободного угла к двери
-    x2, y2 = _точка([(0.35, гл - 0.35), (0.35, гл * 0.5), (ф - 0.35, гл - 0.35), (ф * 0.5, гл - 0.35), (0.35, 0.6)])
+        навести((дверь_x, 0.22, 1.6), (max(0.6, су * 0.45), гл * 0.7, 0.95), 14)
+        сделано.append(_снять(sc, os.path.join(OUT, "%s_1_от_входа.jpg" % имя)))
+    # 2: из свободной точки у дальней стены к двери
     if 2 in виды:
-        навести((x2, y2, 1.55), (min(max(lxд_ + дв_ / 2.0, ф * 0.4), ф * 0.7), 0.3, 0.9), 14)
-        sc.render.filepath = os.path.join(OUT, "%s_2_от_окна.jpg" % имя)
-        bpy.ops.render.render(write_still=True); сделано.append(sc.render.filepath)
+        if ф * гл < 13.0:
+            loc, цель = _угловой_кадр(ф, гл)
+            навести(loc, цель, 14)
+        else:
+            x2, y2 = _точка_обзора(ф, гл, дверь_x)
+            навести((x2, y2, 1.5), _цель_обзора(ф, гл, x2, y2), 14)
+        сделано.append(_снять(sc, os.path.join(OUT, "%s_2_от_окна.jpg" % имя)))
     if 3 not in виды:
         return сделано
     # 3: план без потолка
@@ -509,13 +622,50 @@ def рендер(тип, samples=64, res=(1500, 1000), виды=(1, 2, 3)):
         if o.name.startswith("Светильник") or o.name.startswith("Свет_у"):
             o.hide_render = True
     навести((ф / 2, гл / 2, 8.0), (ф / 2, гл / 2, 0.0), 50, ortho=max(ф, гл) + 0.6)
-    sc.render.filepath = os.path.join(OUT, "%s_3_план.jpg" % имя)
-    bpy.ops.render.render(write_still=True); сделано.append(sc.render.filepath)
+    сделано.append(_снять(sc, os.path.join(OUT, "%s_3_план.jpg" % имя)))
     return сделано
 
 
-def все(типы=ТИПЫ, samples=64):
+def все(типы=ТИПЫ, samples=SAMPLES):
     out = []
     for т in типы:
         out += рендер(т, samples)
     return out
+
+
+# --- очередь по таймеру ------------------------------------------------------------
+_ОЧЕРЕДЬ = dict(задачи=[], сделано=[], ошибки=[], активна=False, samples=SAMPLES, t0=0.0)
+
+
+def _записать_прогресс():
+    os.makedirs(OUT, exist_ok=True)
+    with open(ПРОГРЕСС, "w", encoding="utf-8") as f:
+        json.dump(dict(активна=_ОЧЕРЕДЬ["активна"], осталось=["%s:%d" % (т, в) for т, в in _ОЧЕРЕДЬ["задачи"]],
+                       сделано=[os.path.basename(p) for p in _ОЧЕРЕДЬ["сделано"]], ошибки=_ОЧЕРЕДЬ["ошибки"],
+                       секунд=round(time.time() - _ОЧЕРЕДЬ["t0"]), время=time.strftime("%H:%M:%S")),
+                  f, ensure_ascii=False, indent=1)
+
+
+def _шаг_очереди():
+    if not _ОЧЕРЕДЬ["задачи"]:
+        _ОЧЕРЕДЬ["активна"] = False
+        _записать_прогресс()
+        return None
+    тип, вид = _ОЧЕРЕДЬ["задачи"].pop(0)
+    try:
+        _ОЧЕРЕДЬ["сделано"] += рендер(тип, samples=_ОЧЕРЕДЬ["samples"], виды=(вид,))
+    except Exception:
+        _ОЧЕРЕДЬ["ошибки"].append("%s:%d %s" % (тип, вид, traceback.format_exc()[-600:]))
+    _записать_прогресс()
+    return 0.3
+
+
+def фоном(типы=ТИПЫ, samples=SAMPLES, виды=(1, 2, 3)):
+    """Все кадры по очереди в таймере Blender: вызов возвращается сразу,
+    ход — в `_прогресс.json` (осталось, сделано, ошибки)."""
+    _ОЧЕРЕДЬ.update(задачи=[(т, в) for т in типы for в in виды], сделано=[], ошибки=[],
+                    samples=samples, активна=True, t0=time.time())
+    _записать_прогресс()
+    if not bpy.app.timers.is_registered(_шаг_очереди):
+        bpy.app.timers.register(_шаг_очереди, first_interval=0.3)
+    return ПРОГРЕСС

@@ -8,6 +8,11 @@
   renders/горизонт_2026/схемы/03_оргструктура.png     оргструктура верфи под проект с численностью участков
   docs/проект/персонал_и_дорожная_карта.md            расчёт трудоёмкости и численности, карта, что поправлено у коллег
 
+Читаемость — правило, а не пожелание: размер каждой рамки на оргструктуре
+измеряется по тексту (`get_window_extent`), а не текст подгоняется под рамку;
+подписи Ганта не режутся многоточием, а переносятся; шрифт не мельче 8 pt
+при печати на А3. После генерации картинку смотрят глазами.
+
 Исходники коллег лежат в `docs/команда/` как есть; здесь — то, что из них
 встроено в проект, и то, что в них надо поправить.
 """
@@ -27,17 +32,18 @@ from lib import gorizont as G, gorizont_build as B
 OUT = os.path.join(ROOT, "renders", "горизонт_2026", "схемы")
 ДОК = os.path.join(ROOT, "docs", "проект", "персонал_и_дорожная_карта.md")
 os.makedirs(OUT, exist_ok=True)
-plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 8,
+plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 9,
                      "figure.facecolor": "white", "savefig.facecolor": "white"})
-INK, GRY, ACC, SEA, GRN, WARM, VIO = ("#16202f", "#8a94a6", "#b02634", "#1c5c8a",
+INK, GRY, ACC, SEA, GRN, WARM, VIO = ("#16202f", "#6b7482", "#b02634", "#1c5c8a",
                                       "#1f7a5a", "#b7772a", "#6b4a7a")
 ЦВЕТ_ГРУПП = {"Проект и договор": SEA, "Подготовка": WARM, "Персонал": VIO,
               "Постройка": INK, "Испытания и сдача": GRN, "Эксплуатация": GRY}
 ЦВЕТ_ПРОФ = {"корпусники": INK, "трубопроводчики": SEA, "механики": WARM,
              "электромонтажники": VIO, "достройщики": GRN, "сдаточная команда": ACC,
-             "ИТР проектирования": GRY}
+             "ИТР проектирования": "#9aa3b0"}
 Ф = B._fmt
 дн = datetime.timedelta
+DPI = 150
 
 
 def д(x):
@@ -50,60 +56,65 @@ def гант():
     ч = B.численность()
     x0 = datetime.date(2026, 9, 1)
     x1 = datetime.date(2029, 9, 1)
-    # строки: заголовок группы, затем её задачи
+    # строки: заголовок группы, затем её задачи; длинные названия переносятся, не режутся
     строки, prev = [], None
     for t in карта:
         if t["группа"] != prev:
-            строки.append(("группа", t["группа"]))
+            строки.append(("группа", t["группа"], None))
             prev = t["группа"]
-        строки.append(("задача", t))
-    fig, (ax, ap) = plt.subplots(2, 1, figsize=(16, 13.5), dpi=140, sharex=True,
-                                 gridspec_kw=dict(height_ratios=[len(строки), 9], hspace=0.04))
+        строки.append(("задача", "\n".join(textwrap.wrap("%d. %s" % (t["id"], t["задача"]), 58)), t))
+    ряд = 0.36                                   # дюймов на строку: две строки 9 pt входят
+    h_gantt = ряд * len(строки) + 0.9
+    h_prof = 4.2
+    W = 19.0
+    fig = plt.figure(figsize=(W, h_gantt + h_prof + 0.75 + 1.1), dpi=DPI)   # 1,1" сверху под заголовок
+    лев = 6.3 / W
+    ax = fig.add_axes([лев, (h_prof + 0.75) / fig.get_figheight(), 1 - лев - 0.01, h_gantt / fig.get_figheight()])
+    ap = fig.add_axes([лев, 0.55 / fig.get_figheight(), 1 - лев - 0.01, (h_prof - 0.3) / fig.get_figheight()], sharex=ax)
     ax.set_xlim(x0, x1)
     ax.set_ylim(len(строки) - 0.5, -0.5)
-    for i, (вид, t) in enumerate(строки):
+    for i, (вид, подпись, t) in enumerate(строки):
         if вид == "группа":
-            ax.axhspan(i - 0.5, i + 0.5, color="#f1f3f7", zorder=0)
-            ax.text(x0 - дн(days=12), i, t, ha="right", va="center", fontsize=8,
-                    fontweight="bold", color=ЦВЕТ_ГРУПП[t])
+            ax.axhspan(i - 0.5, i + 0.5, color="#eceff4", zorder=0)
+            ax.text(x0 - дн(days=10), i, подпись, ha="right", va="center", fontsize=10,
+                    fontweight="bold", color=ЦВЕТ_ГРУПП[подпись])
             continue
         col = ЦВЕТ_ГРУПП[t["группа"]]
         a, b = t["начало"], min(t["конец"], x1)
-        if t["веха"]:
-            ax.plot([a], [i], marker="D", ms=7, color=col, zorder=3)
-            ax.text(a + дн(days=10), i, д(a), va="center", fontsize=6.4, color=GRY)
-        else:
-            ax.add_patch(Rectangle((a, i - 0.34), b - a, 0.68, facecolor=col,
-                                   edgecolor="none", alpha=0.85 if t["вид"] else 0.55, zorder=2))
-            подпись = "%s — %s" % (д(t["начало"]), д(t["конец"]))
-            if t["конец"] > x1:
-                ax.annotate("", (x1, i), (b - дн(days=60), i), arrowprops=dict(arrowstyle="->", color=col))
-            if b > x1 - дн(days=170):
-                ax.text(a - дн(days=8), i, подпись, ha="right", va="center", fontsize=6.4, color=GRY)
-            else:
-                ax.text(b + дн(days=8), i, подпись, va="center", fontsize=6.4, color=GRY)
-        имя = t["задача"] if len(t["задача"]) < 62 else t["задача"][:60] + "…"
-        ax.text(x0 - дн(days=12), i, "%d. %s" % (t["id"], имя), ha="right", va="center",
-                fontsize=7.3, color=INK)
+        ax.text(x0 - дн(days=10), i, подпись, ha="right", va="center", fontsize=9, color=INK, linespacing=1.1)
         if t["изменено"]:
-            ax.text(x0 + дн(days=4), i, "!", ha="left", va="center", fontsize=8,
-                    fontweight="bold", color=ACC)
+            ax.text(x0 + дн(days=5), i, "!", ha="left", va="center", fontsize=11, fontweight="bold", color=ACC)
+        if t["веха"]:
+            ax.plot([a], [i], marker="D", ms=9, color=col, zorder=3)
+            ax.text(a + дн(days=12), i, д(a), va="center", fontsize=8, color=INK)
+            continue
+        ax.add_patch(Rectangle((a, i - 0.36), b - a, 0.72, facecolor=col, edgecolor="none",
+                               alpha=0.9 if t["вид"] else 0.5, zorder=2))
+        даты = "%s — %s" % (д(t["начало"]), д(t["конец"]))
+        if t["конец"] > x1:
+            ax.annotate("", (x1, i), (b - дн(days=60), i), arrowprops=dict(arrowstyle="->", color=col))
+        # подпись справа от полосы, а если места нет — слева от неё
+        if b > x1 - дн(days=210):
+            ax.text(a - дн(days=10), i, даты, ha="right", va="center", fontsize=8, color=INK)
+        else:
+            ax.text(b + дн(days=10), i, даты, va="center", fontsize=8, color=INK)
     ax.set_yticks([])
     for sp in ("left", "right", "top"):
         ax.spines[sp].set_visible(False)
     for axx in (ax, ap):
         axx.xaxis.set_major_locator(mdates.MonthLocator(bymonth=(1, 4, 7, 10)))
         axx.xaxis.set_major_formatter(mdates.DateFormatter("%m.%Y"))
-        axx.grid(axis="x", color="#e3e7ee", lw=0.6)
+        axx.grid(axis="x", color="#e3e7ee", lw=0.7)
         for y in range(x0.year, x1.year + 1):
-            axx.axvline(datetime.date(y, 1, 1), color=GRY, lw=0.8)
+            axx.axvline(datetime.date(y, 1, 1), color=GRY, lw=0.9)
+        axx.tick_params(axis="x", labelsize=9)
     ax.tick_params(axis="x", labelbottom=False)
     ax.set_title("Дорожная карта постройки «%s»: ТЗ %s → сдача %s" % (
-        G.NAME.title(), д(B.ТЗ), д(B.сдача()["конец"])), loc="left", fontsize=11,
-        fontweight="bold", color=INK, pad=18)
-    ax.text(0.0, 1.006, "красный «!» — задача переставлена или добавлена относительно карты коллег; "
-            "ромб — веха; бледные полосы — задачи без производственных рабочих",
-            transform=ax.transAxes, fontsize=7.2, color=GRY, va="bottom")
+        G.NAME.title(), д(B.ТЗ), д(B.сдача()["конец"])), loc="left", fontsize=13,
+        fontweight="bold", color=INK, pad=22)
+    ax.text(0.0, 1.008, "красный «!» — задача переставлена или добавлена относительно карты коллег;  "
+            "ромб — веха;  бледные полосы — задачи без производственных рабочих",
+            transform=ax.transAxes, fontsize=8.5, color=GRY, va="bottom")
     # профиль численности
     проф = ч["профиль"]
     xs = [p["месяц"] for p in проф]
@@ -112,21 +123,20 @@ def гант():
         ys = [p["по_профессиям"].get(имя, 0) for p in проф]
         if not any(ys):
             continue
-        ap.bar(xs, ys, bottom=низ, width=27, color=col, alpha=0.85, align="edge", label=имя)
+        ap.bar(xs, ys, bottom=низ, width=27, color=col, alpha=0.9, align="edge", label=имя)
         низ = [a + b for a, b in zip(низ, ys)]
-    ap.set_ylim(0, ч["пик"] * 1.22)
-    ap.set_ylabel("человек в месяце", fontsize=8)
-    ap.legend(loc="upper left", fontsize=7, ncol=7, frameon=False, columnspacing=1.2)
+    ap.set_ylim(0, ч["пик"] * 1.30)
+    ap.set_ylabel("человек в месяце", fontsize=9)
+    ap.legend(loc="upper left", fontsize=8.5, ncol=4, frameon=False, columnspacing=1.4)
     ap.text(ч["пик_месяц"] - дн(days=6), ч["пик"] * 1.01,
             "пик %d чел, %s ▶" % (ч["пик"], ч["пик_месяц"].strftime("%m.%Y")),
-            ha="right", va="bottom", fontsize=7.5, color=ACC, fontweight="bold")
-    ap.text(0.99, 0.83, "основные производственные рабочие и ИТР проектирования по формуле\n"
+            ha="right", va="bottom", fontsize=9, color=ACC, fontweight="bold")
+    ap.text(0.99, 0.72, "основные производственные рабочие и ИТР проектирования по формуле\n"
             "N = T / (мес × %.0f ч × %.2f); вспомогательные +%.0f %% и ИТР производства +%.0f %% сверх"
             % (B.ФОНД_МЕС, B.K_ВН, B.K_ВСПОМ * 100, B.K_ИТР * 100),
-            transform=ap.transAxes, ha="right", va="top", fontsize=7, color=GRY)
+            transform=ap.transAxes, ha="right", va="top", fontsize=8.5, color=GRY)
     for sp in ("right", "top"):
         ap.spines[sp].set_visible(False)
-    fig.subplots_adjust(left=0.30, right=0.985, top=0.955, bottom=0.04)
     p = os.path.join(OUT, "02_дорожная_карта.png")
     fig.savefig(p)
     plt.close(fig)
@@ -134,63 +144,121 @@ def гант():
 
 
 # --- оргструктура ----------------------------------------------------------------
+def _измерить(текст, размер, жирный):
+    """Ширина и высота надписи в дюймах — по реальному рендереру, а не на глаз."""
+    fig = _измерить.fig
+    t = fig.text(0, 0, текст, fontsize=размер, fontweight="bold" if жирный else "normal", linespacing=1.15)
+    bb = t.get_window_extent(renderer=fig.canvas.get_renderer())
+    t.remove()
+    return bb.width / fig.dpi, bb.height / fig.dpi
+
+
 def оргструктура():
+    """«Подвесная» раскладка: директор, ряд заместителей, под каждым — столбик
+    его подразделений; цеха ОПЦ — столбик с отступом под ОПЦ. Так лист выходит
+    в пропорции ~3:2, а не лентой 4:1, и текст крупный. Размер рамок — по
+    измеренному тексту, одна ширина на столбик."""
     дерево = B.оргструктура()
     ч = B.численность()
-    листья = []
+    _измерить.fig = plt.figure(figsize=(4, 4), dpi=DPI)
+    ЗАЗОР_СТОЛБ, ОТСТУП, ШАГ, ВЛОЖ, РЯД = 0.35, 0.16, 0.14, 0.32, 0.55
+    ШРИФТ = {0: 12, 1: 10.5, 2: 9.5, 3: 9.5}
+    ШИР = {0: 28, 1: 20, 2: 24, 3: 22}
 
-    def раскладка(узел, глубина):
-        узел["глубина"] = глубина
-        дети = узел.get("дети", [])
-        if not дети:
-            узел["x"] = len(листья)
-            листья.append(узел)
-        else:
-            for д_ in дети:
-                раскладка(д_, глубина + 1)
-            узел["x"] = (дети[0]["x"] + дети[-1]["x"]) / 2.0
-
-    раскладка(дерево, 0)
-    n = len(листья)
-    fig, ax = plt.subplots(figsize=(20, 9.2), dpi=140)
-    ax.set_xlim(-0.6, n - 0.4)
-    ax.set_ylim(-3.85, 0.55)
-    ax.axis("off")
-    ШИР, ВЫС = 0.90, 0.72
-
-    def узел_(у):
-        x, y = у["x"], -у["глубина"]
-        текст = "\n".join(textwrap.wrap(у["имя"], 15 if у["глубина"] >= 2 else 20))
-        добавлено = у.get("добавлено")
-        w = ШИР if у["глубина"] >= 2 else min(ШИР * 2.4, 2.4)
-        ax.add_patch(FancyBboxPatch((x - w / 2, y - ВЫС / 2), w, ВЫС,
-                                    boxstyle="round,pad=0.02,rounding_size=0.06",
-                                    facecolor="#f3f5f8" if у["глубина"] else INK,
-                                    edgecolor=ACC if добавлено else GRY, lw=1.6 if добавлено else 0.8, zorder=3))
-        ax.text(x, y + (0.09 if "чел" in у else 0.0), текст, ha="center", va="center",
-                fontsize=6.4 if у["глубина"] >= 2 else 7.8,
-                color="white" if not у["глубина"] else INK, zorder=4,
-                fontweight="bold" if у["глубина"] <= 1 else "normal")
-        if "чел" in у:
-            ax.text(x, y - ВЫС / 2 + 0.06, "%d чел" % у["чел"], ha="center", va="bottom",
-                    fontsize=7, color=ACC, fontweight="bold", zorder=4)
+    def подготовить(у, глубина):
+        у["глубина"] = глубина
+        у["текст"] = "\n".join(textwrap.wrap(у["имя"], ШИР[min(глубина, 3)]))
+        tw, th = _измерить(у["текст"], ШРИФТ[min(глубина, 3)], глубина <= 1)
+        у["w"] = tw + 2 * ОТСТУП
+        у["h"] = th + 2 * ОТСТУП + (0.24 if "чел" in у else 0.0)
         for д_ in у.get("дети", []):
-            ax.plot([x, x, д_["x"], д_["x"]], [y - ВЫС / 2, y - 0.5 - ВЫС / 2 + 0.31, y - 0.5 - ВЫС / 2 + 0.31,
-                                                д_["глубина"] * -1 + ВЫС / 2], color=GRY, lw=0.8, zorder=1)
-            узел_(д_)
+            подготовить(д_, глубина + 1)
 
-    узел_(дерево)
-    ax.set_title("Организационная структура верфи под постройку «%s»" % G.NAME.title(),
-                 loc="left", fontsize=11, fontweight="bold", color=INK)
-    ax.text(0.0, 0.985, "по схеме Маши (Org_struktura.docx); красной рамкой — добавленные подразделения; "
-            "численность — пиковая по участку из расчёта (`gorizont_build.численность`)",
-            transform=ax.transAxes, fontsize=7.2, color=GRY, va="top")
-    ax.text(0.0, 0.03, "Пик по верфи: %d основных производственных рабочих (%s), вспомогательные %d, "
-            "ИТР производства %d; всего до %d человек. Средняя численность на постройке %.0f."
-            % (ч["пик_опр"], ч["пик_месяц"].strftime("%m.%Y"), ч["вспомогательные"],
-               ч["ИТР_производства"], ч["всего_пик"], ч["средняя"]),
-            transform=ax.transAxes, fontsize=7.8, color=INK, va="bottom")
-    fig.subplots_adjust(left=0.01, right=0.99, top=0.93, bottom=0.02)
+    подготовить(дерево, 0)
+    замы = дерево["дети"]
+    # ширина столбика — по самой широкой рамке в нём (вложенные — с отступом)
+    for з in замы:
+        w = з["w"]
+        for u in з.get("дети", []):
+            w = max(w, u["w"])
+            for c in u.get("дети", []):
+                w = max(w, c["w"] + ВЛОЖ)
+        з["col_w"] = w
+    W = 0.6 * 2 + sum(з["col_w"] for з in замы) + ЗАЗОР_СТОЛБ * (len(замы) - 1)
+    # координаты: y вниз от 0
+    y0 = -0.1
+    дерево["x"], дерево["yt"] = W / 2.0, y0
+    y1 = y0 - дерево["h"] - РЯД
+    x = 0.6
+    низ = y1
+    for з in замы:
+        з["x"], з["yt"], з["w"] = x + з["col_w"] / 2.0, y1, з["col_w"]
+        y = y1 - з["h"] - РЯД * 0.7
+        for u in з.get("дети", []):
+            u["x"], u["yt"], u["w"] = з["x"], y, з["col_w"]
+            y -= u["h"] + ШАГ
+            for c in u.get("дети", []):
+                c["x"], c["yt"], c["w"] = з["x"] + ВЛОЖ / 2.0, y, з["col_w"] - ВЛОЖ
+                y -= c["h"] + ШАГ
+        низ = min(низ, y)
+        x += з["col_w"] + ЗАЗОР_СТОЛБ
+    plt.close(_измерить.fig)
+    Hf = -низ + 1.9
+    fig = plt.figure(figsize=(W, Hf), dpi=DPI)
+    ax = fig.add_axes([0, 0, 1, 1])
+    ax.set_xlim(0, W); ax.set_ylim(низ - 0.95, 0.95)
+    ax.axis("off")
+
+    def рамка(у):
+        d = у["глубина"]
+        yt = у["yt"]
+        добавлено = у.get("добавлено")
+        ax.add_patch(FancyBboxPatch((у["x"] - у["w"] / 2, yt - у["h"]), у["w"], у["h"],
+                                    boxstyle="round,pad=0.0,rounding_size=0.08",
+                                    facecolor="#f3f5f8" if d else INK,
+                                    edgecolor=ACC if добавлено else "#8a94a6", lw=2.2 if добавлено else 1.0, zorder=3))
+        ax.text(у["x"], yt - у["h"] / 2.0 + (0.12 if "чел" in у else 0.0), у["текст"], ha="center", va="center",
+                fontsize=ШРИФТ[min(d, 3)], color="white" if not d else INK, zorder=4,
+                fontweight="bold" if d <= 1 else "normal", linespacing=1.15)
+        if "чел" in у:
+            ax.text(у["x"], yt - у["h"] + 0.08, "%d чел" % у["чел"], ha="center", va="bottom",
+                    fontsize=10, color=ACC, fontweight="bold", zorder=4)
+
+    рамка(дерево)
+    # директор → заместители: гребёнка
+    y_mid = дерево["yt"] - дерево["h"] - РЯД / 2.0
+    ax.plot([дерево["x"], дерево["x"]], [дерево["yt"] - дерево["h"], y_mid], color="#8a94a6", lw=1.0, zorder=1)
+    ax.plot([замы[0]["x"], замы[-1]["x"]], [y_mid, y_mid], color="#8a94a6", lw=1.0, zorder=1)
+    for з in замы:
+        ax.plot([з["x"], з["x"]], [y_mid, з["yt"]], color="#8a94a6", lw=1.0, zorder=1)
+        рамка(з)
+        # столбик подразделений: стержень слева, отводы к рамкам
+        xs = з["x"] - з["col_w"] / 2.0 + 0.12
+        дети = з.get("дети", [])
+        if дети:
+            ax.plot([xs, xs], [з["yt"] - з["h"], дети[-1]["yt"] - дети[-1]["h"] / 2.0], color="#8a94a6", lw=1.0, zorder=1)
+        for u in дети:
+            ym = u["yt"] - u["h"] / 2.0
+            ax.plot([xs, u["x"] - u["w"] / 2.0], [ym, ym], color="#8a94a6", lw=1.0, zorder=1)
+            рамка(u)
+            цеха = u.get("дети", [])
+            if цеха:
+                xc = u["x"] - u["w"] / 2.0 + ВЛОЖ / 2.0 + 0.1
+                ax.plot([xc, xc], [u["yt"] - u["h"], цеха[-1]["yt"] - цеха[-1]["h"] / 2.0], color="#8a94a6", lw=1.0, zorder=1)
+                for c in цеха:
+                    ym = c["yt"] - c["h"] / 2.0
+                    ax.plot([xc, c["x"] - c["w"] / 2.0], [ym, ym], color="#8a94a6", lw=1.0, zorder=1)
+                    рамка(c)
+    ax.text(0.6, 0.62, "Организационная структура верфи под постройку «%s»" % G.NAME.title(),
+            fontsize=14, fontweight="bold", color=INK, va="bottom")
+    ax.text(0.6, 0.32, "по схеме Маши (Org_struktura.docx); красной рамкой — добавленные подразделения; "
+            "численность — пиковая по участку из расчёта gorizont_build", fontsize=9.5, color=GRY, va="bottom")
+    ax.text(0.6, низ - 0.75, "\n".join(textwrap.wrap(
+        "Пик по верфи: %d основных производственных рабочих (%s), вспомогательные %d, "
+        "ИТР производства %d; всего до %d человек. Средняя численность на постройке %.0f."
+        % (ч["пик_опр"], ч["пик_месяц"].strftime("%m.%Y"), ч["вспомогательные"],
+           ч["ИТР_производства"], ч["всего_пик"], ч["средняя"]), int(W * 11))),
+        fontsize=10, color=INK, va="bottom")
     p = os.path.join(OUT, "03_оргструктура.png")
     fig.savefig(p)
     plt.close(fig)
@@ -357,7 +425,7 @@ def документ():
          "задача 13: поставка до %s, стапель до %s" % (д(поставка), д(стапель_конец)),
          "заказ в первый месяц после договора; резерв — погрузка через съёмный лист палубы на достройке"],
         ["Перегон из Санкт-Петербурга по Ладоге и Онеге судном класса «О»",
-         "задача 36", "разовое разрешение РРР с ограничением по волне и сезону; страхование перегона"],
+         "задача 37", "разовое разрешение РРР с ограничением по волне и сезону; страхование перегона"],
         ["Ходовые испытания не успевают до ледостава",
          "швартовные заканчиваются %s" % д(шварт),
          "заложено: ходовые в апреле следующего года; ускорить — только корпусными чертежами раньше"],

@@ -160,8 +160,14 @@ def каюта(ax, тип):
     ax.plot([xд, xд], [0, дв], color=INK, lw=1.2, zorder=3)
     ax.text(xд + дв / 2.0, -0.28, "дверь %.2f" % дв, ha="center", fontsize=5, color=GRY)
     if тип == "семейная":
-        ax.plot([ф / 2.0, ф / 2.0], [1.2, гл], color=INK, lw=0.8, ls=(0, (3, 2)), zorder=3)
-        ax.text(ф / 2.0 + 0.12, гл - 0.9, "раздвижная перегородка", fontsize=5, color=GRY, rotation=90, va="center")
+        # раздвижная перегородка между торцами двух двухъярусных коек: делит
+        # спальные половины, в открытом виде не мешает проходу вдоль каюты
+        койки = sorted(f for f in м if f[5] == "койка")
+        xp = (койки[0][1] + койки[0][3] + койки[1][1]) / 2.0
+        шкафы = [f for f in м if f[5] == "шкаф"]
+        y0 = max(f[2] + f[4] for f in шкафы) + 0.05 if шкафы else 0.6
+        ax.plot([xp, xp], [y0, гл], color=INK, lw=0.8, ls=(0, (3, 2)), zorder=3)
+        ax.text(xp + 0.12, (y0 + гл - 0.8) / 2.0, "раздвижная перегородка", fontsize=5, color=GRY, rotation=90, va="center")
     if центр:
         ax.add_patch(Circle(центр, G.TURN_CIRCLE / 2.0, fill=False, ec=SEA, lw=0.8, ls="--", zorder=3))
         ax.text(центр[0], центр[1], "Ø1,5", ha="center", va="center", fontsize=5.5, color=SEA)

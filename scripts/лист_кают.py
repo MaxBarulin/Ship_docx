@@ -8,7 +8,7 @@ import os, sys
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, os.path.join(ROOT, "src"))
 from PIL import Image, ImageDraw, ImageFont
-from lib import gorizont_ga as GA, gorizont_cabin_layout as ПК
+from lib import gorizont_ga as GA, gorizont_cabin_layout as ПК, gorizont_style as S
 
 R = os.path.join(ROOT, "renders", "горизонт_2026", "каюты")
 F = r"C:\Windows\Fonts"
@@ -31,7 +31,7 @@ def main():
     d.rectangle([0, 0, W, 196], fill=(18, 30, 48))
     d.text((64, 34), "ИНТЕРЬЕРЫ КАЮТ", font=font(66, True), fill=(255, 255, 255))
     d.text((64, 122), "«Волжский Горизонт» · шесть типов кают по расстановке планов (49 проверок эргономики по СанПиН 2.5.2-703-98) · "
-            "Blender Cycles", font=font(24), fill=(176, 190, 212))
+            "отделка по классу: чем выше класс, тем дороже материалы · Blender Cycles", font=font(24), fill=(176, 190, 212))
     и = GA.итоги()
     y = 230
     for тип in ТИПЫ:
@@ -44,7 +44,8 @@ def main():
         прим = к.get("примечание", "")
         норм = "койка 2,00 × 0,80; проход у койки ≥ %.2f м; дверь %.2f м; санузел ≥ %.1f × %.1f м; высота в свету 2,33 м" % (
             ПК.ПРОХОД[к["мест"]], ПК.ДВЕРЬ_М4 if к.get("М4") else ПК.ДВЕРЬ, ПК.САНУЗЕЛ_МИН[0], ПК.САНУЗЕЛ_МИН[1])
-        d.text((64, y + 42), (прим + ". " if прим else "") + норм, font=font(21), fill=INK2)
+        отделка = "Отделка: " + S.ИНТЕРЬЕР[тип]["описание"] + ". "
+        d.text((64, y + 42), отделка + (прим + ". " if прим else "") + норм, font=font(21), fill=INK2)
         x = 64
         for k, суф in enumerate(("1_от_входа", "2_от_окна", "3_план")):
             p = os.path.join(R, "%s_%s.jpg" % (тип.replace(" ", "_"), суф))
