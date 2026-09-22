@@ -156,9 +156,12 @@ def построить_путь():
         весь += coords if not весь else coords[1:]
     features.insert(0, dict(type="Feature", properties=dict(тип="маршрут", дней=R.ДНЕЙ, км=sum(p[2] for p in плечи), мост_мин=R.МОСТ_МИН),
                             geometry=dict(type="LineString", coordinates=[[x, y] for x, y in весь])))
+    рп = {r["порт"] + str(r["день"]): r for r in R.расписание()}
     for p in R.ПОРТЫ:
+        r = рп[p["порт"] + str(p["день"])]
         features.append(dict(type="Feature", properties=dict(тип="порт", день=p["день"], порт=p["порт"], река=p["река"],
-                                                            стоянка=p.get("стоянка", 1), программа=p["программа"]),
+                                                            стоянка=p.get("стоянка", 1), программа=p["программа"],
+                                                            приход=r["приход_чч"], отход=r["отход_чч"]),
                              geometry=dict(type="Point", coordinates=[p["lon"], p["lat"]])))
     g = dict(type="FeatureCollection", name="Волжский Горизонт — маршрут Самара — Уфа — Самара", features=features)
     os.makedirs(os.path.dirname(OUT_GEO), exist_ok=True)
@@ -260,10 +263,13 @@ def карта(путь, плечи):
     # программа
     x, y = карт_w + 50, 40
     d.text((x, y), "ПРОГРАММА ТУРА", font=font(44, True), fill=WHITE); y += 80
+    рп = {r["порт"] + str(r["день"]): r for r in R.расписание()}
     for p in R.ПОРТЫ:
         дн = "День %d" % p["день"] if p.get("стоянка", 1) == 1 else "Дни %d–%d" % (p["день"], p["день"] + p["стоянка"] - 1)
         if p.get("ход"):
             дн = "День %d" % p["день"]
+        r = рп[p["порт"] + str(p["день"])]
+        часы = " · ".join(s for s in (("приход " + r["приход_чч"]) if r["приход_чч"] else "", ("отход " + r["отход_чч"]) if r["отход_чч"] else "") if s)
         d.text((x, y), дн, font=font(26), fill=(176, 190, 212))
         d.text((x + 190, y - 4), p["порт"], font=font(34, True), fill=WHITE)
         y += 44
@@ -271,7 +277,9 @@ def карта(путь, плечи):
         ширина = панель - 50 - 190 - 30            # от начала текста до края панели
         for s in _перенос(d, p["программа"], font(24), ширина)[:2]:
             d.text((x + 190, y), s, font=font(24), fill=(210, 218, 230)); y += 32
-        y += 16
+        if часы:
+            d.text((x + 190, y), часы, font=font(21), fill=(150, 168, 196)); y += 28
+        y += 10
     низкие = sorted([m for m in R.МОСТЫ if m["высота"] is not None], key=lambda m: m["высота"])[:6]
     мосты_текст = "Самые низкие мосты, м: " + "; ".join("%s %s" % (m["мост"], ("%.1f" % m["высота"]).replace(".", ",")) for m in низкие) \
         + "; габарит судна %s м" % ("%.1f" % G.AIR_DRAFT).replace(".", ",")
