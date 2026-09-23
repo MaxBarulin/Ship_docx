@@ -6,6 +6,7 @@ numpy        # облик_2d
 pillow       # листы и схемы, собираемые из растров
 ezdxf        # чертежи ОР и узла в DXF
 shapely      # сечения деталей на чертежах узла: булевы операции на плоскости
+pypdfium2    # страницы дорожной карты MS Project в PNG
 build123d    # 3D узла: CAD/src/twistlock.py → STEP, STL, GLB
 pyshp        # маршрут: реки Natural Earth (import shapefile)
 playwright   # маршрут: снимок Яндекс Карт; нужен установленный Chrome, работает локально
