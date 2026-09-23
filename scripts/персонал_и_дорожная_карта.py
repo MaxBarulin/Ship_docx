@@ -30,20 +30,16 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib.patches import Rectangle, FancyBboxPatch
 
-from lib import gorizont as G, gorizont_build as B
+from lib import gorizont as G, gorizont_build as B, plain as P
 
 OUT = os.path.join(ROOT, "renders", "горизонт_2026", "схемы")
 ДОК = os.path.join(ROOT, "docs", "проект", "персонал_и_дорожная_карта.md")
 os.makedirs(OUT, exist_ok=True)
 plt.rcParams.update({"axes.unicode_minus": False, "font.family": "DejaVu Sans", "font.size": 9,
                      "figure.facecolor": "white", "savefig.facecolor": "white"})
-# рабочие цвета Office - столбцы, сетка, подписи осей
-EXCEL, СЕТКА, ОСЬ, ПОДПИСЬ = "#4472C4", "#D9D9D9", "#BFBFBF", "#595959"
-EXCEL_ШРИФТ = ["Calibri", "DejaVu Sans"]
-WORD_ШРИФТ = ["Times New Roman", "DejaVu Serif"]
 Ф = B._fmt
 дн = datetime.timedelta
-DPI = 150
+DPI = P.DPI
 
 
 def д(x):
@@ -70,9 +66,6 @@ def карта_ms_project():
 
 
 # --- загрузка персонала ------------------------------------------------------------
-МЕС = ("янв", "фев", "мар", "апр", "май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек")
-
-
 def загрузка():
     """Численность по месяцам - один ряд столбцов, как диаграмма Excel по таблице профиля."""
     ч = B.численность()
@@ -81,34 +74,24 @@ def загрузка():
     i1 = max(i for i, p in enumerate(проф) if p["всего"])
     проф = проф[i0:i1 + 1]
     ys = [p["всего"] for p in проф]
-    подписи = ["%s.%02d" % (МЕС[p["месяц"].month - 1], p["месяц"].year % 100) for p in проф]
-    with plt.rc_context({"font.family": EXCEL_ШРИФТ, "font.size": 10}):
-        # 200 dpi, а не 150 - в Calibri вшиты растровые глифы мелких кеглей, и на 9 pt при 150 dpi
-        # цифры не рисовались
-        fig = plt.figure(figsize=(9.0, 4.2), dpi=200)
+    подписи = [P.месяц(p["месяц"]) for p in проф]
+    with P.excel():
+        fig = plt.figure(figsize=(9.0, 4.2))
         ax = fig.add_axes([0.085, 0.2, 0.895, 0.74])
         xs = range(len(ys))
-        ax.bar(xs, ys, width=0.6, color=EXCEL, zorder=2)
+        ax.bar(xs, ys, width=0.6, color=P.OFFICE[0], zorder=2)
         k = ys.index(max(ys))
-        ax.text(k, ys[k] + 3, "%d" % ys[k], ha="center", va="bottom", fontsize=10, color=ПОДПИСЬ)
+        ax.text(k, ys[k] + 3, "%d" % ys[k], ha="center", va="bottom", fontsize=10)
         верх = (int(max(ys) * 1.12) // 50 + 1) * 50
         ax.set_ylim(0, верх)
         ax.set_yticks(range(0, верх + 1, 50))
         ax.set_xlim(-0.6, len(ys) - 0.4)
         ax.set_xticks(list(xs))
-        ax.set_xticklabels(подписи, rotation=90, fontsize=9, color=ПОДПИСЬ)
-        ax.tick_params(axis="y", labelsize=9, labelcolor=ПОДПИСЬ, length=0)
-        ax.tick_params(axis="x", length=0)
-        ax.grid(axis="y", color=СЕТКА, lw=0.8, zorder=0)
-        for sp in ("left", "right", "top"):
-            ax.spines[sp].set_visible(False)
-        ax.spines["bottom"].set_color(ОСЬ)
-        ax.set_ylabel("Численность, чел.", fontsize=10, color=ПОДПИСЬ)
-        # рамка области диаграммы, как при вставке из Excel в Word
-        fig.patches.append(Rectangle((0.002, 0.004), 0.996, 0.992, transform=fig.transFigure,
-                                     fill=False, edgecolor=СЕТКА, lw=1.0))
-        p = os.path.join(OUT, "02б_загрузка_персонала.png")
-        fig.savefig(p)
+        ax.set_xticklabels(подписи, rotation=90)
+        P.оси(ax)
+        ax.set_ylabel("Численность, чел.")
+        P.рамка(fig)
+        p = P.сохранить(fig, os.path.join(OUT, "02б_загрузка_персонала.png"))
         plt.close(fig)
     старый = os.path.join(OUT, "02_дорожная_карта.png")      # прежний Гант - больше не выпускается
     if os.path.exists(старый):
@@ -132,7 +115,7 @@ def оргструктура():
     прямоугольники, линии чёрные, подразделения под проект - пунктиром. Размер рамок -
     по измеренному тексту, одна ширина на столбик."""
     дерево = B.оргструктура()
-    with plt.rc_context({"font.family": WORD_ШРИФТ}):
+    with P.word():
         return _оргструктура(дерево)
 
 
@@ -230,8 +213,7 @@ def _оргструктура(дерево):
                     рамка(c)
     ax.text(ПОЛЕ, низ - 0.12, "Пунктиром показаны подразделения, созданные под проект. "
             "В скобках - численность участка в пик работ.", fontsize=10, color="black", va="top")
-    p = os.path.join(OUT, "03_оргструктура.png")
-    fig.savefig(p)
+    p = P.сохранить(fig, os.path.join(OUT, "03_оргструктура.png"))
     plt.close(fig)
     return p
 

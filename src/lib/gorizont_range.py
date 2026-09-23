@@ -65,14 +65,15 @@ def _stats(v):
     area = sum(c * _площадь(k) for k, c in cab.items())
     m4 = sum(c * GA.КАЮТЫ[k]["мест"] for k, c in cab.items() if GA.КАЮТЫ[k].get("М4"))
     onboard = berths + G.CREW
+    m4_need = -(-berths * G.ДОЛЯ_М4_КЗ // 100)
     return dict(
         code=v["code"], name=v["name"], idea=v["idea"], note=v["note"],
         cabins=cab, n_cabins=n, berths=berths, crew=G.CREW, onboard=onboard,
-        m4=m4, m4_ok=m4 >= -(-berths * 5 // 100),
+        m4=m4, m4_need=m4_need, m4_ok=m4 >= m4_need,
         cabin_area=round(area, 1),
         area_delta=round(area - CLASSIC_AREA, 1),
         area_per_berth=round(area / berths, 2),
-        kz_ok=berths >= 200,
+        kz_ok=berths >= G.МЕСТ_КЗ,
     )
 
 

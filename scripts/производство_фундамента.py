@@ -3,235 +3,461 @@
 
     python scripts/производство_фундамента.py
 
-Всё - из lib.gorizont_twistlock - трудоёмкость по маршрутам, свободный фонд цехов,
-цепочка кооперации, планировка участков и график, привязанный к дорожной карте Лены.
+Всё - из lib.gorizont_twistlock: трудоёмкость по маршрутам, свободный фонд цехов,
+цепочка кооперации, планировка участков и график, привязанный к дорожной карте постройки.
 Картинки - renders/горизонт_2026/схемы/07…10_узел_*.png.
+
+Вид - простой, как у рабочих материалов (lib.plain). Мощности и сроки - диаграммы Excel
+(Calibri, цвета Office, легенда снизу, десятичная запятая), кооперация и планировка - рисунки
+Word (Times New Roman, белые прямоугольники, чёрные линии 0,8 pt). Кооперация, новое
+оборудование и подвод материалов - пунктиром, а не цветом. Заголовков на картинках нет -
+название даёт подпись «Рисунок N» в документе, числа, которые были в колонках текста,
+перенесены в записку узла (записка_фундамента.py). Рамки и переносы подгоняются под текст
+по get_window_extent. После генерации картинки смотрят глазами.
 """
-import os, sys, textwrap, datetime as dt
+import os, re, sys, textwrap, datetime as dt
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, os.path.join(ROOT, "src"))
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-from matplotlib.patches import FancyBboxPatch, FancyArrowPatch, Rectangle
-from lib import gorizont_twistlock as T, gorizont_build as B
+import matplotlib.transforms as mtransforms
+from matplotlib.patches import FancyArrowPatch, Rectangle, Circle
+from lib import gorizont_twistlock as T, gorizont_build as B, plain as P
 
 OUT = os.path.join(ROOT, "renders", "горизонт_2026", "схемы")
 os.makedirs(OUT, exist_ok=True)
-plt.rcParams.update({"axes.unicode_minus": False, "font.family": "DejaVu Sans", "font.size": 9})
-INK, INK2, MUTED, GRID, SURF = "#0b0b0b", "#52514e", "#8a8983", "#e6e5e0", "#fcfcfb"
-#: Цвет цеха - категориальная палитра в фиксированном порядке по ходу процесса (проверена на дальтонизм).
-ЦЕХ = {"ЛЦ": "#2a78d6", "ТО": "#eb6834", "ОТК": "#1baf7a", "МЦ": "#eda100", "СЦ": "#e87ba4", "К": "#008300"}
-ИМЯ = {"ЛЦ": "литейный цех", "ТО": "термический участок", "ОТК": "служба качества", "МЦ": "механический цех",
-       "СЦ": "сборочный участок", "К": "кооперация"}
+#: Цеха узла по ходу процесса и их названия на картинках.
+ПОРЯДОК = ("ЛЦ", "ТО", "ОТК", "МЦ", "СЦ")
+ИМЯ = {"ЛЦ": "Литейный цех", "ТО": "Термический участок", "ОТК": "ОТК", "МЦ": "Механический цех",
+       "СЦ": "Сборочный участок", "К": "Кооперация"}
+ШАГ_КОЛОНН = 6.0            # м, сетка колонн литейного пролёта (типовая планировка), только для рисунка осей
+ЛИН = P.ЛИНИЯ
 
 
 def ф(x, nd=0):
     return (("%." + str(nd) + "f") % x).replace(".", ",")
 
 
+# --- измерение текста ----------------------------------------------------------------
+def _нр(s):
+    """Число с единицей не разрываются переносом - неразрывный пробел («3 т/ч», «по 6 шт»)."""
+    s = re.sub(r"(\d) (?=(т/ч|т|кН|мм|м|шт|кг|мкм)(?![А-Яа-яЁё]))", "\\1\u00a0", s)
+    return re.sub(r"(?<![А-Яа-яЁё])(КП|ГОСТ) (?=\d)", "\\1\u00a0", s)
+
+
+def _размер(fig, текст, **kw):
+    """Ширина и высота надписи в дюймах - по рендереру, а не на глаз."""
+    t = fig.text(0, 0, текст, **kw)
+    bb = t.get_window_extent(renderer=fig.canvas.get_renderer())
+    t.remove()
+    return bb.width / fig.dpi, bb.height / fig.dpi
+
+
+def _уложить(fig, текст, ширина, **kw):
+    """Перенос по словам в ширину (дюймы): самые длинные строки, что ещё влезают.
+    Если не влезает даже по слову в строке - самый узкий вариант, флаг False."""
+    узкий = None
+    было = set()
+    for n in range(len(текст), 3, -1):
+        s = "\n".join(textwrap.wrap(текст, n))
+        if s in было:
+            continue
+        было.add(s)
+        w, h = _размер(fig, s, **kw)
+        if w <= ширина:
+            return s, w, h, True
+        if узкий is None or w < узкий[1]:
+            узкий = (s, w, h, False)
+    return узкий
+
+
+def _стрелка(ax, p0, p1, пунктир=False, lw=ЛИН, head=9):
+    """Стрелка Word - линия и залитый треугольник на конце. Ломаная - список точек."""
+    pts = [p0, p1] if not isinstance(p0, list) else p0
+    ls = (0, (4, 2.5)) if пунктир else "-"
+    xs, ys = [p[0] for p in pts], [p[1] for p in pts]
+    ax.plot(xs, ys, color="black", lw=lw, ls=ls, solid_capstyle="butt", dash_capstyle="butt", zorder=4)
+    (xa, ya), (xb, yb) = pts[-2], pts[-1]
+    L = ((xb - xa) ** 2 + (yb - ya) ** 2) ** 0.5
+    k = min(1.0, 0.02 / L) if L else 0
+    ax.add_patch(FancyArrowPatch((xb - (xb - xa) * k, yb - (yb - ya) * k), (xb, yb), arrowstyle="-|>",
+                                 mutation_scale=head, lw=lw, color="black", shrinkA=0, shrinkB=0, zorder=5))
+
+
+# --- 10. мощности - линейчатая диаграмма Excel ----------------------------------------
+def _линейчатая(ax):
+    """Оси линейчатой диаграммы Excel: ось категорий слева серой линией, ось значений без линии,
+    сетка по значениям вертикальная."""
+    P.оси(ax, "x")
+    ax.spines["left"].set_visible(True)
+    ax.spines["left"].set_color(P.ОСЬ)
+    ax.spines["bottom"].set_visible(False)
+
+
 def мощности():
-    м = T.мощности()
-    fig, ax = plt.subplots(figsize=(10.5, 4.4), dpi=150)
-    fig.patch.set_facecolor(SURF); ax.set_facecolor(SURF)
-    for i, r in enumerate(м):
-        c = ЦЕХ[r["цех"]]
-        ax.barh(i, r["свободно"], height=0.56, color="white", edgecolor=MUTED, lw=0.8, zorder=2)
-        ax.barh(i, r["часы"], height=0.56, color=c, edgecolor=SURF, lw=2, zorder=3)
-        ax.text(r["свободно"] + 12, i, "%s н·ч из %s свободных - %s %%" % (ф(r["часы"]), ф(r["свободно"]), ф(r["доля"], 1)),
-                va="center", fontsize=8.5, color=INK)
-    ax.set_yticks(range(len(м)))
-    ax.set_yticklabels(["%s - %s" % (r["цех"], ИМЯ[r["цех"]]) for r in м], color=INK)
-    ax.invert_yaxis()
-    ax.set_xlabel("нормо-часы на партию %d шт (заливка - трудоёмкость, контур - свободный годовой фонд цеха)" % T.программа()["всего"], color=INK2)
-    ax.grid(axis="x", color=GRID, lw=0.7, zorder=0)
-    for s in ("top", "right"):
-        ax.spines[s].set_visible(False)
-    ax.set_xlim(0, max(r["свободно"] for r in м) * 1.55)
-    ax.set_title("Загрузка своих мощностей партией фундаментов - хватает с запасом", loc="left", color=INK, fontsize=11)
-    fig.text(0.01, 0.01, "Фонд рабочего места %s ч в год в одну смену. Текущая загрузка цехов другими заказами - 55…75 %%." % ф(T.ФОНД_Ч),
-             fontsize=7.5, color=INK2)
-    fig.tight_layout(rect=(0, 0.04, 1, 1))
-    p = os.path.join(OUT, "10_узел_мощности.png"); fig.savefig(p, facecolor=SURF); plt.close(fig)
+    м = {r["цех"]: r for r in T.мощности()}
+    цеха = [c for c in ПОРЯДОК if c in м] + sorted(c for c in м if c not in ПОРЯДОК)
+    n = len(цеха)
+    загр = [м[c]["часы"] for c in цеха]
+    своб = [м[c]["свободно"] for c in цеха]
+    z = sorted(T.ЗАГРУЗКА_ТЕКУЩАЯ.values())
+    with P.excel():
+        fig = plt.figure(figsize=(9.0, 4.6))
+        ax = fig.add_axes([0.175, 0.255, 0.795, 0.715])
+        h = 0.36
+        ys = list(range(n))
+        ax.barh([y - h / 2 for y in ys], загр, height=h, color=P.OFFICE[0], label="загрузка партией, н·ч", zorder=2)
+        ax.barh([y + h / 2 for y in ys], своб, height=h, color=P.OFFICE[2], label="свободный годовой фонд, н·ч", zorder=2)
+        for y, c in zip(ys, цеха):
+            r = м[c]
+            ax.text(r["часы"] + 8, y - h / 2, "%s (%s %%)" % (P.ч(r["часы"]), P.ч(r["доля"])), va="center", fontsize=9)
+            ax.text(r["свободно"] + 8, y + h / 2, "%d" % r["свободно"], va="center", fontsize=9)
+        ax.set_yticks(ys)
+        ax.set_yticklabels([ИМЯ.get(c, c) for c in цеха], fontsize=10)
+        ax.set_ylim(n - 0.5, -0.5)
+        шаг = 200
+        верх = (int(max(своб) * 1.1) // шаг + 1) * шаг
+        ax.set_xlim(0, верх)
+        ax.set_xticks(range(0, верх + 1, шаг))
+        _линейчатая(ax)
+        P.запятая(ax, "x")
+        ax.set_xlabel("Нормо-часы на партию %d шт" % T.программа()["всего"])
+        P.легенда(ax, ncol=2, dy=-0.17)
+        fig.text(0.012, 0.025, "Свободный фонд - фонд рабочего места %s ч в год в одну смену за вычетом загрузки цеха "
+                 "другими заказами %d…%d %%." % (ф(T.ФОНД_Ч), round(100 * z[0]), round(100 * z[-1])), fontsize=9)
+        P.рамка(fig)
+        p = P.сохранить(fig, os.path.join(OUT, "10_узел_мощности.png"))
+        plt.close(fig)
     return p
 
 
+# --- 07. кооперация - блок-схема Word ---------------------------------------------------
 def кооперация():
-    fig, ax = plt.subplots(figsize=(15, 7.2), dpi=150)
-    fig.patch.set_facecolor(SURF); ax.set_facecolor(SURF)
-    ax.set_xlim(0, 150); ax.set_ylim(-2, 70); ax.axis("off")
+    with P.word():
+        return _кооперация()
+
+
+def _кооперация():
     п = T.программа()
-    узлы = {
-        "МТО": (9, 46, "МТО верфи", "лом, ферросплавы,\nпесок, смола, краска", None),
-        "ЛЦ": (30, 46, "Литейный цех", "стержни, формовка ХТС,\nплавка, выбивка", "ЛЦ"),
-        "ТО": (51, 46, "Термический участок", "нормализация\n+ отпуск", "ТО"),
-        "ОТК": (72, 46, "ОТК", "ВИК, МПД, РК,\nмеханика и KCU", "ОТК"),
-        "МЦ": (93, 46, "Механический цех", "корпус - 2 установки,\nзамок - токарная, ОЦ", "МЦ"),
-        "ТДЦ": (114, 46, "Цинкование ТДЦ", "кооперация,\n40 мкм", "К"),
-        "СЦ": (135, 46, "Сборочный участок", "сборка, стенд 250 кН,\nупаковка по 6 шт", "СЦ"),
-        "КУЗ": (93, 22, "Кузнечный цех", "кооперация - поковки\n40Х, КП 590", "К"),
-        "МТО2": (114, 22, "МТО верфи", "крепёж А4-80, фиксаторы,\nСТЭФ, герметик", None),
-        "СКЛ": (135, 4, "Склад МСЧ", "комплекты на слот", None),
-        "КОРП": (51, 4, "Корпусный цех", "подкладные листы АМг5\nна настил при постройке", None),
-        "СУД": (93, 4, "Судно - солнечная палуба", "установка %d узлов\nв достройку" % п["на_судно"], None),
-    }
-    W, Hh = 16.5, 10.0
-    for k, (x, y, tt, d, цех) in узлы.items():
-        c = ЦЕХ.get(цех, MUTED) if цех else MUTED
-        ax.add_patch(FancyBboxPatch((x - W / 2, y - Hh / 2), W, Hh, boxstyle="round,pad=0.3,rounding_size=1.2",
-                                    facecolor="white", edgecolor=c, lw=2.2 if цех else 1.0, zorder=2))
-        ax.text(x, y + 2.4, tt, ha="center", va="center", fontsize=8.0, color=INK, weight="bold", zorder=3)
-        ax.text(x, y - 1.8, d, ha="center", va="center", fontsize=7.0, color=INK2, zorder=3, linespacing=1.15)
-    def край(x, y, dx, dy):
-        L = (dx * dx + dy * dy) ** 0.5
-        ux, uy = dx / L, dy / L
-        tt = min((W / 2 + 0.8) / abs(ux) if ux else 1e9, (Hh / 2 + 0.8) / abs(uy) if uy else 1e9)
-        return x + ux * tt, y + uy * tt
-    def arrow(a, b, txt):
-        xa, ya = узлы[a][:2]; xb, yb = узлы[b][:2]
-        p0, p1 = край(xa, ya, xb - xa, yb - ya), край(xb, yb, xa - xb, ya - yb)
-        ax.add_patch(FancyArrowPatch(p0, p1, arrowstyle="-|>", mutation_scale=11, color=INK2, lw=1.0, zorder=1))
-        mx, my = (p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2
-        гор = abs(p1[0] - p0[0]) > abs(p1[1] - p0[1])
-        if гор:
-            # между блоками всего несколько единиц - подпись над рядом блоков, по оси зазора, в одну строку
-            ax.text(mx, my + Hh / 2 + 1.0, txt, ha="center", va="bottom", fontsize=6.6, color=INK2)
-            ax.plot([mx, mx], [my + 0.8, my + Hh / 2 + 0.8], color=INK2, lw=0.4, ls=":", zorder=1)
+    # (имя в T.КООПЕРАЦИЯ, колонка, ряд, подпись, пояснение, вид). Раскладка «П»: литьё сверху вниз
+    # слева, обработка и сборка снизу вверх посередине, кооперация и службы - справа.
+    БЛОКИ = [
+        ("МТО", 0, 0, "МТО верфи", "закупка шихты и формовочных материалов", "служба"),
+        ("ЛЦ", 0, 1, "Литейный цех", "стержни, формовка ХТС, плавка, заливка, выбивка, обрубка", "свой"),
+        ("ТО", 0, 2, "Термический участок", "нормализация и отпуск", "свой"),
+        ("ЛЦ очистка", 0, 3, "Литейный цех", "очистка в дробемётной камере", "свой"),
+        ("ОТК", 0, 4, "ОТК", "контроль отливок, лаборатория", "свой"),
+        ("МЦ", 1, 4, "Механический цех", "обработка корпусов и замков на станках с ЧПУ", "свой"),
+        ("Цинкование (кооперация)", 1, 3, "Участок цинкования", "термодиффузионное цинкование", "кооп"),
+        ("СЦ", 1, 2, "Сборочный участок", "сборка, испытания на стенде, маркировка", "свой"),
+        ("Склад МСЧ", 1, 1, "Склад МСЧ", "хранение до установки", "служба"),
+        ("Судно - солнечная палуба", 1, 0, "Судно, солнечная палуба", "установка %d фундаментов в достройку" % п["на_судно"], "служба"),
+        ("Кузнечный цех (кооперация)", 2, 4, "Кузнечный цех", "штамповка замков", "кооп"),
+        ("МТО", 2, 2, "МТО верфи", "покупные изделия", "служба"),
+        ("Корпусный цех", 2, 0, "Корпусный цех", "постройка надстройки", "служба"),
+    ]
+    СЧЁТ = {("ЛЦ", "ТО"): п["всего"], ("Кузнечный цех (кооперация)", "МЦ"): п["всего"],
+            ("СЦ", "Склад МСЧ"): п["на_судно"] + п["зип"]}
+    ШР, ШР_П, ПАД, М = 11, 10, 0.09, 0.12
+    fig0 = plt.figure(figsize=(4, 4), dpi=P.DPI)
+    блоки = []
+    for имя, к, р, подп, поясн, вид in БЛОКИ:
+        текст = подп + "\n" + "\n".join(textwrap.wrap(_нр(поясн), 30))
+        w, h = _размер(fig0, текст, fontsize=ШР, linespacing=1.15)
+        блоки.append(dict(имя=имя, к=к, р=р, текст=текст, w=w, h=h, вид=вид))
+
+    def найти(имя, к=None):
+        кандидаты = [b for b in блоки if b["имя"] == имя]
+        if к is None:
+            return кандидаты[0]
+        return min(кандидаты, key=lambda b: abs(b["к"] - к["к"]) + abs(b["р"] - к["р"]))
+
+    рёбра = []
+    for a, txt, b in T.КООПЕРАЦИЯ:
+        кб = найти(b)
+        ка = найти(a, кб)
+        if (a, b) in СЧЁТ:
+            txt += ", всего %d" % СЧЁТ[(a, b)]
+        верт = ка["к"] == кб["к"]
+        assert (верт and abs(ка["р"] - кб["р"]) == 1) or (ка["р"] == кб["р"] and abs(ка["к"] - кб["к"]) == 1), (a, b)
+        s, w, h, _ = _уложить(fig0, _нр(txt), 2.0 if верт else 1.6, fontsize=ШР_П, linespacing=1.1)
+        рёбра.append(dict(a=ка, b=кб, txt=s, w=w, h=h, верт=верт))
+    nк = 1 + max(b["к"] for b in блоки)
+    nр = 1 + max(b["р"] for b in блоки)
+    wк = [max(b["w"] for b in блоки if b["к"] == к) + 2 * ПАД for к in range(nк)]
+    гор = [r for r in рёбра if not r["верт"]]
+    hб = max(max(b["h"] for b in блоки) + 2 * ПАД, 2 * (max(r["h"] for r in гор) + 0.08))
+    gр = max(0.45, max(r["h"] for r in рёбра if r["верт"]) + 0.16)
+    gк = []
+    for к in range(nк - 1):
+        g = 0.8
+        for r in рёбра:
+            if not r["верт"] and min(r["a"]["к"], r["b"]["к"]) == к:
+                g = max(g, r["w"] + 0.24)
+            if r["верт"] and r["a"]["к"] == к:
+                g = max(g, r["w"] + 0.08 + 0.12 - wк[к] / 2)
+        gк.append(g)
+    xл = [М]
+    for к in range(nк - 1):
+        xл.append(xл[-1] + wк[к] + gк[к])
+    W = xл[-1] + wк[-1] + М
+    yв = [-(М + р * (hб + gр)) for р in range(nр)]
+    подвал = "Сплошной рамкой показаны цеха, где изготавливается узел, пунктиром - кооперация, двойной рамкой - " \
+             "другие подразделения верфи и судно."
+    s_п, _, h_п, _ = _уложить(fig0, подвал, W - 2 * М, fontsize=ШР_П)
+    plt.close(fig0)
+    y_п = yв[-1] - hб - 0.22
+    H = -y_п + h_п + М
+    fig = plt.figure(figsize=(W, H), dpi=P.DPI)
+    ax = fig.add_axes([0, 0, 1, 1])
+    ax.set_xlim(0, W); ax.set_ylim(-H, 0); ax.axis("off")
+    for b in блоки:
+        x0, yt = xл[b["к"]], yв[b["р"]]
+        w = wк[b["к"]]
+        b["рамка"] = (x0, yt - hб, x0 + w, yt)
+        ls = (0, (4, 2.5)) if b["вид"] == "кооп" else "-"
+        ax.add_patch(Rectangle((x0, yt - hб), w, hб, facecolor="white", edgecolor="black", lw=ЛИН, ls=ls, zorder=2))
+        if b["вид"] == "служба":
+            d = 0.035
+            ax.add_patch(Rectangle((x0 + d, yt - hб + d), w - 2 * d, hб - 2 * d, facecolor="none", edgecolor="black",
+                                   lw=ЛИН, zorder=3))
+        ax.text(x0 + w / 2, yt - hб / 2, b["текст"], ha="center", va="center", fontsize=ШР, linespacing=1.15, zorder=4)
+    for r in рёбра:
+        a, b = r["a"]["рамка"], r["b"]["рамка"]
+        if r["верт"]:
+            x = (a[0] + a[2]) / 2
+            y0, y1 = (a[1], b[3]) if b[3] <= a[1] else (a[3], b[1])
+            _стрелка(ax, (x, y0), (x, y1))
+            ax.text(x + 0.08, (y0 + y1) / 2, r["txt"], ha="left", va="center", fontsize=ШР_П, linespacing=1.1)
         else:
-            ax.text(mx + 1.2, my, "\n".join(textwrap.wrap(txt, 12)), ha="left", va="center", fontsize=6.6,
-                    color=INK2, linespacing=1.05)
-    arrow("МТО", "ЛЦ", "шихта, смесь")
-    arrow("ЛЦ", "ТО", "%d отливок" % п["всего"])
-    arrow("ТО", "ОТК", "садки по 40")
-    arrow("ОТК", "МЦ", "годные, паспорт")
-    arrow("МЦ", "ТДЦ", "корпуса, замки")
-    arrow("ТДЦ", "СЦ", "детали с ТДЦ")
-    arrow("КУЗ", "МЦ", "%d поковок" % п["всего"])
-    arrow("МТО2", "СЦ", "покупные изделия")
-    arrow("СЦ", "СКЛ", "%d узлов" % (п["на_судно"] + п["зип"]))
-    arrow("СКЛ", "СУД", "комплекты")
-    arrow("КОРП", "СУД", "листы на настиле")
-    ax.text(0, 67.5, "Производственная цепочка и кооперация - фундамент-замок ВГ-2026.46.00", fontsize=12, color=INK, weight="bold")
-    ax.text(0, 64.2, "Программа на головное судно - %d на палубу + %d ЗИП + %d на разрушающие испытания = %d отливок, установочная партия - %d шт." % (
-        п["на_судно"], п["зип"], п["разрушающие"], п["всего"], п["установочная"]), fontsize=8.5, color=INK2)
-    for i, цех in enumerate(("ЛЦ", "ТО", "ОТК", "МЦ", "СЦ", "К")):
-        y0 = 30.0 - i * 3.0
-        ax.add_patch(Rectangle((1, y0), 2.0, 2.0, facecolor="white", edgecolor=ЦЕХ[цех], lw=2.0))
-        ax.text(3.8, y0 + 1.0, ИМЯ[цех], fontsize=7.5, va="center", color=INK)
-    ax.text(1, 11.0, "Серая рамка - службы верфи вне узла;\nцветная - цех, где идёт операция.", fontsize=7.5, color=INK2, va="top")
-    fig.tight_layout()
-    p = os.path.join(OUT, "07_узел_кооперация.png"); fig.savefig(p, facecolor=SURF); plt.close(fig)
+            y = (a[1] + a[3]) / 2
+            x0, x1 = (a[2], b[0]) if b[0] >= a[2] else (a[0], b[2])
+            _стрелка(ax, (x0, y), (x1, y))
+            ax.text((x0 + x1) / 2, y + 0.05, r["txt"], ha="center", va="bottom", fontsize=ШР_П, linespacing=1.1,
+                    multialignment="center")
+    ax.text(М, y_п, s_п, ha="left", va="top", fontsize=ШР_П)
+    p = P.сохранить(fig, os.path.join(OUT, "07_узел_кооперация.png"))
+    plt.close(fig)
     return p
+
+
+# --- 08. планировка - рисунок Word -----------------------------------------------------
+def _пересекает(seg, r, запас):
+    """Осевой отрезок seg ((x0,y0),(x1,y1)) задевает прямоугольник r (x0,y0,x1,y1) с запасом."""
+    (xa, ya), (xb, yb) = seg
+    return (min(xa, xb) < r[2] + запас and max(xa, xb) > r[0] - запас and
+            min(ya, yb) < r[3] + запас and max(ya, yb) > r[1] - запас)
+
+
+def _путь(a, b, прочие):
+    """Путь стрелки между прямоугольниками a и b (x0,y0,x1,y1): прямой по перекрытию проекций, иначе
+    ломаная в один-два излома, не задевающая прочие прямоугольники."""
+    ox = min(a[2], b[2]) - max(a[0], b[0])
+    oy = min(a[3], b[3]) - max(a[1], b[1])
+    if oy > 0.5 and (b[0] >= a[2] or a[0] >= b[2]):
+        y = (max(a[1], b[1]) + min(a[3], b[3])) / 2
+        return [(a[2], y), (b[0], y)] if b[0] >= a[2] else [(a[0], y), (b[2], y)]
+    if ox > 0.5 and (b[1] >= a[3] or a[1] >= b[3]):
+        x = (max(a[0], b[0]) + min(a[2], b[2])) / 2
+        return [(x, a[3]), (x, b[1])] if b[1] >= a[3] else [(x, a[1]), (x, b[3])]
+    вправо, вверх = b[0] >= a[2], b[1] >= a[3]
+
+    def отст(r, ось):
+        return min(1.0, (r[2 + ось] - r[ось]) / 3)
+    xa_г, xb_г = (a[2], b[0]) if вправо else (a[0], b[2])
+    ya_г, yb_г = (a[3], b[1]) if вверх else (a[1], b[3])
+    # выход и вход - на 1 м от угла, чтобы линия не подходила к подписи площади в углу
+    ya_в = a[3] - отст(a, 1) if вверх else a[1] + отст(a, 1)
+    yb_в = b[1] + отст(b, 1) if вверх else b[3] - отст(b, 1)
+    xa_в = a[2] - отст(a, 0) if вправо else a[0] + отст(a, 0)
+    xb_в = b[0] + отст(b, 0) if вправо else b[2] - отст(b, 0)
+    sx, sy = (1 if вправо else -1), (1 if вверх else -1)
+    вар = [[(xa_г, ya_в), (xb_в, ya_в), (xb_в, yb_г)],
+           [(xa_в, ya_г), (xa_в, yb_в), (xb_г, yb_в)]]
+    for xc in ((xa_г + xb_г) / 2, xa_г + sx, xb_г - sx):
+        вар.append([(xa_г, ya_в), (xc, ya_в), (xc, yb_в), (xb_г, yb_в)])
+    for yc in ((ya_г + yb_г) / 2, ya_г + sy, yb_г - sy):
+        вар.append([(xa_в, ya_г), (xa_в, yc), (xb_в, yc), (xb_в, yb_г)])
+    for pts in вар:
+        if not any(_пересекает(s, r, 0.25) for s in zip(pts, pts[1:]) for r in прочие):
+            return pts
+    return вар[0]
 
 
 def участок():
-    fig, ax = plt.subplots(figsize=(14, 11.5), dpi=150)
-    fig.patch.set_facecolor(SURF); ax.set_facecolor(SURF)
-    ax.set_aspect("equal"); ax.axis("off")
-    mx, my, mw, mh = T.МЕХ_ПРОЛЁТ
-    ax.add_patch(Rectangle((0, 0), 48, 18, facecolor="none", edgecolor=INK, lw=1.6))
-    ax.add_patch(Rectangle((mx, my), mw, mh, facecolor="none", edgecolor=INK, lw=1.6))
-    for x in range(0, 49, 6):
-        ax.plot([x, x], [-0.5, 18.5], color=GRID, lw=0.6, zorder=0); ax.text(x, 18.9, "%d" % (x // 6 + 1), ha="center", fontsize=7, color=MUTED)
-    центры = {}
-    for цех, имя, x, y, w, h in T.УЧАСТОК:
-        c = ЦЕХ[цех]
-        ax.add_patch(Rectangle((x + 0.15, y + 0.15), w - 0.3, h - 0.3, facecolor="white", edgecolor=c, lw=1.8, zorder=2))
-        ax.text(x + w / 2, y + h / 2 + 0.2, "\n".join(textwrap.wrap(имя, 16)), ha="center", va="center", fontsize=6.4, color=INK, zorder=6,
-                linespacing=1.1, bbox=dict(boxstyle="round,pad=0.12", facecolor="white", edgecolor="none", alpha=0.85))
-        ax.text(x + 0.45, y + h - 0.55, "%s м²" % ф(w * h), ha="left", va="top", fontsize=6.0, color=INK2, zorder=6)
-        центры[имя] = (x + w / 2, y + h / 2)
-    # подпись потока - на вершине дуги своей стрелки (arc3: середина хорды + rad/2 по нормали), а не в середине
-    # хорды: у соседних стрелок хорды почти совпадали, и плашка одной подписи закрывала другую
-    занято = []
-    for a, b, txt in T.ПОДВОД_УЧАСТКА:
-        (xa, ya), (xb, yb) = центры[a], центры[b]
-        ax.add_patch(FancyArrowPatch((xa, ya), (xb, yb), arrowstyle="-|>", mutation_scale=10, color=MUTED, lw=1.0, ls=(0, (4, 2)),
-                                     shrinkA=18, shrinkB=18, connectionstyle="arc3,rad=0.15", zorder=3))
-        px, py = (xa + xb) / 2 + 0.075 * (yb - ya), (ya + yb) / 2 - 0.075 * (xb - xa)
-        while any(abs(px - qx) < 0.35 * (len(txt) + len(qt)) * 0.18 and abs(py - qy) < 0.8 for qx, qy, qt in занято):
-            py += 0.8
-        занято.append((px, py, txt))
-        ax.text(px, py, txt, fontsize=6.3, color=INK2, ha="center", va="center", zorder=7,
-                bbox=dict(boxstyle="round,pad=0.1", facecolor=SURF, edgecolor="none"))
-    м = T.МАРШРУТ_УЧАСТКА
-    for i, (a, b) in enumerate(zip(м, м[1:]), 1):
-        (xa, ya), (xb, yb) = центры[a], центры[b]
-        ax.add_patch(FancyArrowPatch((xa, ya), (xb, yb), arrowstyle="-|>", mutation_scale=12, color="#c0392b", lw=1.4,
-                                     shrinkA=16, shrinkB=16, connectionstyle="arc3,rad=0.1", zorder=4, alpha=0.9))
-        ax.text((xa + xb) / 2, (ya + yb) / 2, str(i), fontsize=7, color="white", ha="center", va="center", zorder=8,
-                bbox=dict(boxstyle="circle,pad=0.2", facecolor="#c0392b", edgecolor="none"))
-    ax.text(0, 20.2, "Литейный пролёт 48 × 18 м, кран 5 т, колонны через 6 м", fontsize=9, color=INK)
-    ax.text(mx + mw / 2, -2.0, "проезд 4 м - электрокар, тара по 6 отливок", ha="center", fontsize=7.5, color=INK2)
-    ax.text(mx + mw / 2, my - 1.2, "Механический цех - участок %s × %s м" % (ф(mw), ф(mh, 1)), ha="center", fontsize=9, color=INK)
-    s_л = sum(w * h for ц, _, _, _, w, h in T.УЧАСТОК if ц in ("ЛЦ", "ТО", "ОТК"))
-    s_м = sum(w * h for ц, _, _, _, w, h in T.УЧАСТОК if ц in ("МЦ", "СЦ"))
-    ax.text(0, -21.0, "Площадь под оборудованием - литейный пролёт %s м², механический %s м². Красные стрелки 1…%d - маршрут корпуса, пунктир - подвод стержней," % (
-        ф(s_л), ф(s_м), len(м) - 1), fontsize=8, color=INK2)
-    ax.text(0, -22.4, "металла, смеси и замков. Участки действующие - под узел добавляются модельный комплект, ящик, приспособление ЧПУ и стенд 250 кН.", fontsize=8, color=INK2)
-    ax.text(0, -23.8, "Планировка - по типовой литейке со стальным литьём в ХТС.", fontsize=8, color=INK2)
-    x0 = 0
-    for цех in ("ЛЦ", "ТО", "ОТК", "МЦ", "СЦ"):
-        ax.add_patch(Rectangle((x0, -26.0), 0.9, 0.9, facecolor="white", edgecolor=ЦЕХ[цех], lw=1.8))
-        ax.text(x0 + 1.3, -25.55, ИМЯ[цех], fontsize=7.5, va="center", color=INK)
-        x0 += 2.0 + len(ИМЯ[цех]) * 0.42
-    ax.set_xlim(-0.5, 48.5); ax.set_ylim(-26.8, 21.5)
-    ax.set_title("Компоновка производства фундаментов - оборудование, площади, поток деталей", loc="left", color=INK, fontsize=12)
-    fig.tight_layout()
-    p = os.path.join(OUT, "08_узел_участок.png"); fig.savefig(p, facecolor=SURF); plt.close(fig)
+    with P.word():
+        return _участок()
+
+
+def _участок():
+    уч = T.УЧАСТОК
+    мх, му, мw, мh = T.МЕХ_ПРОЛЁТ
+    лит = [r for r in уч if r[3] >= 0]
+    Lx0, Ly0 = min(r[2] for r in лит), min(r[3] for r in лит)
+    Lx, Ly = max(r[2] + r[4] for r in лит), max(r[3] + r[5] for r in лит)
+    проезд = Ly0 - (му + мh)
+    ОТСТ = 0.15                                           # оборудование - внутри своей площадки
+    рамка = {имя: (x + ОТСТ, y + ОТСТ, x + w - ОТСТ, y + h - ОТСТ) for _, имя, x, y, w, h in уч}
+    площадь = {имя: w * h for _, имя, x, y, w, h in уч}
+    новое = [имя for имя in рамка if "испытаний" in имя]    # стенд испытаний - единственное новое оборудование
+    маршрут = T.МАРШРУТ_УЧАСТКА
+    номер = {имя: i for i, имя in enumerate(маршрут, 1)}
+
+    W, ПОЛЕ_М = 9.6, 1.2
+    x0, x1 = Lx0 - ПОЛЕ_М, Lx + ПОЛЕ_М
+    S = W / (x1 - x0)                                      # дюймов на метр
+    y0, y1 = му - 1.9, Ly + 3.4
+    ШР, ШР_З, ШР_П = 9, 10, 10
+    fig = plt.figure(figsize=(W, 4), dpi=P.DPI)
+    подвал = ["Цифры в кружках - порядок прохождения корпуса, пунктирные стрелки - подача шихты, металла, смеси, "
+              "стержней и замков.",
+              "Пунктирная рамка - новое оборудование под узел, остальное оборудование действующее."]
+    строки = []
+    for s in подвал:
+        t, _, _, _ = _уложить(fig, s, W - 0.3, fontsize=ШР_П)
+        строки.append(t)
+    текст_п = "\n".join(строки)
+    _, h_п = _размер(fig, текст_п, fontsize=ШР_П, linespacing=1.3)
+    низ = h_п + 0.2
+    H = (y1 - y0) * S + низ
+    fig.set_size_inches(W, H)
+    ax = fig.add_axes([0, низ / H, 1, 1 - низ / H])
+    ax.set_xlim(x0, x1); ax.set_ylim(y0, y1); ax.axis("off")
+    м = 1.0 / S                                            # метров в дюйме
+
+    # стены и оси колонн
+    ax.add_patch(Rectangle((Lx0, Ly0), Lx - Lx0, Ly - Ly0, facecolor="none", edgecolor="black", lw=1.4, zorder=1))
+    ax.add_patch(Rectangle((мх, му), мw, мh, facecolor="none", edgecolor="black", lw=1.4, zorder=1))
+    n_ос = int(round((Lx - Lx0) / ШАГ_КОЛОНН))
+    for i in range(n_ос + 1):
+        x = Lx0 + i * ШАГ_КОЛОНН
+        ax.plot([x, x], [Ly0, Ly + 0.6], color="#808080", lw=0.4, zorder=0)
+        ax.text(x, Ly + 0.8, "%d" % (i + 1), ha="center", va="bottom", fontsize=ШР)
+    ax.text(Lx0, Ly + 2.3, "Литейный пролёт %s × %s м" % (ф(Lx - Lx0), ф(Ly - Ly0)), ha="left", va="bottom", fontsize=ШР_З)
+    ax.text(мх + мw / 2, му - 0.6, "Механический цех, участок %s × %s м" % (ф(мw), ф(мh, 1 if мh % 1 else 0)),
+            ha="center", va="top", fontsize=ШР_З)
+    ax.text((Lx0 + Lx) / 2, (Ly0 + му + мh) / 2, "проезд %s м для электрокара" % ф(проезд), ha="center", va="center",
+            fontsize=ШР)
+
+    # оборудование: название по центру, внизу - номер по маршруту слева и площадь справа
+    ПАД, D = 0.04, 0.19
+    for имя, (a0, b0, a1, b1) in рамка.items():
+        ax.add_patch(Rectangle((a0, b0), a1 - a0, b1 - b0, facecolor="white", edgecolor="black", lw=ЛИН,
+                               ls=(0, (4, 2.5)) if имя in новое else "-", zorder=2))
+        w_in, h_in = (a1 - a0) * S, (b1 - b0) * S
+        пл = "%s м²" % ф(площадь[имя])
+        wп, hп = _размер(fig, пл, fontsize=ШР)
+        низ_п = max(D if имя in номер else 0, hп) + ПАД
+        s, wт, hт, ок = _уложить(fig, _нр(имя), w_in - 2 * ПАД, fontsize=ШР, linespacing=1.1)
+        if ок and hт + низ_п + 2 * ПАД <= h_in:
+            ax.text((a0 + a1) / 2, (b1 + b0 + (низ_п + ПАД) * м) / 2, s, ha="center", va="center", fontsize=ШР,
+                    linespacing=1.1, zorder=6)
+            ax.text(a1 - ПАД * м, b0 + ПАД * м, пл, ha="right", va="bottom", fontsize=ШР, zorder=6)
+        else:
+            # не влезает - подпись рядом с площадкой, с той стороны, где свободно
+            s, wт, hт, _ = _уложить(fig, _нр(имя) + ", " + пл, 1.4, fontsize=ШР, linespacing=1.1)
+            wm, hm = wт * м, hт * м
+            cy = (b0 + b1) / 2
+            места = [((a1 + 0.3, cy - hm / 2, a1 + 0.3 + wm, cy + hm / 2), "left"),
+                     ((a0 - 0.3 - wm, cy - hm / 2, a0 - 0.3, cy + hm / 2), "right")]
+            for (r0, r1, r2, r3), ha in места:
+                if not any(_пересекает(((r0, r1), (r2, r3)), q, 0.2) for n_, q in рамка.items() if n_ != имя):
+                    break
+            ax.text(r0 if ha == "left" else r2, cy, s, ha=ha, va="center", fontsize=ШР, linespacing=1.1, zorder=6,
+                    bbox=dict(boxstyle="square,pad=0.1", facecolor="white", edgecolor="none"))
+        if имя in номер:
+            cx, cy = a0 + (ПАД + D / 2) * м, b0 + (ПАД + D / 2) * м
+            ax.add_patch(Circle((cx, cy), D / 2 * м, facecolor="white", edgecolor="black", lw=ЛИН, zorder=6))
+            ax.text(cx, cy, "%d" % номер[имя], ha="center", va="center", fontsize=ШР, zorder=7)
+
+    # маршрут корпуса - сплошные стрелки, подвод - пунктир
+    for a, b in zip(маршрут, маршрут[1:]):
+        прочие = [r for n_, r in рамка.items() if n_ not in (a, b)]
+        _стрелка(ax, _путь(рамка[a], рамка[b], прочие), None, head=8)
+    for a, b, _txt in T.ПОДВОД_УЧАСТКА:
+        прочие = [r for n_, r in рамка.items() if n_ not in (a, b)]
+        _стрелка(ax, _путь(рамка[a], рамка[b], прочие), None, пунктир=True, lw=0.6, head=7)
+    fig.text(0.15 / W, (низ - 0.12) / H, текст_п, ha="left", va="top", fontsize=ШР_П, linespacing=1.3)
+    p = P.сохранить(fig, os.path.join(OUT, "08_узел_участок.png"))
+    plt.close(fig)
     return p
 
 
+# --- 09. сроки освоения - диаграмма Ганта в Excel ---------------------------------------
 def освоение():
     г = T.график()
     карта = {t[0]: t for t in B.ЛЕНА}
-    фон = [(24, "7.4 Оснастка"), (38, "10.4 Изделия МСЧ"), (41, "10.6 Корпус на стапеле"), (45, "11 Достройка")]
-    fig = plt.figure(figsize=(15, 8.6), dpi=150)
-    fig.patch.set_facecolor(SURF)
-    ax = fig.add_axes([0.30, 0.40, 0.66, 0.50]); ax.set_facecolor(SURF)
-    цвет = lambda кто: ЦЕХ["ЛЦ"] if "ЛЦ" in кто else ЦЕХ["МЦ"] if "МЦ" in кто else ЦЕХ["ОТК"] if "ОТК" in кто else MUTED
-    строки = [(e["этап"], e["начало"], e["конец"], цвет(e["кто"]), e["кто"]) for e in г]
-    n = len(строки)
-    for i, (имя, d0, d1, c, кто) in enumerate(строки):
-        ax.barh(i, (d1 - d0).days + 1, left=mdates.date2num(d0), height=0.55, color=c, edgecolor=SURF, lw=2, zorder=3)
-        поздно = d1 > dt.date(2028, 12, 1)
-        ax.text(mdates.date2num(d0 if поздно else d1) + (-6 if поздно else 6), i, "%s - %s · %s" % (d0.strftime("%d.%m.%y"), d1.strftime("%d.%m.%y"), кто),
-                va="center", ha="right" if поздно else "left", fontsize=7.2, color=INK2)
-    for j, (ид, имя) in enumerate(фон):
-        t = карта[ид]; d0 = t[3]; d1 = B._раб(d0, t[4])
-        ax.axvspan(mdates.date2num(d0), mdates.date2num(d1), color="#f0efec", zorder=0)
-        ax.text(mdates.date2num(d0) + 3, -0.75 - 0.42 * (j % 2), "карта постройки - " + имя, fontsize=7, color=MUTED, va="bottom")
-    ax.set_yticks(range(n)); ax.set_yticklabels([s[0] for s in строки], fontsize=8, color=INK)
-    ax.set_ylim(n - 0.5, -1.4)
-    ax.xaxis_date(); ax.xaxis.set_major_locator(mdates.MonthLocator(interval=3)); ax.xaxis.set_major_formatter(mdates.DateFormatter("%m.%Y"))
-    ax.grid(axis="x", color=GRID, lw=0.7, zorder=0)
-    for s in ("top", "right"):
-        ax.spines[s].set_visible(False)
-    ax.set_xlim(mdates.date2num(dt.date(2026, 12, 1)), mdates.date2num(dt.date(2029, 6, 1)))
-    ax.tick_params(axis="x", labelsize=7.5, colors=INK2)
-    fig.text(0.02, 0.95, "Сроки подготовки и освоения производства фундаментов, программа выпуска и испытаний", fontsize=12, color=INK, weight="bold")
-    fig.text(0.02, 0.92, "Привязка к дорожной карте постройки судна. Серия готова к %s - за год до начала достройки." % next(
-        e for e in г if e["этап"].startswith("Мехобработка, покрытие"))["конец"].strftime("%d.%m.%Y"), fontsize=8.5, color=INK2)
-    п = T.программа()
-    н = T.нагрузки()
-    лев = ["Программа выпуска на головное судно",
-           "  на палубу - %d (18 слотов × 4)" % п["на_судно"], "  ЗИП - %d (5 %%)" % п["зип"],
-           "  разрушающие испытания - %d" % п["разрушающие"], "  всего отливок и замков - %d" % п["всего"],
-           "  установочная партия - %d, серийная - %d" % (п["установочная"], п["серийная"]),
-           "", "Рабочая нагрузка на опору (SWL)",
-           "  отрыв %s · сжатие %s · сдвиг %s кН" % (ф(н["SWL"]["отрыв"]), ф(н["SWL"]["сжатие"]), ф(н["SWL"]["сдвиг"])),
-           "  предельная - %s · %s · %s кН" % (ф(н["предельный"]["отрыв"]), ф(н["предельный"]["сжатие"]), ф(н["предельный"]["сдвиг"]))]
-    fig.text(0.02, 0.31, "\n".join(лев), fontsize=8.5, color=INK, va="top", linespacing=1.45)
-    прав = ["Программа испытаний (ВГ-2026.46.00 ПМ)"] + ["\n   ".join(textwrap.wrap("• %s - %s" % (a, b), 105)) for a, b in T.ИСПЫТАНИЯ]
-    fig.text(0.36, 0.31, "\n".join(прав), fontsize=8.2, color=INK, va="top", linespacing=1.45)
-    x0 = 0.30
-    for цех, t in (("ЛЦ", "литейный цех"), ("МЦ", "механический цех"), ("ОТК", "ОТК и РРР")):
-        fig.patches.append(Rectangle((x0, 0.345), 0.012, 0.016, transform=fig.transFigure, facecolor=ЦЕХ[цех], edgecolor="none"))
-        fig.text(x0 + 0.016, 0.353, t, fontsize=7.8, color=INK, va="center"); x0 += 0.11
-    fig.patches.append(Rectangle((x0, 0.345), 0.012, 0.016, transform=fig.transFigure, facecolor=MUTED, edgecolor="none"))
-    fig.text(x0 + 0.016, 0.353, "ПБ, ТУ, корпусный и достроечный цеха", fontsize=7.8, color=INK, va="center")
-    p = os.path.join(OUT, "09_узел_освоение.png"); fig.savefig(p, facecolor=SURF); plt.close(fig)
+    # вехи карты постройки, к которым привязан график (те же задачи, что в T.график)
+    вехи = [(карта[38][3], "изготовление МСЧ с %s" % карта[38][3].strftime("%d.%m.%y")),
+            (карта[45][3], "достройка с %s" % карта[45][3].strftime("%d.%m.%y"))]
+    имена = ["%s (%s)" % (e["этап"], e["кто"]) for e in г]
+    n = len(г)
+    d_min = min(e["начало"] for e in г)
+    d_max = max(e["конец"] for e in г)
+    н0 = dt.date(d_min.year, d_min.month, 1)
+    к_ = d_max + dt.timedelta(days=150)
+    м_ = ((к_.month - 1) // 3 + 1) * 3 + 1
+    к0 = dt.date(к_.year + (м_ > 12), (м_ - 1) % 12 + 1, 1)
+    with P.excel():
+        W, Hs = 9.6, 0.43
+        fig = plt.figure(figsize=(W, 1), dpi=P.DPI)
+        подписи = []
+        for s in имена:
+            t, w, h, _ = _уложить(fig, s, 3.1, fontsize=9, linespacing=1.1)
+            подписи.append(t)
+        w_п = max(_размер(fig, s, fontsize=9, linespacing=1.1)[0] for s in подписи)
+        верх, низ = 0.42, 0.36
+        H = верх + низ + n * Hs
+        fig.set_size_inches(W, H)
+        лев = (w_п + 0.22) / W
+        прав = 0.4 / W
+        ax = fig.add_axes([лев, низ / H, 1 - лев - прав, n * Hs / H])
+        X0, X1 = mdates.date2num(н0), mdates.date2num(к0)
+        ax.set_xlim(X0, X1)
+        ax.set_ylim(n - 0.5, -0.5)
+        дней_на_дюйм = (X1 - X0) / ((1 - лев - прав) * W)
+        линии = [mdates.date2num(d) for d, _ in вехи]
+        БЕЛО = dict(boxstyle="square,pad=0.05", facecolor="white", edgecolor="none")
+        for i, e in enumerate(г):
+            a, b = mdates.date2num(e["начало"]), mdates.date2num(e["конец"]) + 1
+            ax.barh(i, b - a, left=a, height=0.55, color=P.OFFICE[0], zorder=2)
+            s = "%s - %s" % (e["начало"].strftime("%d.%m.%y"), e["конец"].strftime("%d.%m.%y"))
+            w = _размер(fig, s, fontsize=9)[0] * дней_на_дюйм
+            пад = 0.06 * дней_на_дюйм
+            справа = (b + пад, b + пад + w)
+            слева = (a - пад - w, a - пад)
+
+            def можно(r):
+                return r[0] >= X0 and r[1] <= X1 and not any(r[0] - пад < x < r[1] + пад for x in линии)
+            if можно(справа) or not можно(слева):
+                ax.text(справа[0], i, s, ha="left", va="center", fontsize=9, bbox=БЕЛО, zorder=4)
+            else:
+                ax.text(слева[1], i, s, ha="right", va="center", fontsize=9, bbox=БЕЛО, zorder=4)
+        ax.set_yticks(range(n))
+        ax.set_yticklabels(подписи, fontsize=9, linespacing=1.1)
+        тики = []
+        d = н0
+        while d <= к0:
+            if d.month in (1, 4, 7, 10):
+                тики.append(d)
+            d = dt.date(d.year + (d.month == 12), d.month % 12 + 1, 1)
+        ax.set_xticks([mdates.date2num(d) for d in тики])
+        ax.set_xticklabels([P.месяц(d) for d in тики])
+        _линейчатая(ax)
+        тр = mtransforms.blended_transform_factory(ax.transData, ax.transAxes)
+        for d, текст in вехи:
+            x = mdates.date2num(d)
+            ax.plot([x, x], [0, 1.0], transform=тр, color=P.ПОДПИСЬ, lw=0.9, ls=(0, (4, 3)), zorder=3, clip_on=False)
+            w = _размер(fig, текст, fontsize=9)[0] * дней_на_дюйм
+            if x + 3 + w <= X1 + (прав * W - 0.08) * дней_на_дюйм:      # можно зайти в правое поле рисунка
+                ax.text(x + 3, 1.015, текст, transform=тр, ha="left", va="bottom", fontsize=9)
+            else:
+                ax.text(x - 3, 1.015, текст, transform=тр, ha="right", va="bottom", fontsize=9)
+        P.рамка(fig)
+        p = P.сохранить(fig, os.path.join(OUT, "09_узел_освоение.png"))
+        plt.close(fig)
     return p
 
 

@@ -25,7 +25,10 @@ temp + os.replace) сводятся к итоговым; одна и та же �
 import glob, io, json, os, re, runpy, subprocess, sys, tempfile
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-ЛОГ = os.path.join(tempfile.gettempdir(), "gorizont_проверка_текста.jsonl")
+# журнал свой на каждый прогон - параллельные проверки не затирают друг друга;
+# дочерний процесс трассы получает путь через окружение
+ЛОГ = os.environ.get("GORIZONT_ЛОГ_ТЕКСТА") or os.path.join(
+    tempfile.gettempdir(), "gorizont_проверка_текста_%d.jsonl" % os.getpid())
 
 ИМЕНА = re.compile(r"(?<![А-Яа-яЁё])(Лен[аеуыо]й?|Маш[аеуи]й?|Глеб[аеу]?|Иван[аеу]?|Андре[йяюе]|Владимир[аеу]?|"
                    r"Алексе[йяюе]|Макс[аеу]?|Барулин[а-я]*|Соколов[а-я]*|Игнатьев[а-я]*|Рябов[а-я]*)(?![А-Яа-яЁё])")
@@ -235,7 +238,7 @@ def _трасса(скрипт, аргументы):
 def проверить_картинки(скрипты=None):
     if os.path.exists(ЛОГ):
         os.remove(ЛОГ)
-    env = dict(os.environ, PYTHONUTF8="1", MPLBACKEND="Agg")
+    env = dict(os.environ, PYTHONUTF8="1", MPLBACKEND="Agg", GORIZONT_ЛОГ_ТЕКСТА=ЛОГ)
     for s in скрипты or ГЕНЕРАТОРЫ:
         p = subprocess.run([sys.executable, "-X", "utf8", os.path.abspath(__file__), "--трасса",
                             os.path.join(ROOT, "scripts", s)], cwd=ROOT, env=env, capture_output=True, text=True,
@@ -245,7 +248,8 @@ def проверить_картинки(скрипты=None):
     по_файлу = {}
     for ln in open(ЛОГ, encoding="utf-8") if os.path.exists(ЛОГ) else []:
         r = json.loads(ln)
-        if "_tmp" not in os.path.basename(r["файл"]):
+        имя = os.path.basename(r["файл"])
+        if "_tmp" not in имя and ".tmp." not in имя:
             по_файлу[r["файл"]] = r
     всего = 0
     for f, r in по_файлу.items():
