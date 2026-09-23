@@ -10,7 +10,7 @@ from lib import gorizont as G, gorizont_hydro as H, gorizont_struct as S, gorizo
 from lib import gorizont_power as P
 
 OUT = os.path.join(ROOT, "renders", "горизонт_2026", "расчёты")
-plt.rcParams.update({
+plt.rcParams.update({"axes.unicode_minus": False, 
     "font.family": "DejaVu Sans", "font.size": 9,
     "axes.grid": True, "grid.color": "#d8dde5", "grid.linewidth": 0.6,
     "axes.edgecolor": "#3a4658", "axes.labelcolor": "#1a2334",
@@ -38,11 +38,11 @@ def save(fig, name):
 
 
 def hydro_curves():
-    ts = [0.6 + 0.15 * i for i in range(17)]          # 0,6…3,0 — до высоты борта
+    ts = [0.6 + 0.15 * i for i in range(17)]          # 0,6…3,0 - до высоты борта
     rows = [H.hydrostatics(t) for t in ts]
     fig, axs = plt.subplots(1, 4, figsize=(15.5, 5.6))
     head(fig, "Кривые элементов теоретического чертежа",
-         "Осадка от 0.6 м до высоты борта %.1f м. Штриховая линия — осадка в полном грузу" % G.DEPTH)
+         "Осадка от 0.6 м до высоты борта %.1f м. Штриховая линия - осадка в полном грузу" % G.DEPTH)
     fig.subplots_adjust(top=0.80, wspace=0.34, bottom=0.12)
     T = H.equilibrium()["T"]
     sets = [
@@ -100,7 +100,7 @@ def stability_plots():
     wb = H.weather_criterion(H.CLASS, z_top=zt)
     fig, axs = plt.subplots(1, 3, figsize=(15.5, 5.4))
     head(fig, "Остойчивость на больших углах крена",
-         "Сплошная — только корпус до %.2f м, штриховая — с закрытым ярусом главной палубы до %.2f м" % (G.DEPTH, zt))
+         "Сплошная - только корпус до %.2f м, штриховая - с закрытым ярусом главной палубы до %.2f м" % (G.DEPTH, zt))
     fig.subplots_adjust(top=0.80, wspace=0.26, bottom=0.14)
     axs[0].plot(a["theta"], a["lk"], color=SEA, lw=2, label="корпус")
     axs[0].plot(b["theta"], b["lk"], color=SEA, lw=1.6, ls="--", label="с надстройкой")
@@ -110,18 +110,18 @@ def stability_plots():
     axs[1].axhline(0, color=INK, lw=1)
     axs[1].plot([0, 57.3], [0, a["h"]], color=GRN, lw=1.2, ls=":")
     axs[1].annotate("h = %.2f м" % a["h"], (30, a["h"] * 0.52), color=GRN, fontsize=9)
-    axs[1].set_title("ДСО: плечи статической остойчивости", fontsize=10, loc="left")
+    axs[1].set_title("ДСО - плечи статической остойчивости", fontsize=10, loc="left")
     axs[2].plot(a["theta"], a["dyn"], color=GRN, lw=2, label="корпус")
     axs[2].plot(b["theta"], b["dyn"], color=GRN, lw=1.6, ls="--", label="с надстройкой")
-    axs[2].set_title("ДДО: работа восстанавливающего момента", fontsize=10, loc="left")
+    axs[2].set_title("ДДО - работа восстанавливающего момента", fontsize=10, loc="left")
     for ax, yl in zip(axs, ("l_k, м", "GZ, м", "l_d, м*рад")):
         ax.set_xlabel("угол крена, град")
         ax.set_ylabel(yl)
         ax.legend(fontsize=8)
         ax.xaxis.set_major_locator(MultipleLocator(15))
     fig.text(0.01, 0.015,
-             "Критерий погоды K = %.1f (корпус) и %.1f (с надстройкой) при норме не менее 1.0;  "
-             "амплитуда качки %.1f град;  кренящий момент от ветра %.0f т*м" %
+             "Критерий погоды K = %.1f (корпус) и %.1f (с надстройкой) при норме не менее 1.0,  "
+             "амплитуда качки %.1f град,  кренящий момент от ветра %.0f т*м" %
              (wa["K"], wb["K"], wa["theta_r"], wa["Mv"]), fontsize=9, color="#56627a")
     save(fig, "04_остойчивость.png")
 
@@ -153,9 +153,9 @@ def strength_plots():
     lim = r["sigma_allow"] * g["W_deck_m3"]
     axs[2].axhline(lim, color="#8a93a5", lw=1.2, ls="--")
     axs[2].axhline(-lim, color="#8a93a5", lw=1.2, ls="--")
-    axs[2].annotate("предельный момент по допускаемому напряжению %.0f МПа: +/- %.0f МН*м"
+    axs[2].annotate("предельный момент по допускаемому напряжению %.0f МПа - +/- %.0f МН*м"
                     % (r["sigma_allow"], lim), (4, lim * 1.04), fontsize=9, color="#56627a")
-    txt = "  |  ".join("%s: M = %.1f МН*м, напряжение в палубе %.0f МПа" %
+    txt = "  |  ".join("%s - M = %.1f МН*м, напряжение в палубе %.0f МПа" %
                        (row["condition"], row["M"] / 1000.0, row["sigma_deck"])
                        for row in r["rows"])
     fig.text(0.01, 0.012, txt + "   |   W палубы %.3f куб.м, W днища %.3f куб.м, I %.2f м4"
@@ -188,7 +188,7 @@ def resistance_plots():
                     (10.4, H.PROP_POWER - 90), color=ACC, fontsize=9)
     P24 = H.power(G.SPEED_MAX_KMH)["Pb"]
     axs[1].axhline(P24, color="#8a93a5", lw=1.2, ls="--")
-    axs[1].annotate("на %.1f км/ч нужно %.0f кВт — %.0f %% от установленной" % (G.SPEED_MAX_KMH, P24, 100 * P24 / H.PROP_POWER),
+    axs[1].annotate("на %.1f км/ч нужно %.0f кВт - %.0f %% от установленной" % (G.SPEED_MAX_KMH, P24, 100 * P24 / H.PROP_POWER),
                     (10.4, P24 + 40), color="#56627a", fontsize=9)
     vmax = H.max_speed()
     axs[1].plot([vmax, vmax], [0, H.power(vmax)["Pb"]], color=ACC, lw=1.0, ls=":")
@@ -203,16 +203,16 @@ def resistance_plots():
     axs[1].set_title("Потребная и установленная мощность", fontsize=10, loc="left")
     rows = []
     for d in (4, 5, 6, 8, 10, 15):
-        rows.append("H=%d: v_кр=%.1f, предел %.1f, по мощности %.1f" %
+        rows.append("H=%d - v_кр=%.1f, предел %.1f, по мощности %.1f" %
                     (d, H.critical_speed(d), 0.7 * H.critical_speed(d),
                      H.max_speed(depth=d)))
-    fig.text(0.01, 0.012, "Мелководье, км/ч —  " + ";  ".join(rows),
+    fig.text(0.01, 0.012, "Мелководье, км/ч -  " + ",  ".join(rows),
              fontsize=8.5, color="#56627a")
     save(fig, "06_ходкость.png")
 
 
 def power_balance():
-    """Электробаланс по режимам: из чего складывается нагрузка на шинах."""
+    """Электробаланс по режимам - из чего складывается нагрузка на шинах."""
     rows = P.table()
     names = [P.MODE_SHORT[r["key"]] for r in rows]
     hotel = [r["hotel"] for r in rows]
@@ -222,7 +222,7 @@ def power_balance():
     fig, axs = plt.subplots(1, 2, figsize=(14.6, 4.6),
                             gridspec_kw={"width_ratios": [1.45, 1]})
     head(fig, "Электробаланс по режимам и выбор единичной мощности ГДГ",
-         "Слева — потребность на шинах ГРЩ; справа — проверка n−1 на "
+         "Слева - потребность на шинах ГРЩ. Справа - проверка n-1 на "
          "фарватере 4 м, она и назначает мощность машины")
     fig.subplots_adjust(top=0.76, bottom=0.22, wspace=0.24)
 
@@ -254,14 +254,14 @@ def power_balance():
             fontsize=8.5, color=INK, ha="left")
     for i, s in enumerate(speeds):
         ax.text(i, s + 0.12, "%.1f" % s, ha="center", fontsize=9, color=INK)
-    ax.set_ylim(max(0.0, min(speeds) - 3.0), max(max(speeds), G.SPEED_KMH) + 2.2)   # подпись линии — внутри поля
+    ax.set_ylim(max(0.0, min(speeds) - 3.0), max(max(speeds), G.SPEED_KMH) + 2.2)   # подпись линии - внутри поля
     ax.set_xlabel("единичная мощность ГДГ, кВт (три машины)")
     ax.set_ylabel("достижимая скорость при отказе одного ГДГ, км/ч")
-    ax.set_title("Проверка n−1, фарватер 4 м", fontsize=10, loc="left")
+    ax.set_title("Проверка n-1, фарватер 4 м", fontsize=10, loc="left")
 
     fig.text(0.01, 0.012,
-             "Три ГДГ по %d кВт на метаноле, батарея %d кВт·ч, солнечные модули %.0f кВт; "
-             "гребные ГЭД колёс 2 x %d кВт; аварийный ДГ %d кВт."
+             "Три ГДГ по %d кВт на метаноле, батарея %d кВт·ч, солнечные модули %.0f кВт, "
+             "гребные ГЭД колёс 2 x %d кВт, аварийный ДГ %d кВт."
              % (G.DG_POWER, G.BATTERY_KWH, G.SOLAR_KW, G.WHEEL_MOTOR_POWER, G.EMERGENCY_DG),
              fontsize=8.5, color="#56627a")
     save(fig, "07_электробаланс.png")
@@ -270,7 +270,7 @@ def power_balance():
 # Здесь был график «один вал против двух». Он умер вместе с винтами:
 # движитель сменился на колёсный, и сравнивать теперь надо колесо с винтом
 # на мелководье, а не вал с валом. Числа для такого графика уже есть в
-# gorizont_wheel.propeller_comparison(); сам график — работа отдельная,
+# gorizont_wheel.propeller_comparison(); сам график - работа отдельная,
 # и рисовать его вслепую, без Blender и без matplotlib под рукой, значит
 # сдать непроверенную картинку.
 

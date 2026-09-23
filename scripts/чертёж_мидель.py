@@ -11,7 +11,7 @@ from lib import gorizont as G, gorizont_hydro as H, gorizont_struct as S, gorizo
 from lib import eskd
 
 OUT = os.path.join(ROOT, "renders", "горизонт_2026", "чертежи")
-plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 9,
+plt.rcParams.update({"axes.unicode_minus": False, "font.family": "DejaVu Sans", "font.size": 9,
                      "figure.facecolor": "white", "savefig.facecolor": "white"})
 os.makedirs(OUT, exist_ok=True)
 INK, ACC, SEA, GRY = "#16202f", "#b02634", "#1c5c8a", "#8d97a6"
@@ -46,7 +46,7 @@ def plate(y0, z0, y1, z1, t_mm, col=INK, lw=2.6):
 
 
 def stiff(y, z, hw, tw, bf, tf, ang=90, col=SEA):
-    """Профиль: стенка длиной hw под углом ang, поясок bf."""
+    """Профиль - стенка длиной hw под углом ang, поясок bf."""
     a = math.radians(ang)
     dy, dz = math.cos(a) * hw, math.sin(a) * hw
     ax.plot([y, y + dy], [z, z + dz], color=col, lw=1.8)
@@ -183,11 +183,11 @@ for row in r["rows"]:
                  % (row["condition"], row["M"] / 1000.0, row["sigma_deck"],
                     row["sigma_bot"], "проходит" if row["ok"] else "НЕ ПРОХОДИТ"))
 lines += ["",
-          "Материал основных связей — сталь %s, предел текучести %.0f МПа" %
+          "Материал основных связей - сталь %s, предел текучести %.0f МПа" %
           (r["steel"]["name"], r["steel"]["ReH"]),
           "Допускаемое напряжение 0.60·ReH = %.0f МПа, использовано %.0f %%" %
           (r["sigma_allow"], 100 * max(x["sigma_deck"] for x in r["rows"]) / r["sigma_allow"]),
-          "Волна класса «%s»: высота %.1f м, длина равна длине судна"
+          "Волна класса «%s» - высота %.1f м, длина равна длине судна"
           % (H.CLASS, H.WAVE_HEIGHT[H.CLASS])]
 for i, s_ in enumerate(lines):
     ax3.text(0, 0.92 - i * 0.055, s_, fontsize=8.8, color=INK if i < 4 else "#3a4658",

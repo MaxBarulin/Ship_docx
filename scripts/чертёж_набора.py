@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Схема набора корпуса: бок и вид на днище."""
+"""Схема набора корпуса - бок и вид на днище."""
 import os, sys, math
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, os.path.join(ROOT, "src"))
@@ -11,7 +11,7 @@ from lib import gorizont as G, gorizont_hydro as H, gorizont_struct as S
 from lib import eskd
 
 OUT = os.path.join(ROOT, "renders", "горизонт_2026", "чертежи")
-plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 8.5,
+plt.rcParams.update({"axes.unicode_minus": False, "font.family": "DejaVu Sans", "font.size": 8.5,
                      "figure.facecolor": "white", "savefig.facecolor": "white"})
 os.makedirs(OUT, exist_ok=True)
 INK, ACC, SEA, GRY, GRN = "#16202f", "#b02634", "#1c5c8a", "#9aa4b4", "#187454"
@@ -73,8 +73,8 @@ for xb in H.BULKHEADS[1:-1]:
             color=ACC, lw=2.4)
     ax.text(xb, side_z(0, G.DEPTH) + 0.5, "%.0f" % xb, color=ACC, fontsize=8.5,
             ha="center", fontweight="bold")
-ax.text(X0, side_z(0, G.DEPTH) + 1.25, "БОК. Красные — водонепроницаемые переборки, "
-        "синие — рамные шпангоуты через 2200 мм, серые — холостые через 550 мм",
+ax.text(X0, side_z(0, G.DEPTH) + 1.25, "БОК. Красные - водонепроницаемые переборки, "
+        "синие - рамные шпангоуты через 2200 мм, серые - холостые через 550 мм",
         fontsize=11, color=INK, fontweight="bold")
 ax.text(X1, side_z(0, DB) + 0.12, "второе дно 1.30", fontsize=8.5, color=SEA, ha="right")
 ax.text(23, side_z(0, ER_TOP) - 0.38, "понижение второго дна в МО 0.47",

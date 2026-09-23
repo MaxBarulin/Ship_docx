@@ -2,14 +2,14 @@
 """Расчётные модели корпуса для CAD и МКЭ (ANSYS, SpaceClaim, Rhino).
 
 Строятся по той же плазовой таблице, что и все расчёты проекта, поэтому
-геометрия в ANSYS и геометрия в рендере — одна и та же поверхность.
+геометрия в ANSYS и геометрия в рендере - одна и та же поверхность.
 
     python scripts/модели_для_расчёта.py
 
 Что получается в CAD/:
-  ВГ-2026_корпус_оболочка.stl / .obj   — корпус до палубы, замкнутая оболочка
-  ВГ-2026_корпус_с_ярусами.stl / .obj  — то же плюс надстройка и рубка
-  ВГ-2026_обводы_3D.dxf                — шпангоуты, ватерлинии и батоксы
+  ВГ-2026_корпус_оболочка.stl / .obj   - корпус до палубы, замкнутая оболочка
+  ВГ-2026_корпус_с_ярусами.stl / .obj  - то же плюс надстройка и рубка
+  ВГ-2026_обводы_3D.dxf                - шпангоуты, ватерлинии и батоксы
                                          3D-полилиниями под лофт в CAD
 """
 import os, sys
@@ -33,7 +33,7 @@ def dump(name, verts, faces, title):
     vs = scaled(verts)
     n1 = M.write_stl(os.path.join(OUT, name + ".stl"), vs, faces, title)
     n2 = M.write_obj(os.path.join(OUT, name + ".obj"), vs, faces, title)
-    print("%-34s вершин %6d  граней %6d  треугольников %6d  замкнута: %s"
+    print("%-34s вершин %6d  граней %6d  треугольников %6d  замкнута - %s"
           % (name, chk["verts"], chk["faces"], n1, "да" if chk["closed"] else "НЕТ"))
     return chk
 
@@ -47,7 +47,7 @@ def lines_dxf():
         if nm not in doc.layers:
             doc.layers.add(name=nm, color=col)
     msp = doc.modelspace()
-    # шпангоуты — по узлам плазовой таблицы
+    # шпангоуты - по узлам плазовой таблицы
     for n, x, zk, bk, zb, bb, ys in G.OFFSETS:
         zs = [zk + (zb - zk) * (k / 60) ** 1.35 for k in range(61)]
         pts = [(x * K, bk * K, zk * K)]

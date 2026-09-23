@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-"""Геометрия корпуса в виде замкнутых сеток — для расчётов в CAD и МКЭ.
+"""Геометрия корпуса в виде замкнутых сеток - для расчётов в CAD и МКЭ.
 
 Поверхность строится по той же плазовой таблице, что и все расчёты
-(`gorizont.OFFSETS`), поэтому модель для ANSYS и модель для рендера — это
+(`gorizont.OFFSETS`), поэтому модель для ANSYS и модель для рендера - это
 буквально одна и та же поверхность, а не две похожие.
 
-Сетка замкнутая и манифолдная: каждое ребро принадлежит ровно двум граням.
+Сетка замкнутая и манифолдная - каждое ребро принадлежит ровно двум граням.
 """
 import math
 from . import gorizont as G
@@ -18,7 +18,7 @@ WHEEL_HALF = 5.50
 
 
 def default_xs(step_end=0.5, step_mid=1.0):
-    """Сетка сечений по длине: гуще в оконечностях."""
+    """Сетка сечений по длине - гуще в оконечностях."""
     xs, x = [], 0.0
     while x <= G.LOA + 1e-9:
         xs.append(round(x, 3))
@@ -33,7 +33,7 @@ def default_xs(step_end=0.5, step_mid=1.0):
 def _deck(x):
     """Параметры сечения с плоской главной палубой.
 
-    Подъём борта выше D — это фальшборт, а не палуба (см.
+    Подъём борта выше D - это фальшборт, а не палуба (см.
     scripts/blender_фальшборт.py), поэтому расчётная оболочка обрывается
     на высоте борта D = G.DEPTH м по всей длине.
     """
@@ -43,7 +43,7 @@ def _deck(x):
 
 
 def _shell(x, nu):
-    """Точки обвода от киля до палубы: [(y, z), ...], nu + 1 штук."""
+    """Точки обвода от киля до палубы - [(y, z), ...], nu + 1 штук."""
     zk, bk, zb, bb = _deck(x)
     pts = []
     for k in range(nu + 1):
@@ -86,7 +86,7 @@ def ring(x, nu=24, nd=10, tiers=False, nw=6):
 
 
 def build(xs=None, nu=24, nd=10, tiers=False, nw=6):
-    """Замкнутая сетка: (вершины [(x,y,z)], грани [(i0,i1,i2,i3)])."""
+    """Замкнутая сетка - (вершины [(x,y,z)], грани [(i0,i1,i2,i3)])."""
     xs = xs or default_xs()
     rings, verts = [], []
     for x in xs:
@@ -108,7 +108,7 @@ def build(xs=None, nu=24, nd=10, tiers=False, nw=6):
 
 
 def box_solid(x0, x1, half_fn, z_bot_fn, z_top, n_x=90, n_z=6, n_y=8):
-    """Замкнутая призма: план по half_fn(x), низ по z_bot_fn(x), верх z_top."""
+    """Замкнутая призма - план по half_fn(x), низ по z_bot_fn(x), верх z_top."""
     xs = [x0 + (x1 - x0) * i / n_x for i in range(n_x + 1)]
     verts, rings = [], []
     for x in xs:
@@ -177,7 +177,7 @@ def weld(verts, faces, tol=1e-4):
 
 
 def check(verts, faces):
-    """Манифолдность: каждое ребро ровно у двух граней."""
+    """Манифолдность - каждое ребро ровно у двух граней."""
     from collections import Counter
     c = Counter()
     for f in faces:
@@ -215,7 +215,7 @@ def write_stl(path, verts, faces, name="gorizont"):
 
 def write_obj(path, verts, faces, name="gorizont"):
     with open(path, "w", encoding="utf-8", newline="\n") as fh:
-        fh.write("# «Волжский Горизонт» — обводы по плазовой таблице\n")
+        fh.write("# «Волжский Горизонт» - обводы по плазовой таблице\n")
         fh.write("o %s\n" % name)
         for v in verts:
             fh.write("v %.4f %.4f %.4f\n" % v)

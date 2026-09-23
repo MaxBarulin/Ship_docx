@@ -5,7 +5,7 @@
 
 Every dimension comes from lib.gorizont_twistlock - the same numbers drive the
 drawings, the strength check, the casting technology and the Blender scene.
-Units are millimetres; node frame: X along the ship, Y across, Z up from the
+Units are millimetres. Node frame - X along the ship, Y across, Z up from the
 underside of the cast body. Outputs:
 
     CAD/STEP/VG-2026_46_00_twistlock.step      assembly with labelled parts
@@ -63,7 +63,7 @@ def plunger_xy():
 
 
 def body_blank(bottom=0.0, top=0.0):
-    """Outer shape of the body: flange, cup, ribs, bosses; bottom/top grow the machined faces."""
+    """Outer shape of the body - flange, cup, ribs, bosses, bottom/top grow the machined faces."""
     fl = prism(bd.RectangleRounded(K["L_x"], K["L_y"], K["R_фл"]), -bottom, K["t_фл"] + bottom)
     cup = cyl(K["D_н"], -bottom, K["H"] + top)
     s = fl + cup + rib(1, K["t_фл"] + K["ребро"][1]) + rib(-1, K["t_фл"] + K["ребро"][1])
@@ -97,7 +97,7 @@ def body():
 
 
 def casting():
-    """Casting: allowances on the machined faces, holes not cast, riser as an obround on the pad."""
+    """Casting - allowances on the machined faces, holes not cast, riser as an obround on the pad."""
     s = body_blank(bottom=P["подошва"], top=P["площадка"])
     o = T.отливка()
     s += prism(bd.SlotOverall(o["прибыль_D"], o["прибыль_W"]), K["H"] + P["площадка"] - 1.0, o["прибыль_H"] + 1.0)
@@ -106,9 +106,9 @@ def casting():
 
 
 def core():
-    """Cavity core: the cup cavity, the tongue in the window and the print leg outside the cup.
+    """Cavity core - the cup cavity, the tongue in the window and the print leg outside the cup.
 
-    The leg runs from the window up to the top of the pattern: a print only as tall as the window
+    The leg runs from the window up to the top of the pattern - a print only as tall as the window
     would be an undercut, and the pattern could not be drawn out of the cope."""
     z_bot = -P["подошва"] - T.ЗНАК_НИЗ
     c = cyl(K["D_в"] - 0.5, z_bot, Z_CAV)
@@ -121,7 +121,7 @@ def core():
 
 
 def lock(angle=135.0):
-    """VG-2026.46.02 cone with shaft (40Kh forging); angle is the lever angle: 135 open (cone along X), 225 closed."""
+    """VG-2026.46.02 cone with shaft (40Kh forging). Angle is the lever angle - 135 open (cone along X), 225 closed."""
     L, W, hs, hc, (Lt, Wt) = Z["голова"]
     head = prism(bd.SlotOverall(L, W), Z_HEAD, hs)
     top = bd.loft([bd.Pos(0, 0, Z_HEAD + hs) * bd.SlotOverall(L, W), bd.Pos(0, 0, Z_HEAD + hs + hc) * bd.SlotOverall(Lt, Wt)])
@@ -137,7 +137,7 @@ def lock(angle=135.0):
 
 
 def lever(angle):
-    """VG-2026.46.03 lever on the square, arm out of the window; angle 135 = open, 225 = closed."""
+    """VG-2026.46.03 lever on the square, arm out of the window, angle 135 = open, 225 = closed."""
     R = T.РЫЧАГ
     hub = cyl(R["ступица"][0], Z_SQ_BOT, Z_SQ_BOT + R["ступица"][1])
     hub -= bd.Pos(0, 0, Z_SQ_BOT - 1.0) * bd.Box(Z["квадрат"] + 0.2, Z["квадрат"] + 0.2, R["ступица"][1] + 2.0, align=C)
@@ -166,7 +166,7 @@ def plunger(angle):
 
 
 def greaser():
-    """pos.15 grease nipple M10x1 GOST 19853-74, straight: thread in the tap hole of the cup wall on +X
+    """pos.15 grease nipple M10x1 GOST 19853-74, straight - thread in the tap hole of the cup wall on +X
     (drill 9 = thread shown at its tap diameter), hex 11 on the wall, neck and ball head."""
     z, r = K["маслёнка_z"], K["D_н"] / 2.0
     ax = bd.Rot(0, 90, 0)                                   # local +Z -> +X

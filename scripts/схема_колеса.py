@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-"""Схема гребного колеса: шарнирная плица против радиальной, вид с борта.
+"""Схема гребного колеса - шарнирная плица против радиальной, вид с борта.
 
     python scripts/схема_колеса.py
 
-Один лист, два колеса в одном положении. Слева — как построено: механизм
-Моргана, плицы в воде отвесны, наверху откинуты наружу. Справа — жёсткое
+Один лист, два колеса в одном положении. Слева - как построено - механизм
+Моргана, плицы в воде отвесны, наверху откинуты наружу. Справа - жёсткое
 радиальное колесо, плицы смотрят от оси. Углы входа и выхода подписаны:
 это и есть разница в ударе и КПД, из-за которой узел выбран шарнирным.
 """
@@ -20,7 +20,7 @@ from lib import gorizont as G, gorizont_wheel as W, gorizont_super as SU
 
 OUT = os.path.join(ROOT, "renders", "горизонт_2026", "схемы")
 os.makedirs(OUT, exist_ok=True)
-plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 8,
+plt.rcParams.update({"axes.unicode_minus": False, "font.family": "DejaVu Sans", "font.size": 8,
                      "figure.facecolor": "white", "savefig.facecolor": "white"})
 INK, GRY, ACC, SEA, WATER = "#16202f", "#8a94a6", "#b02634", "#1c5c8a", "#d8e8f2"
 
@@ -64,7 +64,7 @@ def колесо(ax, шарнирное, заголовок):
         ax.add_patch(Polygon([(px + nx, pz + nz), (x1 + nx, z1 + nz), (x1 - nx, z1 - nz), (px - nx, pz - nz)],
                              closed=True, facecolor=ACC, edgecolor="#7a0a1c", lw=0.5, zorder=4))
         ax.add_patch(Circle((px, pz), 0.06, facecolor="white", ec=INK, lw=0.7, zorder=5))
-    # механизм — только у шарнирного
+    # механизм - только у шарнирного
     if шарнирное:
         ex, ez = W.eccentric_centre()
         ax.add_patch(Circle((ex, z0 + ez), W.ECC_BOSS, facecolor="#bfc5cc", ec=INK, lw=0.8, zorder=5))
@@ -88,8 +88,8 @@ def колесо(ax, шарнирное, заголовок):
 
 def build(verbose=True):
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(13, 7.2), dpi=140)
-    колесо(a1, True, "Как построено: шарнирные плицы, механизм Моргана")
-    колесо(a2, False, "Для сравнения: жёсткие радиальные плицы")
+    колесо(a1, True, "Как построено - шарнирные плицы, механизм Моргана")
+    колесо(a2, False, "Для сравнения - жёсткие радиальные плицы")
     fig.suptitle("Гребное колесо Ø%.2f м, %d плиц %.2f x %.2f м, ось на %.2f м над ОП" % (
         W.DIAMETER, W.BLADES, W.BLADE_SPAN, W.BLADE_HEIGHT, W.axis_height(G.DRAFT)),
         fontsize=11, fontweight="bold", color=INK, x=0.02, ha="left")

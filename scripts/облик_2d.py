@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
-"""2D-облик судна: борт, план, два сечения — в цвете, из библиотек.
+"""2D-облик судна. Борт, план, два сечения - в цвете, из библиотек.
 
     python scripts/облик_2d.py
 
-Стадия «визуальный концепт»: утверждается до модели. Ни одна линия не
-нарисована руками — борт строится из `gorizont_lines` (корпус),
+Стадия «визуальный концепт» - утверждается до модели. Ни одна линия не
+нарисована руками - борт строится из `gorizont_lines` (корпус),
 `gorizont_super` (ярусы, кожух, арка), `gorizont_facade` (панели из
-компоновки), `gorizont_wheel` (колесо), цвет — из `gorizont_style`.
-Поэтому облик и модель не могут разойтись: они читают одни функции.
+компоновки), `gorizont_wheel` (колесо), цвет - из `gorizont_style`.
+Поэтому облик и модель не могут разойтись - они читают одни функции.
 
 Три листа:
   1_борт.png     вид с правого борта, ватерлиния, колесо в арке
-  2_план.png     вид сверху: солнечная палуба, рубка, кожухи, нос и корма
+  2_план.png     вид сверху - солнечная палуба, рубка, кожухи, нос и корма
   3_сечения.png  поперечные сечения по атриуму (через колесо) и по каютам
 """
 import os, sys, math
@@ -27,7 +27,7 @@ from lib import gorizont_facade as F, gorizont_wheel as W, gorizont_style as S, 
 
 OUT = os.path.join(ROOT, "renders", "горизонт_2026", "облик")
 os.makedirs(OUT, exist_ok=True)
-plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 8,
+plt.rcParams.update({"axes.unicode_minus": False, "font.family": "DejaVu Sans", "font.size": 8,
                      "figure.facecolor": "white", "savefig.facecolor": "white"})
 П = S.ПАЛИТРА
 ЧЁРНЫЙ, СЕРЕБРО, ГРАФИТ, КРАСНЫЙ = П["чёрный"], П["графит_серебро"], П["стекло_тон"], П["красный"]
@@ -104,14 +104,14 @@ def борт(ax):
             ст = SU.ПОРТАЛ["стойка"]
             zв = G.DECKS["солнечная"]
             ax.add_patch(Rectangle((п0 - ст, к["z0"]), п1 - п0 + 2 * ст, zв - к["z0"], facecolor=СЕРЕБРО, edgecolor="none", zorder=6))
-            # внутри портала: кожух над колесом светлый, над ним — стекло атриума во всю ширину
+            # внутри портала: кожух над колесом светлый, над ним - стекло атриума во всю ширину
             ax.add_patch(Rectangle((п0, G.DECKS["средняя"] - 0.05), п1 - п0, zв - G.DECKS["средняя"] - 0.3,
                                    facecolor=СТЕКЛО, edgecolor="none", zorder=7))
             ax.text((п0 + п1) / 2.0, zв - 1.4, "атриум", ha="center", fontsize=6.5, color="#9fc3d6", zorder=8)
             cx, cz = SU.центр_проёма(); rп = SU.радиус_проёма(); rр = SU.ПРОЁМ_КОЖУХА["рамка"]
             ax.add_patch(Circle((cx, cz), rп + rр, facecolor=КРАСНЫЙ, edgecolor="none", zorder=7))
             ax.add_patch(Circle((cx, cz), rп, facecolor="#0c0e11", edgecolor="none", zorder=8))
-            # ниже палубы — корпус, ниша тёмная (перекрыть нижнюю половину круга)
+            # ниже палубы - корпус, ниша тёмная (перекрыть нижнюю половину круга)
             ax.add_patch(Rectangle((cx - rп - rр - 0.5, cz - rп - rр - 0.5), 2 * (rп + rр) + 1.0, к["z0"] - (cz - rп - rр - 0.5),
                                    facecolor=ЧЁРНЫЙ, edgecolor="none", zorder=9))
             ax.add_patch(Polygon(ниша + [(к["ниша_x1"] + W.NICHE_FAIR, G.DEPTH), (к["ниша_x0"] - W.NICHE_FAIR, G.DEPTH)],
@@ -130,7 +130,7 @@ def борт(ax):
                 ax.plot([px, px + dx * (W.PIVOT_OFFSET + W.BLADE_HEIGHT)], [pz, pz + dz * (W.PIVOT_OFFSET + W.BLADE_HEIGHT)],
                         color=КРАСНЫЙ, lw=2.2, zorder=11, solid_capstyle="butt")
             # красная линия: по кромке прогулочной палубы, у колеса ныряет вокруг проёма
-            # красная линия — по кромке прогулочной палубы вдоль всего борта, но тонкая;
+            # красная линия - по кромке прогулочной палубы вдоль всего борта, но тонкая;
             # у портала она ныряет и обходит колесо: единственный акцент судна
             пб1 = [(x, y) for x, y in SU.обвод("главная", 0.5) if y > 0.06]
             zл = я["z1"] - F.ВЫСОТА_ЛИНИИ / 2.0
@@ -296,7 +296,7 @@ def сечение(ax, x, заголовок, атриум):
         ax.text(0, G.DECKS["первая"] + 1.0, "провизия", ha="center", va="center", fontsize=6.5, color=ЛИНИЯ, zorder=7)
         ax.text(0, G.DECKS["солнечная"] + 0.55, "световой фонарь, солнечные модули", ha="center", fontsize=6, color=ЛИНИЯ)
     else:
-        # каюты: борт 3,00 — коридор 1,30 — внутренняя
+        # каюты: борт 3,00 - коридор 1,30 - внутренняя
         for палуба, код in (("главная", "главная"), ("средняя", "средняя")):
             z0 = G.DECKS[палуба]; z1 = z0 + G.DECK_PITCH
             yб = SU.полуширота(x, код, z=z0 + 0.6) - G.LINING / 2.0
@@ -311,7 +311,7 @@ def сечение(ax, x, заголовок, атриум):
                 ax.text(s * (yб - GA.ГЛУБИНА_БОРТ - GA.КОРИДОР / 2), z0 + 1.1, "1,3", ha="center", va="center", fontsize=5.5, color=ЛИНИЯ, zorder=6, rotation=90)
                 ax.text(s * гв / 2, z0 + 1.1, "внутр.\n%.2f" % гв, ha="center", va="center", fontsize=6, color=ЛИНИЯ, zorder=6)
             ax.text(0, z1 - 0.18, "зашивка 0,35 · в свету 2,33", ha="center", va="center", fontsize=5.5, color="#7d858f", zorder=6)
-        ax.text(0, G.DECKS["первая"] + 1.0, "трюм: техника, в свету 1,85", ha="center", va="center", fontsize=6.5, color=ЛИНИЯ, zorder=7)
+        ax.text(0, G.DECKS["первая"] + 1.0, "трюм - техника, в свету 1,85", ha="center", va="center", fontsize=6.5, color=ЛИНИЯ, zorder=7)
     ax.plot([-10.5, 10.5], [G.DRAFT] * 2, color="#2f6f9a", lw=0.8, ls="--", zorder=8)
     ax.plot([-10.5, 10.5], [G.DRAFT + 8.5] * 2, color="#7a1020", lw=0.6, ls=":", zorder=8)
     ax.text(10.3, G.DRAFT + 8.6, "8,5 над водой", fontsize=6, color="#7a1020", ha="right")
@@ -321,9 +321,9 @@ def сечение(ax, x, заголовок, атриум):
 def build(verbose=True):
     fig = plt.figure(figsize=(24, 5.2), dpi=150)
     ax = fig.add_axes([0.01, 0.02, 0.98, 0.86]); борт(ax)
-    fig.text(0.01, 0.94, "1. Вид с правого борта — «Волжский Горизонт», %.0f × %.1f м, осадка %.2f" % (G.LOA, G.BEAM, G.DRAFT),
+    fig.text(0.01, 0.94, "1. Вид с правого борта - «Волжский Горизонт», %.0f × %.1f м, осадка %.2f" % (G.LOA, G.BEAM, G.DRAFT),
              fontsize=12, fontweight="bold", color=ЛИНИЯ)
-    fig.text(0.01, 0.905, "стеклянный монолит в светлой раме: оба яруса — тёмное стекло, рама — цоколь, карнизы, наклонные торцы · портал во всю высоту с колесом внизу и атриумом над ним · красная линия ныряет только там",
+    fig.text(0.01, 0.905, "стеклянный монолит в светлой раме. Оба яруса - тёмное стекло, рама - цоколь, карнизы, наклонные торцы · портал во всю высоту с колесом внизу и атриумом над ним · красная линия ныряет только там",
              fontsize=8, color="#7d858f")
     p1 = os.path.join(OUT, "1_борт.png"); fig.savefig(p1); plt.close(fig)
 
@@ -335,7 +335,7 @@ def build(verbose=True):
     p2 = os.path.join(OUT, "2_план.png"); fig.savefig(p2); plt.close(fig)
 
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(16, 8.2), dpi=150)
-    сечение(a1, X, "3а. Сечение по оси колёс, x = %.0f: ниши, кожухи, атриум" % X, True)
+    сечение(a1, X, "3а. Сечение по оси колёс, x = %.0f - ниши, кожухи, атриум" % X, True)
     сечение(a2, 45.0, "3б. Сечение по каютному блоку, x = 45", False)
     fig.suptitle("3. Поперечные сечения", fontsize=12, fontweight="bold", color=ЛИНИЯ, x=0.01, ha="left")
     fig.tight_layout(rect=(0, 0, 1, 0.95))

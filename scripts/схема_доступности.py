@@ -108,7 +108,7 @@ def leg(x, y, draw, txt, sub=""):
     if sub:
         d.text((x + 28, y + 7), sub, font=font(17), fill=INK2)
 leg(70, ly, lambda x, y: wheel(d, x, y), "каюта для маломобильных пассажиров",
-    "8 кают: 4 бизнес, 2 люкс, 2 стандарт — выбор класса, а не «каюта для инвалида»")
+    "8 кают - 4 бизнес, 2 люкс, 2 стандарт - выбор класса, а не «каюта для инвалида»")
 leg(1000, ly, lambda x, y: (d.rectangle([x-14, y-14, x+14, y+14], fill=(255, 255, 255),
                                         outline=SEA, width=3),
                             d.text((x, y), "Л", font=font(18, b=True), fill=SEA, anchor="mm")),

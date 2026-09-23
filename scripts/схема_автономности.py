@@ -3,7 +3,7 @@
 
     python scripts/схема_автономности.py
 
-Лист А2: цепочка расхождения в метрах, дальности датчиков, состав системы,
+Лист А2 - цепочка расхождения в метрах, дальности датчиков, состав системы,
 поведение при отказах и проверки. Числа считает `gorizont_autonomy`.
 """
 import os, sys, math
@@ -25,7 +25,7 @@ WARM = "#b7772a"
 
 
 def _chain(ax, r, s):
-    """Цепочка расхождения: от обнаружения до полной остановки."""
+    """Цепочка расхождения - от обнаружения до полной остановки."""
     need = r["required"]
     ax.set_xlim(-60, need * 1.06)
     ax.set_ylim(-34, 40)
@@ -146,7 +146,7 @@ def build(verbose=True):
     sh = eskd.Sheet("A2", mark="ВГ-2026.00.00 ПМ2",
                     name="Автономное управление" + chr(10)
                          + "и исключение столкновений",
-                    material=None, mass=None, scale="—",
+                    material=None, mass=None, scale="-",
                     sheet_no=1, sheets=1)
     x0 = eskd.MARGIN_L + 4.0
     top = sh.H - eskd.MARGIN - 6.0
