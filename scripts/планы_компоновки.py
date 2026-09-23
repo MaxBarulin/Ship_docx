@@ -19,6 +19,7 @@ from matplotlib.patches import Rectangle, Polygon, FancyBboxPatch
 
 from lib import gorizont as G, gorizont_lines as L, gorizont_super as SU
 from lib import gorizont_ga as GA, gorizont_public as PB, gorizont_wheel as W, gorizont_facade as F
+from lib import gorizont_modules as MOD
 
 OUT = os.path.join(ROOT, "renders", "горизонт_2026", "планы")
 os.makedirs(OUT, exist_ok=True)
@@ -115,7 +116,8 @@ def лист(палуба, заголовок, подпись):
             if тип == "cabins":
                 continue
             xc = (x0 + x1) / 2.0
-            if x1 - x0 >= 11.0 and тип != "trunk":
+            # на солнечной палубе середину занимают слоты модулей — подписи всех зон на выносках
+            if x1 - x0 >= 11.0 and тип != "trunk" and палуба != "солнечная":
                 ш = max(10, int((x1 - x0) / 0.55))
                 ax.text(xc, 0.0, "\n".join(textwrap.wrap(имя, ш)), ha="center", va="center",
                         fontsize=6.2, color=INK, zorder=5,
@@ -179,6 +181,15 @@ def лист(палуба, заголовок, подпись):
         for x0, x1, y0, y1 in PB.колодцы(плита):
             if x1 - x0 > 3.0:
                 ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, facecolor="none", edgecolor=SEA, lw=0.6, ls="--", zorder=6))
+    # --- солнечная палуба: слоты модулей (пунктир) и фундаменты-замки ВГ-2026.46.00 — постоянные, стоят и без модулей
+    if палуба == "солнечная":
+        for s in MOD.слоты():
+            ax.add_patch(Rectangle((s["x0"], s["y0"]), s["x1"] - s["x0"], s["y1"] - s["y0"], facecolor="none",
+                                   edgecolor="#1f7a5a", lw=0.7, ls=(0, (3, 2)), zorder=6))
+            ax.text(s["xc"], s["yc"], s["слот"], ha="center", va="center", fontsize=5.4, color="#1f7a5a", zorder=7,
+                    bbox=dict(boxstyle="round,pad=0.15", fc="white", ec="none", alpha=0.8))
+            for (x, y) in s["фундаменты"]:
+                ax.add_patch(Rectangle((x - 0.17, y - 0.17), 0.34, 0.34, facecolor=ACC, edgecolor="none", zorder=7))
     # --- колёса и кожухи
     if палуба in ("трюм", "главная", "средняя"):
         к = SU.кожух()
@@ -242,7 +253,9 @@ def build(verbose=True):
         ("трюм", "1. Трюм (технический ярус), 0,90…3,00 м", "нежилой: в свету 1,85 м, локально 2,15…2,30 при пониженном втором дне"),
         ("главная", "2. Главная палуба, 3,00…5,80 м", "палуба переборок; бортовой проход 1,0 м — открытый путь эвакуации"),
         ("средняя", "3. Средняя палуба, 5,80…8,60 м", "каютный блок в четыре ряда; %d пассажиров в %d каютах на судне" % (и["пассажиров"], и["пассажирских_кают"])),
-        ("солнечная", "4. Солнечная палуба, 8,60 м", "открытая; всё не выше 0,9 м, кроме опускной рубки"),
+        ("солнечная", "4. Солнечная палуба, 8,60 м",
+         "открытая; рубка стационарная; %d слотов под модули 20' HC (пунктир) на %d фундаментах-замках ВГ-2026.46.00 (красные), "
+         "темы модулей — docs/проект/модульное_решение.md" % (len(MOD.слоты()), len(MOD.фундаменты()))),
     ]
     пути = []
     for i, (п, заг, под) in enumerate(листы):

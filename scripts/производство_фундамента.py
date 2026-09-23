@@ -81,7 +81,7 @@ def кооперация():
         c = ЦЕХ.get(цех, MUTED) if цех else MUTED
         ax.add_patch(FancyBboxPatch((x - W / 2, y - Hh / 2), W, Hh, boxstyle="round,pad=0.3,rounding_size=1.2",
                                     facecolor="white", edgecolor=c, lw=2.2 if цех else 1.0, zorder=2))
-        ax.text(x, y + 2.4, tt, ha="center", va="center", fontsize=8.6, color=INK, weight="bold", zorder=3)
+        ax.text(x, y + 2.4, tt, ha="center", va="center", fontsize=8.0, color=INK, weight="bold", zorder=3)
         ax.text(x, y - 1.8, d, ha="center", va="center", fontsize=7.0, color=INK2, zorder=3, linespacing=1.15)
     def край(x, y, dx, dy):
         L = (dx * dx + dy * dy) ** 0.5
@@ -94,8 +94,13 @@ def кооперация():
         ax.add_patch(FancyArrowPatch(p0, p1, arrowstyle="-|>", mutation_scale=11, color=INK2, lw=1.0, zorder=1))
         mx, my = (p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2
         гор = abs(p1[0] - p0[0]) > abs(p1[1] - p0[1])
-        ax.text(mx + (0 if гор else 1.2), my + (1.4 if гор else 0), "\n".join(textwrap.wrap(txt, 12)), ha="center" if гор else "left",
-                va="bottom" if гор else "center", fontsize=6.6, color=INK2, linespacing=1.05)
+        if гор:
+            # между блоками всего несколько единиц — подпись над рядом блоков, по оси зазора, в одну строку
+            ax.text(mx, my + Hh / 2 + 1.0, txt, ha="center", va="bottom", fontsize=6.6, color=INK2)
+            ax.plot([mx, mx], [my + 0.8, my + Hh / 2 + 0.8], color=INK2, lw=0.4, ls=":", zorder=1)
+        else:
+            ax.text(mx + 1.2, my, "\n".join(textwrap.wrap(txt, 12)), ha="left", va="center", fontsize=6.6,
+                    color=INK2, linespacing=1.05)
     arrow("МТО", "ЛЦ", "шихта, смесь")
     arrow("ЛЦ", "ТО", "%d отливок" % п["всего"])
     arrow("ТО", "ОТК", "садки по 40")
