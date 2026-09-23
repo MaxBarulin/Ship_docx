@@ -2,7 +2,7 @@
 """Чертежи ОР в DWG: пакетная конвертация DXF → DWG через AutoCAD Core Console.
 
     python scripts/чертежи_dwg.py            # ОР, РТ, МР и КД узла ВГ-2026.46.00 → CAD/DWG/{,расчёты,модули,узел}
-    python scripts/чертежи_dwg.py --все      # и узел ВГ-2026_31_00_СБ тоже
+    python scripts/чертежи_dwg.py --все      # все DXF из корня CAD/, не только ОР
 
 Свободных библиотек, пишущих DWG, нет; AutoCAD 2023 на машине есть, а с ним —
 accoreconsole.exe, безоконный движок AutoCAD, который открывает DXF и

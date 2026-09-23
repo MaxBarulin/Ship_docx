@@ -580,7 +580,7 @@ def рендер(тип, samples=SAMPLES, res=РАЗРЕШЕНИЕ, виды=(1,
     os.makedirs(OUT, exist_ok=True)
     ф, гл, lxд = каюта(тип)
     sc = сцена()
-    главная = [s for s in bpy.data.scenes if s.name not in ("Каюты", "Узел")]
+    главная = [s for s in bpy.data.scenes if s.name not in ("Каюты", "Фундамент")]
     if главная and главная[0].world and sc.world is None:
         sc.world = главная[0].world
     sc.render.engine = "CYCLES"

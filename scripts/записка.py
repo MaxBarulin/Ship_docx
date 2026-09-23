@@ -39,7 +39,6 @@ from lib import gorizont_market as M
 from lib import gorizont_ga as GA
 from lib import gorizont_public as PB
 from lib import gorizont_modules as MOD
-from lib import gorizont_node as N
 from lib import gorizont_twistlock as TW
 from lib import gorizont_range as RG
 from lib import gorizont_roll as RO
@@ -286,7 +285,7 @@ def блок2_интерьеры_и_системы():
     т.append(таблица(["Требование КЗ", "Решение", "Где посчитано"], [
         ["Очистка и повторное использование сточных вод",
          "два контура: чёрные — вакуумные туалеты, %s; серые — %s; экономия пресной воды %d м³ в сутки" % (G.AWTS["black"], G.AWTS["grey"], G.AWTS["fresh_water_saved_m3_day"]),
-         "`gorizont_awts`, станция в трюме x 5…14"],
+         "`gorizont.AWTS`, `gorizont_mach.AWTS_SCHEME`; станции СОСВ-Ч и СОСВ-С в трюме x 5…14 (`gorizont.ТРЮМ`)"],
         ["Гибридная электроустановка",
          "%s: %d ГДГ по %d кВт, батарея %d кВт·ч, солнечные модули %d кВт, береговое питание; на ходу %d кВт из %d, на стоянке %d кВт" % (
              G.PLANT, round(G.DG_TOTAL / G.DG_POWER), G.DG_POWER, G.BATTERY_KWH, G.SOLAR_KW, round(ход["total"]), G.DG_TOTAL, round(стоянка["total"])),
@@ -367,11 +366,6 @@ def блок3():
                      [[r["элемент"], r["случай"], "%s %s" % (_з(r["значение"]), r["ед"]), "%s %s" % (_з(r["допускаемое"]), r["ед"]), _з(r["запас"], 2)] for r in мин]))
     плохо = [c for c in TW.checks() if not c["ok"]]
     т.append("\nПроверок `gorizont_twistlock.checks()`: %d, не прошло %d.\n" % (len(TW.checks()), len(плохо)))
-    т.append("### 3.5 Проработка колеса — ось плицы с кривошипом\n")
-    плохо_н = [c for c in N.checks() if not c["ok"]]
-    т.append("До 22.09.2026 узлом КД была ось плицы %s с кривошипом механизма Моргана: СБ `CAD/ВГ-2026_31_00_СБ_ось_плицы.dxf`, 3D "
-             "`CAD/STEP/VG-2026_31_00_blade_axle.step`, расчёт на удар о воду — `docs/проект/узел_ось_плицы.md` (%d проверок, не прошло %d). "
-             "Она остаётся проработкой движителя.\n" % (N.MARK, len(N.checks()), len(плохо_н)))
     return "\n".join(т)
 
 
