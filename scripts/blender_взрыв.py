@@ -102,9 +102,7 @@ def _подписи_поверх(sc, cam, база, выход):
         u, v, _ = world_to_camera_view(sc, cam, p)
         якоря.append({"текст": текст, "x": round(u * W, 1), "y": round((1.0 - v) * H, 1)})
     jp = os.path.join(tempfile.gettempdir(), "_подписи_09_взрыв.json")
-    json.dump({"стиль": "сборки", "заголовок": "Компоновочная схема «Волжского Горизонта» (взрыв-модель)",
-               "подзаголовок": "сборки судна раздвинуты по высоте, колесо с кожухом - по борту",
-               "якоря": якоря}, open(jp, "w", encoding="utf-8"), ensure_ascii=False)
+    json.dump({"стиль": "сборки", "якоря": якоря}, open(jp, "w", encoding="utf-8"), ensure_ascii=False)
     py = os.path.join(ROOT, ".venv", "Scripts", "python.exe")
     if not os.path.exists(py):
         py = "python"

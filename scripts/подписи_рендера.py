@@ -8,7 +8,11 @@
 не совпадал по высоте со своей сборкой. Теперь Blender рендерит картинку без
 текста и пишет рядом JSON с экранными координатами точек, к которым относится
 подпись (`bpy_extras.object_utils.world_to_camera_view`), а подписи рисуются
-здесь - всегда поверх, на светлой плашке, с выноской до своей точки.
+здесь - всегда поверх, в белой прямоугольной рамке, с выноской до своей точки.
+
+Вид простой, как выноски в PowerPoint или Word: Calibri, тонкая чёрная рамка без
+скруглений, чёрные точки. Заголовка на кадре нет - название даёт подпись «Рисунок N»
+в документе, поля «заголовок» и «подзаголовок» в JSON больше не рисуются.
 
 Формат якорей - {"стиль" - "сборки" | "позиции", "заголовок" - "...", "подзаголовок" - "...",
 "якоря" - [{"текст" - "...", "x" - px, "y" - px}, ...]}, x, y - пиксели рендера, y сверху.
@@ -21,11 +25,11 @@
 import os, sys, json, math
 from PIL import Image, ImageDraw, ImageFont
 
-INK, ACC, MUT, BG = (22, 32, 47), (176, 38, 52), (96, 108, 124), (255, 255, 255)
+INK, BG = (0, 0, 0), (255, 255, 255)
 
 
 def _шрифт(px, жирный=False):
-    for имя in (("segoeuib.ttf" if жирный else "segoeui.ttf"), ("DejaVuSans-Bold.ttf" if жирный else "DejaVuSans.ttf")):
+    for имя in (("calibrib.ttf" if жирный else "calibri.ttf"), ("DejaVuSans-Bold.ttf" if жирный else "DejaVuSans.ttf")):
         for d in (r"C:\Windows\Fonts", "/usr/share/fonts/truetype/dejavu"):
             p = os.path.join(d, имя)
             if os.path.exists(p):
@@ -73,10 +77,10 @@ def _сборки(img, d, якоря, W, H):
         y, h = ys[i], hs[i]
         ax, ay = a["x"], a["y"]
         # выноска: от точки к левому краю плашки, излом на уровне её середины
-        d.line([(ax, ay), (x0 - 30, y + h / 2), (x0, y + h / 2)], fill=INK, width=3)
-        d.ellipse([ax - 8, ay - 8, ax + 8, ay + 8], fill=ACC, outline=BG, width=3)
+        d.line([(ax, ay), (x0 - 30, y + h / 2), (x0, y + h / 2)], fill=INK, width=2)
+        d.ellipse([ax - 6, ay - 6, ax + 6, ay + 6], fill=INK)
         wmax = max(d.textlength(s, font=f) for s in строки[i])
-        d.rounded_rectangle([x0, y, x0 + wmax + 2 * pad, y + h], radius=10, fill=BG, outline=INK, width=2)
+        d.rectangle([x0, y, x0 + wmax + 2 * pad, y + h], fill=BG, outline=INK, width=2)
         for k, s in enumerate(строки[i]):
             d.text((x0 + pad, y + pad - 2 + k * шаг), s, font=f, fill=INK)
 
@@ -109,9 +113,9 @@ def _позиции(img, d, якоря, W, H):
         занято.append(rect)
         L = math.hypot(bx - a["x"], by - a["y"]) or 1.0
         ex, ey = bx - (bx - a["x"]) / L * r, by - (by - a["y"]) / L * r
-        d.line([(a["x"], a["y"]), (ex, ey)], fill=INK, width=3)
+        d.line([(a["x"], a["y"]), (ex, ey)], fill=INK, width=2)
         d.ellipse([a["x"] - 6, a["y"] - 6, a["x"] + 6, a["y"] + 6], fill=INK)
-        d.ellipse(rect, fill=BG, outline=INK, width=3)
+        d.ellipse(rect, fill=BG, outline=INK, width=2)
         tw = d.textlength(a["текст"], font=f)
         d.text((bx - tw / 2, by - f.size * 0.62), a["текст"], font=f, fill=INK)
 
@@ -125,11 +129,6 @@ def наложить(png, якоря_json, out):
         _позиции(img, d, data["якоря"], W, H)
     else:
         _сборки(img, d, data["якоря"], W, H)
-    if data.get("заголовок"):
-        ft, fs = _шрифт(max(34, W // 55), True), _шрифт(max(24, W // 90))
-        d.text((40, 30), data["заголовок"], font=ft, fill=INK)
-        if data.get("подзаголовок"):
-            d.text((40, 30 + ft.size + 12), data["подзаголовок"], font=fs, fill=MUT)
     tmp = os.path.join(os.path.dirname(out), "_tmp_overlay" + os.path.splitext(out)[1])
     if out.lower().endswith(".jpg"):
         img.save(tmp, quality=92)

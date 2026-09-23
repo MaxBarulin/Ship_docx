@@ -34,7 +34,8 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
                    r"Алексе[йяюе]|Макс[аеу]?|Барулин[а-я]*|Соколов[а-я]*|Игнатьев[а-я]*|Рябов[а-я]*)(?![А-Яа-яЁё])")
 ПОРУЧЕНИЯ = re.compile(r"(?i)(передат|передай|посмотре|сверит|уточнит|ждём|ждёт|вход от|TODO|FIXME|заглушк|"
                        r"поручени|нейро|Claude|\(принято\)|редакци[ия] [0-9])")
-КОД = re.compile(r"(gorizont\w*|blender_\w+|\w+\.py\b|scripts/|src/lib|docs/|CAD/|renders/|\.md\b|\.docx|\.blend|checks\(\))")
+КОД = re.compile(r"(gorizont\w*|blender_\w+|\w+\.py\b|scripts/|src/lib|docs/|CAD/|renders/|\.md\b|\.docx|\.blend|checks\(\)|"
+                 r"\w+\.(?:png|jpe?g|pdf|dxf|dwg|xlsx|geojson|glb|stl|step)\b)")
 
 #: генераторы картинок, у которых на листе есть текст (рендеры Blender без подписей не нужны)
 ГЕНЕРАТОРЫ = [

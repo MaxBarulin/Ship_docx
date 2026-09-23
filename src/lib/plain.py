@@ -62,6 +62,26 @@ WORD = dict(_ОБЩЕЕ, **{
 })
 
 
+#: растровые чертежи (теоретический чертёж, проекция «корпус») - шрифт по ГОСТ 2.304, чёрные линии,
+#: как лист, выведенный из САПР. Если шрифта ГОСТ нет (облачная сессия) - ISOCPEUR, затем DejaVu.
+#: В GOST Common «°» рисуется как «¹», «Ø» как «Ý», «·» как «¾», кавычки «» как «¼½» - писать «град»,
+#: «⌀» (U+2300), «⋅» (U+22C5) и обходиться без кавычек-ёлочек
+ЧЕРТЁЖ = dict(_ОБЩЕЕ, **{
+    "font.family": ["GOST Common", "ISOCPEUR", "DejaVu Sans"], "font.size": 10,
+    "text.color": "black", "axes.edgecolor": "black", "axes.labelcolor": "black",
+    "xtick.color": "black", "ytick.color": "black",
+    "lines.linewidth": 0.7, "lines.color": "black",
+    "patch.linewidth": 0.7, "patch.edgecolor": "black", "patch.facecolor": "white",
+    "grid.color": СЕТКА, "grid.linewidth": 0.5,
+    "legend.frameon": False,
+})
+
+
+def чертёж():
+    """Контекст растрового чертежа - `with P.чертёж(): ...`."""
+    return plt.rc_context(ЧЕРТЁЖ)
+
+
 def excel():
     """Контекст диаграммы Excel - `with P.excel(): ...`."""
     return plt.rc_context(EXCEL)

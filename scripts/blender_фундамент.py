@@ -308,9 +308,10 @@ def виды(samples=96, verbose=True):
     # пол ниже самых нижних гаек: иначе они уходили под плиту пола и просвечивали сквозь неё
     _пол(кол, z_мин - 0.04)
     база = _кадр(sc, "_46_02_взрыв_база.png", cam, (-0.06, 0.06, 0.0), 50, res=(1800, 1500), samples=samples)
-    сделано.append(_подписи_поверх(sc, база, os.path.join(OUT, "46_02_взрыв.png"), sorted(якоря, key=lambda a: int(a[0])),
-                                   "Взрыв-схема узла ВГ-2026.46.00", "номера - позиции спецификации, замок «открыто»"))
-    os.remove(база)
+    сделано.append(_подписи_поверх(sc, база, os.path.join(OUT, "46_02_взрыв.png"), sorted(якоря, key=lambda a: int(a[0]))))
+    # кадр без подписей - во временную папку, а не в корзину: подписи можно переложить без нового рендера
+    import shutil, tempfile
+    shutil.move(база, os.path.join(tempfile.gettempdir(), os.path.basename(база)))
     # 3. отливка с прибылью, стержень с ногой-знаком и корпус после мехобработки
     for o in list(кол.objects):
         bpy.data.objects.remove(o, do_unlink=True)
