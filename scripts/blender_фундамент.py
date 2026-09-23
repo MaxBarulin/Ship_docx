@@ -227,6 +227,30 @@ def _цифра(sc, кол, текст, loc, cam_loc, size=0.022):
     return o
 
 
+def _подписи_поверх(sc, png_база, png_выход, якоря_мир, заголовок="", подзаголовок="", стиль="позиции"):
+    """Номера позиций кружками с выносками — поверх рендера, в 2D (scripts/подписи_рендера.py в .venv проекта:
+    в Python Blender нет PIL). Якоря — точки деталей в мировых координатах, проецируются камерой сцены."""
+    import json, subprocess, tempfile
+    from bpy_extras.object_utils import world_to_camera_view
+    W = sc.render.resolution_x * sc.render.resolution_percentage // 100
+    H = sc.render.resolution_y * sc.render.resolution_percentage // 100
+    якоря = []
+    for текст, p in якоря_мир:
+        u, v, _ = world_to_camera_view(sc, sc.camera, Vector(p))
+        якоря.append({"текст": текст, "x": round(u * W, 1), "y": round((1.0 - v) * H, 1)})
+    jp = os.path.join(tempfile.gettempdir(), "_подписи_%s.json" % os.path.splitext(os.path.basename(png_выход))[0])
+    json.dump({"стиль": стиль, "заголовок": заголовок, "подзаголовок": подзаголовок, "якоря": якоря},
+              open(jp, "w", encoding="utf-8"), ensure_ascii=False)
+    py = os.path.join(ROOT, ".venv", "Scripts", "python.exe")
+    if not os.path.exists(py):
+        py = "python"
+    r = subprocess.run([py, "-X", "utf8", os.path.join(ROOT, "scripts", "подписи_рендера.py"), png_база, jp, png_выход],
+                       capture_output=True, text=True, encoding="utf-8")
+    if r.returncode != 0:
+        raise RuntimeError("подписи_рендера: " + r.stderr[-400:])
+    return png_выход
+
+
 #: Взрыв-схема: сдвиг каждой позиции (м); детали внутри окна корпуса выходят через окно — по направлению рычага.
 def _сдвиг(имя, окно):
     ox, oy = окно
@@ -234,6 +258,8 @@ def _сдвиг(имя, окно):
         return (0.0, 0.0, 0.30)
     if имя.startswith("pos.16"):
         return (0.0, 0.0, 0.16)
+    if имя.startswith("pos.15"):                        # маслёнка на +X — за стаканом от камеры; выносится вправо в кадре
+        return (0.14, -0.14, 0.02)
     if имя.startswith("pos.3 "):
         return (ox * 0.36, oy * 0.36, -0.02)
     for k, d in (("pos.4 ", 0.12), ("pos.13", 0.20), ("pos.12", 0.26), ("pos.14 end", 0.30), ("pos.14 screw", 0.33)):
@@ -266,22 +292,25 @@ def виды(samples=96, verbose=True):
     окно = Vector((-1.0, 1.0, 0.0)).normalized()            # рычаг в GLB «открыто» смотрит на 135°
     cam = (-1.30, -1.30, 0.78)                                # поперёк окна: детали из окна уходят влево
     вправо = Vector((1.0, -1.0, 0.0)).normalized()           # «вправо» в кадре
-    подписаны = set()
+    подписаны, якоря, z_мин = set(), [], 0.0
     for o in детали:
         d = Vector(_сдвиг(o.name, (окно.x, окно.y)))
         o.location = d
+        vs = [v.co + d for v in o.data.vertices]              # сетка в осях узла, сдвиг — location
+        z_мин = min(z_мин, min(v.z for v in vs))
         поз = o.name.split()[0].replace("pos.", "")
         if поз not in подписаны:
             подписаны.add(поз)
-            vs = [v.co + d for v in o.data.vertices]          # сетка в осях узла, сдвиг — location
             c = sum(vs, Vector()) / len(vs)
-            if поз in ("3", "4", "12", "13", "14"):         # ряд деталей из окна — номера над ними
-                _цифра(sc, кол, поз, Vector((c.x, c.y, max(v.z for v in vs) + 0.04)), cam)
-            else:
-                вынос = max((v - c).dot(вправо) for v in vs)
-                _цифра(sc, кол, поз, c + вправо * (вынос + 0.035), cam)
-    _пол(кол, -0.46)
-    сделано.append(_кадр(sc, "46_02_взрыв.png", cam, (-0.06, 0.06, 0.0), 50, res=(1800, 1500), samples=samples))
+            if поз == "1":                                      # корпус: точка на фланце, а не в пустом стакане
+                c = Vector((c.x + 0.10, c.y - 0.10, min(v.z for v in vs) + 0.01))
+            якоря.append((поз, (c.x, c.y, c.z)))
+    # пол ниже самых нижних гаек: иначе они уходили под плиту пола и просвечивали сквозь неё
+    _пол(кол, z_мин - 0.04)
+    база = _кадр(sc, "_46_02_взрыв_база.png", cam, (-0.06, 0.06, 0.0), 50, res=(1800, 1500), samples=samples)
+    сделано.append(_подписи_поверх(sc, база, os.path.join(OUT, "46_02_взрыв.png"), sorted(якоря, key=lambda a: int(a[0])),
+                                   "Взрыв-схема узла ВГ-2026.46.00", "номера — позиции спецификации; замок «открыто»"))
+    os.remove(база)
     # 3. отливка с прибылью, стержень с ногой-знаком и корпус после мехобработки
     for o in list(кол.objects):
         bpy.data.objects.remove(o, do_unlink=True)

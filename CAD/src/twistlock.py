@@ -165,6 +165,19 @@ def plunger(angle):
     return s
 
 
+def greaser():
+    """pos.15 grease nipple M10x1 GOST 19853-74, straight: thread in the tap hole of the cup wall on +X
+    (drill 9 = thread shown at its tap diameter), hex 11 on the wall, neck and ball head."""
+    z, r = K["маслёнка_z"], K["D_н"] / 2.0
+    ax = bd.Rot(0, 90, 0)                                   # local +Z -> +X
+    s = bd.Pos(r - 8.0, 0, z) * ax * bd.Cylinder(4.5, 8.0, align=C)
+    s += bd.Pos(r, 0, z) * ax * bd.extrude(bd.RegularPolygon(11.0 / math.sqrt(3.0), 6), 7.0)
+    s += bd.Pos(r + 7.0, 0, z) * ax * bd.Cylinder(3.0, 4.0, align=C)
+    s += bd.Pos(r + 13.0, 0, z) * bd.Sphere(3.5)
+    s.label = "pos.15 grease nipple M10x1"
+    return s
+
+
 def small_parts():
     """Washers, round nut, end screw, bolts, nuts, isolation, doubler plate."""
     parts = []
@@ -206,7 +219,7 @@ def small_parts():
 
 
 def assembly(angle=225.0):
-    parts = [body(), lock(angle), lever(angle), plunger(angle)] + small_parts()
+    parts = [body(), lock(angle), lever(angle), plunger(angle), greaser()] + small_parts()
     return bd.Compound(label="VG-2026.46.00 cast twistlock foundation", children=parts), parts
 
 

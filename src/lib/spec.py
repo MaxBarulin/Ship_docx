@@ -60,12 +60,44 @@ def _row(sh, x, y, cells, center=(0, 1, 2, 5)):
         cx += w
 
 
+#: ширина знака шрифта 2,5 мм, мм — по растру листа: 60 знаков наименования занимают 83 мм
+ЗНАК_ММ = 1.40
+
+
+def _перенести(r):
+    """Запись спецификации в несколько строк, если наименование или примечание не влезает в графу
+    (ГОСТ 2.106: запись продолжается на следующей строке). Количество с единицей, не влезающее в
+    графу «Кол.», делится: число в «Кол.», единица — в начало «Примечания»."""
+    import textwrap
+    ширина = dict(COLS)
+    r = dict(r)
+    q = str(r.get("qty", "") or "")
+    if q and len(q) * ЗНАК_ММ > ширина["Кол."] - 1.5 and " " in q:
+        число, ед = q.split(" ", 1)
+        r["qty"] = число
+        r["note"] = (ед + (", " + r["note"] if r.get("note") else "")).strip()
+    имя = textwrap.wrap(str(r.get("name", "") or ""), max(8, int((ширина["Наименование"] - 3.0) / ЗНАК_ММ)), break_long_words=False)
+    прим = textwrap.wrap(str(r.get("note", "") or ""), max(6, int((ширина["Примечание"] - 3.0) / ЗНАК_ММ)), break_long_words=False)
+    n = max(1, len(имя), len(прим))
+    out = []
+    for i in range(n):
+        if i == 0:
+            s = dict(r)
+        else:
+            s = dict(fmt="", zone="", pos="", mark="", qty="")
+        s["name"] = имя[i] if i < len(имя) else ""
+        s["note"] = прим[i] if i < len(прим) else ""
+        out.append(s)
+    return out
+
+
 def draw(sections, mark, name, sheets_data, path_fmt, rows_per_sheet=27,
          rows_next=32, org=eskd.ORG):
     """Разложить разделы по листам А4 и сохранить.
 
     `sections` — [(заголовок раздела, [строки])]; строка — словарь с ключами
-    fmt, zone, pos, mark, name, qty, note.
+    fmt, zone, pos, mark, name, qty, note. Длинные наименования и примечания
+    переносятся на следующие строки той же записи.
     """
     flat = []
     for title, rows in sections:
@@ -73,7 +105,8 @@ def draw(sections, mark, name, sheets_data, path_fmt, rows_per_sheet=27,
             continue
         flat.append(("раздел", title))
         for r in rows:
-            flat.append(("строка", r))
+            for s in _перенести(r):
+                flat.append(("строка", s))
         flat.append(("пусто", None))
     pages, rest = [], list(flat)
     while rest or not pages:

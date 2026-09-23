@@ -7,8 +7,14 @@
 палубы и ярусы поднимаются ступенями, колёса с кожухами выезжают по бортам,
 рубка и солнечная палуба — выше всех. Сдвиги обратимы: после рендера всё
 возвращается на место, модель не портится.
+
+Подписи сборок — не 3D-текст в сцене (его закрывало колесо, он терялся белым
+по светлому корпусу и не совпадал по высоте со своей сборкой), а выноски
+поверх рендера: Blender проецирует точку на каждой сборке камерой, а
+`scripts/подписи_рендера.py` (в .venv проекта — в Python Blender нет PIL)
+рисует столбец подписей у правого края с выносками до этих точек.
 """
-import bpy, os, math
+import bpy, os, math, json, subprocess, tempfile
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 OUT = os.path.join(ROOT, "renders", "горизонт_2026", "виды")
 
@@ -54,35 +60,65 @@ def сдвинуть(знак=1):
     return сделано
 
 
-def подписи():
-    """Подписи сборок текстом рядом с моделью — для схемы."""
-    пометки = [("Корпус, второе дно, цистерны, трюм: ГДГ, приводы колёс", 0.0),
-               ("Главная палуба: гараж, атриум, ресторан, театр, каюты", 6.5),
-               ("Прогулочная палуба (крыша первого яруса)", 10.5),
-               ("Средняя палуба: каюты, атриум, спа; портал с колёсами", 14.0),
-               ("Солнечная палуба: 72 фундамента-замка, модули темы, навес с солнечными панелями", 19.0),
-               ("Рубка", 24.0)]
-    сделано = []
-    for i, (т, dz) in enumerate(пометки):
-        cu = bpy.data.curves.new("_взрыв_подпись_%d" % i, "FONT")
-        cu.body = т; cu.size = 2.0
-        ob = bpy.data.objects.new("_взрыв_подпись_%d" % i, cu)
-        bpy.context.scene.collection.objects.link(ob)
-        # столбик подписей перед судном, снизу вверх в порядке сборок; шаг ровный —
-        # сверху под углом строки сжимаются, и при шаге по dz они наезжали друг на друга
-        ob.location = (6.0, -44.0, 3.0 + 4.2 * i)
-        ob.rotation_euler = (math.radians(90), 0, math.radians(-8))
-        if hasattr(ob, "visible_glossy"):
-            ob.visible_glossy = False           # без отражения в воде: зеркальные строки читались как мусор
-        сделано.append(ob)
-    return сделано
+#: Подписи сборок: текст и префиксы объектов для точки выноски. Точки всех ярусов — на одной абсциссе
+#: X_ВЫНОСКИ в носовой части, где есть все ярусы: тогда порядок точек по высоте совпадает с порядком сборок,
+#: и выноски к столбцу подписей идут веером без пересечений; колесо — в центре своей сборки.
+X_ВЫНОСКИ = 104.0
+ПОДПИСИ = [
+    ("Корпус: второе дно, цистерны метанола и воды, трюм — ГДГ, ГРЩ, приводы колёс", ("Корпус",), X_ВЫНОСКИ),
+    ("Первая и главная палубы, водонепроницаемые переборки, оборудование трюма", ("Палуба_главная", "Палуба_первая", "Переборка_ВНП", "Трюм_"), X_ВЫНОСКИ),
+    ("Первый ярус: гараж и аппарель, атриум, ресторан, театр-лаунж, каюты", ("Надстройка_главная", "Каюта_", "Гараж_"), X_ВЫНОСКИ),
+    ("Прогулочная палуба — крыша первого яруса", ("Палуба_прогулочная",), X_ВЫНОСКИ),
+    ("Второй ярус: каюты, верх атриума, спа; портал колёс", ("Надстройка_средняя", "Портал_"), X_ВЫНОСКИ),
+    ("Солнечная палуба: 72 фундамента-замка ВГ-2026.46.00, модули темы, навес с солнечными панелями", ("Палуба_солнечная", "08_Фундаменты", "09_Модули"), X_ВЫНОСКИ),
+    ("Рулевая рубка, стационарная", ("Рубка",), X_ВЫНОСКИ),
+    ("Гребное колесо Ø4,90 с кожухом — выдвинуто по борту", ("Колесо_ЛБ", "Кожух_ЛБ"), None),
+]
+
+
+def _точка(префиксы, x_точки):
+    """Точка выноски: на ближнем к камере борту сборки (y — минимум), по длине — x_точки (None — середина сборки),
+    по высоте — середина сборки."""
+    from mathutils import Vector
+    xs, ys, zs = [], [], []
+    for o in _объекты(префиксы):
+        for c in o.bound_box:
+            w = o.matrix_world @ Vector(c)
+            xs.append(w.x); ys.append(w.y); zs.append(w.z)
+    if not xs:
+        return None
+    x = 0.5 * (min(xs) + max(xs)) if x_точки is None else min(max(x_точки, min(xs)), max(xs))
+    return Vector((x, min(ys), 0.5 * (min(zs) + max(zs))))
+
+
+def _подписи_поверх(sc, cam, база, выход):
+    from bpy_extras.object_utils import world_to_camera_view
+    W, H = sc.render.resolution_x, sc.render.resolution_y
+    якоря = []
+    for текст, префиксы, x_точки in ПОДПИСИ:
+        p = _точка(префиксы, x_точки)
+        if p is None:
+            continue
+        u, v, _ = world_to_camera_view(sc, cam, p)
+        якоря.append({"текст": текст, "x": round(u * W, 1), "y": round((1.0 - v) * H, 1)})
+    jp = os.path.join(tempfile.gettempdir(), "_подписи_09_взрыв.json")
+    json.dump({"стиль": "сборки", "заголовок": "Компоновочная схема «Волжского Горизонта» (взрыв-модель)",
+               "подзаголовок": "сборки модели blender/gorizont.blend раздвинуты по высоте, колёса с кожухами — по бортам",
+               "якоря": якоря}, open(jp, "w", encoding="utf-8"), ensure_ascii=False)
+    py = os.path.join(ROOT, ".venv", "Scripts", "python.exe")
+    if not os.path.exists(py):
+        py = "python"
+    r = subprocess.run([py, "-X", "utf8", os.path.join(ROOT, "scripts", "подписи_рендера.py"), база, jp, выход],
+                       capture_output=True, text=True, encoding="utf-8")
+    if r.returncode != 0:
+        raise RuntimeError("подписи_рендера: " + r.stderr[-400:])
+    return выход
 
 
 def рендер(samples=96, res=(2400, 1500), cycles=False):
     os.makedirs(OUT, exist_ok=True)
     sc = bpy.context.scene
     сдвиги = сдвинуть(1)
-    тексты = подписи()
     cam = sc.camera
     if cam is None:
         cam = bpy.data.objects.get("_взрыв_камера")
@@ -94,9 +130,10 @@ def рендер(samples=96, res=(2400, 1500), cycles=False):
     from mathutils import Vector
     cam.data.type = "PERSP"
     cam.location = (-70.0, -120.0, 52.0)
-    look = Vector((62.0, 0.0, 13.0)) - cam.location
+    # цель смещена вправо по кадру: судно слева, справа — столбец подписей
+    look = Vector((80.0, -20.0, 12.0)) - cam.location
     cam.rotation_euler = look.to_track_quat("-Z", "Y").to_euler()
-    cam.data.lens = 38
+    cam.data.lens = 30
     cam.data.clip_end = 80000.0       # вода до горизонта: при коротком clip_end под горизонтом тёмная полоса
     r = sc.render
     было_r = (r.resolution_x, r.resolution_y, r.filepath, r.engine)
@@ -111,13 +148,13 @@ def рендер(samples=96, res=(2400, 1500), cycles=False):
                 r.engine = eng; break
             except Exception:
                 pass
-    r.filepath = os.path.join(OUT, "09_взрыв_схема.png")
+    база = os.path.join(tempfile.gettempdir(), "_09_взрыв_база.png")
+    r.filepath = база
+    r.image_settings.file_format = "PNG"
     bpy.ops.render.render(write_still=True)
-    путь = r.filepath
+    путь = _подписи_поверх(sc, cam, база, os.path.join(OUT, "09_взрыв_схема.jpg"))
     # вернуть всё
     сдвинуть(-1)
-    for t in тексты:
-        bpy.data.objects.remove(t, do_unlink=True)
     cam.location, cam.rotation_euler, cam.data.lens, cam.data.type = было
     r.resolution_x, r.resolution_y, r.filepath, r.engine = было_r
     return путь, len(сдвиги)

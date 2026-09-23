@@ -239,8 +239,20 @@ class Sheet(object):
                    color="#7b8798")
 
     def save(self, path):
+        # Windows иногда отвечает EINVAL на запись PNG по кириллическому пути, если файл только что открывали:
+        # пишем во временный файл рядом и переименовываем, с повтором
+        import time
         os.makedirs(os.path.dirname(path), exist_ok=True)
-        self.fig.savefig(path, dpi=self.dpi, facecolor="white")
+        tmp = os.path.join(os.path.dirname(path), "_tmp_sheet" + os.path.splitext(path)[1])
+        for попытка in range(5):
+            try:
+                self.fig.savefig(tmp, dpi=self.dpi, facecolor="white")
+                os.replace(tmp, path)
+                break
+            except OSError:
+                if попытка == 4:
+                    raise
+                time.sleep(2.0)
         plt.close(self.fig)
         return path
 

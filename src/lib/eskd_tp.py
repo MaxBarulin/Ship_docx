@@ -154,13 +154,17 @@ class TechSheet(object):
         return self.top
 
     def block(self, title, lines, y=None, size=2.3, gap=4.4):
-        """Текстовый блок: переходы, базирование, примечания."""
+        """Текстовый блок: переходы, базирование, примечания. Строка длиннее поля переносится
+        по словам с отступом продолжения — иначе примечание МК сборки уходило за рамку."""
+        import textwrap
         x0 = eskd.MARGIN_L
         y = self.top if y is None else y
         self.text(x0, y - 3.0, title, size=3.0, bold=True)
         yy = y - 8.0
+        lim = max(20, int((self.W - eskd.MARGIN - x0 - 4.0) / (size * 0.55)))
         for t in lines:
-            self.text(x0 + 2.0, yy, t, size=size)
-            yy -= gap
+            for m, ln in enumerate(textwrap.wrap(t, lim) or [""]):
+                self.text(x0 + 2.0 + (3.0 if m else 0.0), yy, ln, size=size)
+                yy -= gap
         self.top = yy - 2.0
         return self.top
