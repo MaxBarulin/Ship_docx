@@ -103,7 +103,7 @@ def _подписи_поверх(sc, cam, база, выход):
         якоря.append({"текст": текст, "x": round(u * W, 1), "y": round((1.0 - v) * H, 1)})
     jp = os.path.join(tempfile.gettempdir(), "_подписи_09_взрыв.json")
     json.dump({"стиль": "сборки", "заголовок": "Компоновочная схема «Волжского Горизонта» (взрыв-модель)",
-               "подзаголовок": "сборки модели blender/gorizont.blend раздвинуты по высоте, колёса с кожухами — по бортам",
+               "подзаголовок": "сборки судна раздвинуты по высоте, колесо с кожухом — по борту",
                "якоря": якоря}, open(jp, "w", encoding="utf-8"), ensure_ascii=False)
     py = os.path.join(ROOT, ".venv", "Scripts", "python.exe")
     if not os.path.exists(py):

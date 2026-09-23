@@ -73,8 +73,7 @@ img = img.crop((0, 0, W, min(Ht, max(y2, y) + 90)))
 d = ImageDraw.Draw(img)
 d.rectangle([0, img.size[1] - 70, W, img.size[1]], fill=(18, 30, 48))
 text(d, (64, img.size[1] - 52),
-     "docs/проект/теория_корабля.md · src/lib/gorizont_hydro.py, gorizont_struct.py, "
-     "gorizont_strength.py · scripts/расчёты_графики.py",
+     "УЖЦ ОСК 2026 · «Волжский Горизонт» · ПБ «Без границ» · расчёты по теории корабля — пояснительная записка, приложение А",
      font(20), (150, 168, 196))
 img.save(os.path.join(R, "лист_расчётов_горизонт.png"))
 print("готово", img.size)

@@ -58,7 +58,7 @@ def main():
             x += колонка + 24
         y += блок
     d.rectangle([0, H - 64, W, H], fill=(18, 30, 48))
-    d.text((64, H - 50), "scripts/blender_каюты.py · lib/gorizont_cabin_layout.py · планы/5_каюты.png — планировки с проверками", font=font(20), fill=(150, 168, 196))
+    d.text((64, H - 50), "УЖЦ ОСК 2026 · «Волжский Горизонт» · ПБ «Без границ» · планировки кают с проверкой эргономики — лист «Планировки кают»", font=font(20), fill=(150, 168, 196))
     out = os.path.join(R, "00_лист_кают.png")
     img.save(out)
     print(out, img.size)

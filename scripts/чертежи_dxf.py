@@ -102,14 +102,32 @@ def frame(msp, sheet, scale, bbox, mark, title, subtitle, notes=(), material="�
 
     def t(x, y, ss, h, al=TA.MIDDLE_LEFT):
         msp.add_text(ss, dxfattribs={"layer": "08_ТЕКСТ", "style": "ГОСТ", "height": h * scale}).set_placement((x, y), align=al)
-    t(bx + 3 * scale, by + 45.5 * scale, title, 5.0)
-    t(bx + 3 * scale, by + 30.0 * scale, subtitle, 2.5)
+    # графы штампа: наименование — на всю ширину 179 мм, подзаголовок — до вертикали на 120 мм.
+    # Длинное наименование уменьшается по высоте (не мельче 3,5), подзаголовок переносится в две строки
+    h_t = min(5.0, 179.0 / (max(1, len(title)) * ЗНАК))
+    if h_t >= 3.5:
+        t(bx + 3 * scale, by + 45.5 * scale, title, h_t)
+    else:                                        # и так не влезает — две строки в графе высотой 19 мм
+        стр_т = textwrap.wrap(title, (len(title) + 1) // 2 + 4)
+        h_t = min(5.0, 179.0 / (max(len(s) for s in стр_т) * ЗНАК))
+        t(bx + 3 * scale, by + 49.5 * scale, стр_т[0], h_t)
+        t(bx + 3 * scale, by + 41.5 * scale, " ".join(стр_т[1:]), h_t)
+    стр = textwrap.wrap(subtitle, int(114.0 / (2.5 * ЗНАК))) or [""]
+    if len(стр) == 1:
+        t(bx + 3 * scale, by + 30.0 * scale, стр[0], 2.5)
+    else:
+        h_s = min(2.5, 114.0 / (max(len(s) for s in стр[:2]) * ЗНАК))
+        t(bx + 3 * scale, by + 32.8 * scale, стр[0], h_s)
+        t(bx + 3 * scale, by + 27.2 * scale, " ".join(стр[1:]), h_s)
     t(bx + 3 * scale, by + 18.0 * scale, mark, 4.5)
     t(bx + 123 * scale, by + 18.0 * scale, "Масштаб 1 : %d" % scale, 3.5)
     t(bx + 3 * scale, by + 6.0 * scale, material, 2.5)
     t(bx + 123 * scale, by + 6.0 * scale, "Формат %s" % sheet.replace("x2", " x 2"), 3.0)
     t(bx + 3 * scale, by + bh + 4 * scale, "УЖЦ ОСК 2026 · «Волжский Горизонт» · ПБ «Без границ»", 3.0)
     ty0 = by + bh + 11 * scale
+    if wrap is None:
+        # по ширине штампа: без переноса длинный пункт уходил за правую рамку листа
+        wrap = int((185 - 8) / (2.5 * ЗНАК))
     if notes:
         lines = []
         for i, n in enumerate(notes):
@@ -123,28 +141,48 @@ def frame(msp, sheet, scale, bbox, mark, title, subtitle, notes=(), material="�
     return ox, oy, Wd, Hd
 
 
+#: ширина знака шрифта ГОСТ в долях высоты — по метрикам шрифта стиля (с запасом на широкие буквы)
+ЗНАК = 0.74
+
+
+def _в_графу(v, w_mm, hgt):
+    """Строки ячейки: текст длиннее графы переносится по словам, а не залезает на соседнюю."""
+    return textwrap.wrap(str(v), max(4, int((w_mm - 3.0) / (hgt * ЗНАК)))) or [""]
+
+
+def table_height(head, rows, widths, h_row=6.0):
+    """Высота таблицы в мм бумаги с учётом переносов — для подбора формата до построения."""
+    шаг = 2.5 * 1.6
+    h = h_row + (max(len(_в_графу(v, w, 2.8)) for v, w in zip(head, widths)) - 1) * шаг
+    for r in rows:
+        h += h_row + (max(len(_в_графу(v, w, 2.5)) for v, w in zip(r, widths)) - 1) * шаг
+    return h
+
+
 def table(msp, x, y, scale, head, rows, widths, h_row=6.0):
-    """Таблица: x, y — левый верхний угол в модели (мм); widths — мм бумаги."""
+    """Таблица: x, y — левый верхний угол в модели (мм); widths — мм бумаги.
+    Длинный текст ячейки переносится по словам, строка таблицы растёт на число строк."""
     Wd = sum(widths) * scale
     hr = h_row * scale
-    n = len(rows) + 1
-    for i in range(n + 1):
-        msp.add_line((x, y - i * hr), (x + Wd, y - i * hr), dxfattribs={"layer": "00_РАМКА"})
+    yy = y
+    msp.add_line((x, yy), (x + Wd, yy), dxfattribs={"layer": "00_РАМКА"})
+    for vals, hgt in [(head, 2.8)] + [(r, 2.5) for r in rows]:
+        кл = [_в_графу(v, w, hgt) for v, w in zip(vals, widths)]
+        шаг = hgt * 1.6 * scale
+        h = hr + (max(len(с) for с in кл) - 1) * шаг
+        cx = x
+        for с, w in zip(кл, widths):
+            for k, s in enumerate(с):
+                msp.add_text(s, dxfattribs={"layer": "08_ТЕКСТ", "style": "ГОСТ", "height": hgt * scale}
+                             ).set_placement((cx + 1.5 * scale, yy - hr / 2 - k * шаг), align=TA.MIDDLE_LEFT)
+            cx += w * scale
+        yy -= h
+        msp.add_line((x, yy), (x + Wd, yy), dxfattribs={"layer": "00_РАМКА"})
     cx = x
     for w in widths + [0]:
-        msp.add_line((cx, y), (cx, y - n * hr), dxfattribs={"layer": "00_РАМКА"})
+        msp.add_line((cx, y), (cx, yy), dxfattribs={"layer": "00_РАМКА"})
         cx += w * scale
-
-    def cells(vals, yy, hgt):
-        cx = x
-        for v, w in zip(vals, widths):
-            msp.add_text(str(v), dxfattribs={"layer": "08_ТЕКСТ", "style": "ГОСТ", "height": hgt * scale}
-                         ).set_placement((cx + 1.5 * scale, yy), align=TA.MIDDLE_LEFT)
-            cx += w * scale
-    cells(head, y - hr / 2, 2.8)
-    for i, r in enumerate(rows):
-        cells(r, y - hr * (i + 1) - hr / 2, 2.5)
-    return y - n * hr
+    return yy
 
 
 def text(msp, x, y, s, h, scale, layer="08_ТЕКСТ", al=TA.MIDDLE_CENTER, rot=0.0):
@@ -279,8 +317,9 @@ def cabins(msp, палуба, scale, furniture=True):
     return n
 
 
-def zones(msp, палуба, z, scale, y_num):
-    """Границы зон, номера в кружках и названия."""
+def zones(msp, палуба, z, scale, y_num, занято=()):
+    """Границы зон, номера в кружках и названия. `занято` — участки ДП (x0, x1, м) с трапами,
+    фонарём и т. п.: там у ДП своя подпись, и название зоны уходит к левому борту."""
     ярус = ЯРУС[палуба]
     rows = []
     for i, (x0, x1, kind, name, note) in enumerate(GA.ЗОНЫ[палуба], 1):
@@ -295,7 +334,9 @@ def zones(msp, палуба, z, scale, y_num):
         text(msp, cx, y_num, str(i), 4.0, scale, "06_ПОМЕЩЕНИЯ")
         короткое = name.split(":")[0].split(",")[0]
         if (x1 - x0) * K / scale > len(короткое) * 1.6 + 4 and kind != "cabins":
-            text(msp, cx, -0.2 * K, короткое, 2.8, scale, "06_ПОМЕЩЕНИЯ")
+            пол = len(короткое) * 2.8 * ЗНАК * scale / 2 / K + 0.5
+            у_дп = any(a < cx / K + пол and b > cx / K - пол for a, b in занято)
+            text(msp, cx, (-4.6 if у_дп else -0.2) * K, короткое, 2.8, scale, "06_ПОМЕЩЕНИЯ")
         s = GA.площадь_зоны(палуба, x0, x1)
         rows.append([i, name + ((" — " + note) if note else ""), "%.0f" % s,
                      "%d…%d" % (round(x0 / S.SPACING), round(x1 / S.SPACING)), "%.1f…%.1f" % (x0, x1)])
@@ -307,11 +348,13 @@ def deck_plan(палуба, mark, title, extra=None):
     ярус = ЯРУС[палуба]
     zl = min(z, G.DEPTH - 0.01)
     ymax = 9.2 * K
-    zrows = len(GA.ЗОНЫ[палуба]) + 1
+    ТАБ = (["№", "Помещение", "Площадь, м²", "Шпангоуты", "x, м"], [12, 200, 26, 26, 30])
+    h_tab = table_height(ТАБ[0], [["", name + ((" — " + note) if note else ""), "", "", ""]
+                                  for x0, x1, kind, name, note in GA.ЗОНЫ[палуба]], ТАБ[1])
     y_tab = -ymax - 14 * K
-    bbox0 = (-2 * K, y_tab - zrows * 6.0 * 200 - 6 * K, (G.LOA + 6) * K, ymax + 9 * K)
+    bbox0 = (-2 * K, y_tab - h_tab * 200 - 6 * K, (G.LOA + 6) * K, ymax + 9 * K)
     sheet, sc = pick_sheet(bbox0[2] - bbox0[0], bbox0[3] - bbox0[1])
-    bbox = (-2 * K, y_tab - zrows * 6.0 * sc - 6 * K, (G.LOA + 6) * K, ymax + 9 * K)
+    bbox = (-2 * K, y_tab - h_tab * sc - 6 * K, (G.LOA + 6) * K, ymax + 9 * K)
     doc = newdoc(); msp = doc.modelspace()
     poly(msp, hull_outline(zl), "01_ОБШИВКА", close=True)
     if палуба == "солнечная":
@@ -319,7 +362,12 @@ def deck_plan(палуба, mark, title, extra=None):
     else:
         poly(msp, tier_outline(ярус, z), "02_ПАЛУБЫ", close=True)
     msp.add_line((-2 * K, 0), ((G.LOA + 2) * K, 0), dxfattribs={"layer": "07_ОСИ"})
-    rows = zones(msp, палуба, z, sc, ymax - 1.0 * K)
+    занято = []
+    if палуба in ("главная", "средняя"):
+        занято += list(GA.ТРАПЫ.values())
+    if палуба == "солнечная":
+        занято += [GA.ТРАПЫ["кормовой"], GA.ТРАПЫ["атриум"], (W.X_AXIS + 1, W.X_AXIS + 7)]
+    rows = zones(msp, палуба, z, sc, ymax - 1.0 * K, занято)
     n_cab = 0
     if палуба in ("главная", "средняя"):
         n_cab = cabins(msp, палуба, sc, furniture=(sc <= 100))
@@ -353,13 +401,12 @@ def deck_plan(палуба, mark, title, extra=None):
         wheels_plan(msp, sc, labels=False)
     if палуба == "солнечная":
         р = SU.РУБКА
-        rect(msp, р["x0"] * K, -р["полу"] * K, р["x1"] * K, р["полу"] * K, "02_ПАЛУБЫ")
-        text(msp, 0.5 * (р["x0"] + р["x1"]) * K, 0.0, "рулевая рубка", 2.4, sc, "02_ПАЛУБЫ")
+        rect(msp, р["x0"] * K, -р["полу"] * K, р["x1"] * K, р["полу"] * K, "02_ПАЛУБЫ")    # подпись — у зоны
         X = W.X_AXIS
         rect(msp, (X - 8) * K, -5.5 * K, (X + 8) * K, 5.5 * K, "05_ОБОРУДОВАНИЕ")
-        text(msp, X * K, 4.6 * K, "солнечные модули %.0f кВт на навесе h 2,6 м" % G.SOLAR_KW, 2.2, sc, "05_ОБОРУДОВАНИЕ")
+        text(msp, X * K, 4.6 * K, "навес h 2,6 м", 2.2, sc, "05_ОБОРУДОВАНИЕ")
         rect(msp, (X + 1) * K, -3.4 * K, (X + 7) * K, 3.4 * K, "02_ПАЛУБЫ")
-        text(msp, (X + 4) * K, 0.0, "световой фонарь атриума", 2.0, sc, "02_ПАЛУБЫ")
+        text(msp, (X + 4) * K, 2.4 * K, "световой фонарь атриума", 2.0, sc, "02_ПАЛУБЫ")    # у ДП — трап
         for имя in ("кормовой", "атриум"):
             a, b = GA.ТРАПЫ[имя]
             rect(msp, (a + 0.2) * K, -1.55 * K, (b - 0.2) * K, 1.55 * K, "12_ТРАПЫ_ЛИФТЫ")
@@ -371,7 +418,7 @@ def deck_plan(палуба, mark, title, extra=None):
     if extra:
         extra(msp, sc)
     frames_ruler(msp, 0, G.LOA, -ymax, sc)
-    table(msp, 0.0, y_tab, sc, ["№", "Помещение", "Площадь, м²", "Шпангоуты", "x, м"], rows, [12, 200, 26, 26, 30])
+    table(msp, 0.0, y_tab, sc, ТАБ[0], rows, ТАБ[1])
     e = H.equilibrium()
     notes = ("Уровень палубы z = %.2f м от основной плоскости. Кают на палубе — %d." % (G.DECKS[палуба], n_cab),
              "Размеры в миллиметрах, ось x — от кормового перпендикуляра, шпация практическая %.0f мм." % (S.SPACING * 1000),
@@ -390,11 +437,13 @@ def deck_plan(палуба, mark, title, extra=None):
 def hold_plan():
     z = 0.55
     ymax = 9.2 * K
-    n_rows = len(G.TANKS) + len(G.ТРЮМ) + 2
+    ТАБ = (["№", "Код", "Наименование", "x, м", "y, м", "z, м", "V, м³", "Масса, т"], [10, 16, 120, 26, 26, 24, 16, 18])
+    h_tab = table_height(ТАБ[0], [["", "", t["name"], "", "", "", "", ""] for t in G.TANKS] +
+                         [["", "", r[1], "", "", "", "", ""] for r in G.ТРЮМ], ТАБ[1], h_row=5.0)
     y_tab = -ymax - 9 * K
-    bbox0 = (-2 * K, y_tab - n_rows * 5.0 * 200 - 6 * K, (G.LOA + 6) * K, ymax + 6 * K)
+    bbox0 = (-2 * K, y_tab - h_tab * 200 - 6 * K, (G.LOA + 6) * K, ymax + 6 * K)
     sheet, sc = pick_sheet(bbox0[2] - bbox0[0], bbox0[3] - bbox0[1])
-    bbox = (-2 * K, y_tab - n_rows * 5.0 * sc - 6 * K, (G.LOA + 6) * K, ymax + 6 * K)
+    bbox = (-2 * K, y_tab - h_tab * sc - 6 * K, (G.LOA + 6) * K, ymax + 6 * K)
     doc = newdoc(); msp = doc.modelspace()
     poly(msp, hull_outline(G.DEPTH - 0.01), "02_ПАЛУБЫ", close=True)
     poly(msp, hull_outline(z), "01_ОБШИВКА", close=True)
@@ -413,7 +462,14 @@ def hold_plan():
             x = min(x + 0.5, t["x1"]) if x < t["x1"] else x + 1.0
         poly(msp, pts_u + pts_d[::-1], "04_ЦИСТЕРНЫ", close=True)
         cx = 0.5 * (t["x0"] + t["x1"]) * K
-        cy = 0.5 * (max(y0, -7.0) + min(y1, 7.0)) * K
+        # подпись цистерны — в центре, а если там механизм второго дна над ней — на свободном месте цистерны
+        ya, yb = max(y0, -7.0), min(y1, 7.0)
+        пол_x = max(len(t["code"]) * 2.6, len("%.0f м³" % t["vol"]) * 2.0) * ЗНАК * sc / 2 / K
+        def _свободно(yc):
+            return not any(e[2] < cx / K + пол_x and e[3] > cx / K - пол_x and e[4] < yc + 3.0 * sc / K
+                           and e[5] > yc - 3.0 * sc / K for e in G.ТРЮМ)
+        кандидаты = [0.5 * (ya + yb)] + [ya + (yb - ya) * f for f in (0.2, 0.8, 0.1, 0.9)]
+        cy = next((c for c in кандидаты if _свободно(c)), кандидаты[0]) * K
         text(msp, cx, cy + 0.9 * sc, t["code"], 2.6, sc, "04_ЦИСТЕРНЫ")
         text(msp, cx, cy - 1.8 * sc, "%.0f м³" % t["vol"], 2.0, sc, "04_ЦИСТЕРНЫ")
         trows.append([i, t["code"], t["name"], "%.1f…%.1f" % (t["x0"], t["x1"]), "%.1f…%.1f" % (y0, y1),
@@ -430,11 +486,11 @@ def hold_plan():
     for i, name in enumerate(H.COMPARTMENTS):
         x0, x1 = H.BULKHEADS[i], H.BULKHEADS[i + 1]
         if (x1 - x0) * K / sc > 24:
-            text(msp, 0.5 * (x0 + x1) * K, ymax - 3.2 * K, name.split(",")[0].split(":")[0], 2.2, sc, "03_ПЕРЕБОРКИ")
+            # над корпусом: внутри контура название отсека ложилось на подписи бортовых цистерн
+            text(msp, 0.5 * (x0 + x1) * K, ymax + 1.2 * K, name.split(",")[0].split(":")[0], 2.2, sc, "03_ПЕРЕБОРКИ")
     frames_ruler(msp, 0, G.LOA, -ymax, sc)
     ts = G.tank_summary()
-    table(msp, 0.0, y_tab, sc, ["№", "Код", "Наименование", "x, м", "y, м", "z, м", "V, м³", "Масса, т"],
-          trows + erows, [10, 16, 120, 26, 26, 24, 16, 18], h_row=5.0)
+    table(msp, 0.0, y_tab, sc, ТАБ[0], trows + erows, ТАБ[1], h_row=5.0)
     notes = ("Второе дно z = 0…%.2f м; цистерны второго дна между продольными переборками y = ±%.2f м и обшивкой." % (G.DECKS["первая"], G.LONG_BULKHEAD_Y),
              "Метанол — в цистернах с коффердамами по торцам (1,0 м) и бортам; вентиляция и газоотвод в дымовую трубу.",
              "Всего %d цистерн, %.0f м³, масса содержимого при полном запасе %.0f т (балласт пустой)." % (len(G.TANKS), ts["vol"], ts["mass"]),
@@ -448,6 +504,16 @@ def hold_plan():
 
 
 # ------------------------------------------------------------- разрез -------
+def _метка_группы(коды):
+    """ГДГ-1, ГДГ-2, ГДГ-3 → ГДГ-1/2/3; ГЭД-ПБ, ГЭД-ЛБ → ГЭД-ПБ/ЛБ; разные — через запятую."""
+    if len(коды) == 1:
+        return коды[0]
+    части = [к.split("-", 1) for к in коды]
+    if all(len(ч) == 2 for ч in части) and len({ч[0] for ч in части}) == 1:
+        return части[0][0] + "-" + "/".join(ч[1] for ч in части)
+    return ", ".join(коды)
+
+
 def profile():
     step = 0.5
     keel, deck = [], []
@@ -473,7 +539,7 @@ def profile():
         poly(msp, [(x0н * K, я["z0"] * K), (x1н * K, я["z0"] * K), (x1в * K, я["z1"] * K), (x0в * K, я["z1"] * K)], "02_ПАЛУБЫ", close=True)
     р = SU.РУБКА
     poly(msp, [(р["x0"] * K, р["z0"] * K), (р["x1"] * K, р["z0"] * K), ((р["x1"] + 0.5) * K, р["z1"] * K), (р["x0"] * K, р["z1"] * K)], "02_ПАЛУБЫ", close=True)
-    text(msp, 0.5 * (р["x0"] + р["x1"]) * K, 0.5 * (р["z0"] + р["z1"]) * K, "рубка, ход %.2f м" % G.WHEELHOUSE_LIFT, 2.4, sc, "02_ПАЛУБЫ")
+    text(msp, 0.5 * (р["x0"] + р["x1"]) * K, 0.5 * (р["z0"] + р["z1"]) * K, "рубка", 2.4, sc, "02_ПАЛУБЫ")
     X = W.X_AXIS
     rect(msp, (X - 8) * K, (G.DECKS["солнечная"] + 2.6) * K, (X + 8) * K, (G.DECKS["солнечная"] + 2.68) * K, "05_ОБОРУДОВАНИЕ")
     text(msp, X * K, (G.DECKS["солнечная"] + 3.3) * K, "солнечный навес", 2.2, sc, "05_ОБОРУДОВАНИЕ")
@@ -497,10 +563,14 @@ def profile():
     # цистерны и механизмы трюма — контуры
     for t in G.TANKS:
         rect(msp, t["x0"] * K, t["z0"] * K, t["x1"] * K, t["z1"] * K, "04_ЦИСТЕРНЫ")
+    # на разрезе механизмы правого и левого борта (и три ГДГ в ряд) совпадают — одна метка на группу
+    группы = {}
     for code, name, x0, x1, y0, y1, z0, z1, m in G.ТРЮМ:
         rect(msp, x0 * K, z0 * K, x1 * K, z1 * K, "05_ОБОРУДОВАНИЕ")
+        группы.setdefault((x0, x1, z0, z1), []).append(code)
+    for (x0, x1, z0, z1), коды in группы.items():
         if (x1 - x0) * K / sc > 8:
-            text(msp, 0.5 * (x0 + x1) * K, 0.5 * (z0 + z1) * K, code, 1.8, sc, "05_ОБОРУДОВАНИЕ")
+            text(msp, 0.5 * (x0 + x1) * K, 0.5 * (z0 + z1) * K, _метка_группы(коды), 1.8, sc, "05_ОБОРУДОВАНИЕ")
     # ватерлиния
     msp.add_line((-2 * K, T * K), ((G.LOA + 2) * K, T * K), dxfattribs={"layer": "07_ОСИ"})
     text(msp, (G.LOA + 1.5) * K, (T + 0.5) * K, "ВЛ %.2f м (Тк %.2f / Тн %.2f)" % (T, e["Ta"], e["Tf"]), 2.8, sc, "07_ОСИ", TA.MIDDLE_LEFT)
@@ -663,7 +733,7 @@ def sections_along():
                     pass
     notes = ("Сечения по длине корпуса: положение по шпангоутам и по x от кормового перпендикуляра.",
              "На каждом сечении: обвод корпуса (в районе колёс — с нишей), ярусы надстройки, уровни палуб, ватерлиния T = %.2f м." % T,
-             "Состав помещений по уровням — из компоновки gorizont_ga; каюты — по расстановке рядов.",
+             "Состав помещений по уровням — по общему расположению ОР-01…04; каюты — по расстановке рядов.",
              "Сечения по миделю и по оси колёс с набором и таблицей связей — лист ОР-06.")
     frame(msp, sheet, sc, bbox, "ВГ-2026 ОР-08 сечения по длине", "Поперечные сечения по длине судна: %s" % ", ".join("x = %.0f" % x for x in СЕЧЕНИЯ_ПО_ДЛИНЕ),
           "Волжский Горизонт · L = %.1f м · B = %.1f м · T = %.2f м" % (G.LOA, G.BEAM, T), notes, material="Сталь D36 ГОСТ Р 52927")
@@ -704,7 +774,7 @@ def lines_plan():
                 poly(msp, pts, "07_ОСИ"); pts = []
             x += 0.5
         poly(msp, pts, "07_ОСИ")
-        text(msp, 2.0 * K, (dz_bok + G.DEPTH + 0.4) * K, "батоксы через 1 м", 2.4, sc, "09_РАЗМЕРЫ", TA.MIDDLE_LEFT)
+    text(msp, 2.0 * K, (dz_bok + G.DEPTH + 0.4) * K, "батоксы через 1 м", 2.4, sc, "09_РАЗМЕРЫ", TA.MIDDLE_LEFT)
     msp.add_line((-1 * K, (T + dz_bok) * K), ((G.LOA + 1) * K, (T + dz_bok) * K), dxfattribs={"layer": "07_ОСИ"})
     text(msp, (G.LOA + 1.5) * K, (T + dz_bok) * K, "КВЛ %.2f" % T, 2.6, sc, "07_ОСИ", TA.MIDDLE_LEFT)
     # надстройка на боку — тонко
@@ -714,6 +784,7 @@ def lines_plan():
         poly(msp, [(x0н * K, (я["z0"] + dz_bok) * K), (x1н * K, (я["z0"] + dz_bok) * K), (x1в * K, (я["z1"] + dz_bok) * K), (x0в * K, (я["z1"] + dz_bok) * K)], "02_ПАЛУБЫ", close=True)
     msp.add_circle((W.X_AXIS * K, (W.axis_height(T) + dz_bok) * K), W.DIAMETER / 2 * K, dxfattribs={"layer": "13_КОЛЁСА"})
     # --- полуширота: ватерлинии
+    концы = []
     for z in list(G.WATERLINES) + [T]:
         pts = []
         x = 0.0
@@ -724,7 +795,17 @@ def lines_plan():
             x += 0.5
         if len(pts) > 2:
             poly(msp, pts, "01_ОБШИВКА" if abs(z - T) > 1e-6 else "07_ОСИ")
-            text(msp, pts[-1][0] + 0.3 * K, pts[-1][1], "ВЛ %.2f" % z, 1.8, sc, "09_РАЗМЕРЫ", TA.MIDDLE_LEFT)
+            концы.append((pts[-1], z))
+    # у форштевня ватерлинии сходятся, и подписи на концах ложились друг на друга:
+    # столбец за носом с шагом не меньше высоты строки, выноска к концу своей линии
+    шаг = 1.8 * sc * 1.7
+    x_подп = (G.LOA + 2.5) * K
+    y_пред = None
+    for (xe, ye), z in sorted(концы, key=lambda c: c[0][1]):
+        y = ye if y_пред is None else max(ye, y_пред + шаг)
+        y_пред = y
+        msp.add_line((xe, ye), (x_подп - 0.2 * K, y), dxfattribs={"layer": "09_РАЗМЕРЫ"})
+        text(msp, x_подп, y, "ВЛ %.2f" % z, 1.8, sc, "09_РАЗМЕРЫ", TA.MIDDLE_LEFT)
     msp.add_line((0, 0), (G.LOA * K, 0), dxfattribs={"layer": "07_ОСИ"})
     # теоретические шпангоуты
     for n, x in L.stations():
@@ -743,7 +824,7 @@ def lines_plan():
     text(msp, dx, (G.DEPTH + 1.5) * K, "корпус: кормовые шпангоуты слева, носовые справа", 2.6, sc, "09_РАЗМЕРЫ")
     frames_ruler(msp, 0, G.LOA, -3.0 * K, sc)
     h = H.hydrostatics(T)
-    notes = ("Теоретический чертёж: бок (поднят на %.0f м), полуширота, корпус. Ординаты — по gorizont_lines/gorizont_hydro с нишами колёс." % dz_bok,
+    notes = ("Теоретический чертёж: бок (поднят на %.0f м), полуширота, корпус. Ординаты — по плазовой таблице с нишами колёс." % dz_bok,
              "L = %.1f, B = %.1f, H = %.2f, T = %.2f м; δ = %.3f, α = %.3f, β = %.3f; V = %.0f м³." % (G.LOA, G.BEAM, G.DEPTH, T, h["delta"], h["alpha"], h["beta"], h["V"]),
              "20 теоретических шпангоутов через L/20 = %.2f м и полушпангоуты в оконечностях; ватерлинии по плазовой таблице." % (G.LOA / 20),
              "Обвод: плоское днище, скуловая дуга, прямой борт с развалом; ниши колёс %.1f…%.1f м от киля до палубы." % (W.X_AXIS - W.NICHE_LEN / 2, W.X_AXIS + W.NICHE_LEN / 2))

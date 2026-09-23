@@ -493,7 +493,7 @@ $SKPOLY
   9
 $TDCREATE
  40
-2461306.6664814814
+2461307.558078704
   9
 $TDUCREATE
  40
@@ -501,7 +501,7 @@ $TDUCREATE
   9
 $TDUPDATE
  40
-2461306.6664814814
+2461307.558078704
   9
 $TDUUPDATE
  40
@@ -933,11 +933,11 @@ $PSTYLEMODE
   9
 $FINGERPRINTGUID
   2
-{E516CE89-A0D5-4145-A71D-C1184868B91B}
+{124EB029-E8A4-46C5-8A72-0DF52EC4EC96}
   9
 $VERSIONGUID
   2
-{F52C9D7A-9194-4760-92CF-886F042046AD}
+{49691EC8-19E2-4920-9E80-EF6171464E4C}
   9
 $EXTNAMES
 290
@@ -1327,9 +1327,9 @@ ISM
   0
 CLASS
   1
-ACDBPLACEHOLDER
+LAYOUT
   2
-AcDbPlaceHolder
+AcDbLayout
   3
 ObjectDBX Classes
  90
@@ -1343,9 +1343,9 @@ ObjectDBX Classes
   0
 CLASS
   1
-LAYOUT
+ACDBPLACEHOLDER
   2
-AcDbLayout
+AcDbPlaceHolder
   3
 ObjectDBX Classes
  90
@@ -50011,7 +50011,7 @@ AcDbText
  40
 500.0
   1
-1. Набор — gorizont_struct: шпация 550 мм, рамная 2200 мм; переборки — gorizont_hydro.BULKHEADS (общие с ОР-04 и расчётом непотопляемости).
+1. Набор: шпация 550 мм, рамная 2200 мм; переборки — общие с ОР-04 и расчётом непотопляемости.
   7
 ГОСТ
  11
@@ -51229,7 +51229,7 @@ DictionaryVariables
 280
 0
   1
-1.4.4 @ 2026-09-22T12:59:44.088372+00:00
+1.4.4 @ 2026-09-23T10:23:38.785849+00:00
   0
 VISUALSTYLE
   5
@@ -57791,7 +57791,7 @@ DictionaryVariables
 280
 0
   1
-1.4.4 @ 2026-09-22T12:59:44.150817+00:00
+1.4.4 @ 2026-09-23T10:23:38.852076+00:00
   0
 ENDSEC
   0

@@ -24,7 +24,7 @@ INK, ACC, SEA, GRN = "#1a2334", "#b02634", "#1c5c8a", "#187454"
 def head(fig, title, sub):
     h = fig.get_figheight()
     y1 = 1.0 - 0.30 / h
-    y2 = 1.0 - 0.58 / h
+    y2 = 1.0 - 0.68 / h            # подзаголовок не впритык под заголовком
     fig.suptitle(title, fontsize=15, fontweight="bold", x=0.01, ha="left", y=y1)
     fig.text(0.01, y2, sub, fontsize=9.5, color="#56627a", ha="left")
     fig.text(0.99, y1 - 0.01 / h, "«Волжский Горизонт» · проект 2026", fontsize=9,
@@ -254,7 +254,7 @@ def power_balance():
             fontsize=8.5, color=INK, ha="left")
     for i, s in enumerate(speeds):
         ax.text(i, s + 0.12, "%.1f" % s, ha="center", fontsize=9, color=INK)
-    ax.set_ylim(max(0.0, min(speeds) - 3.0), max(speeds) + 1.2)
+    ax.set_ylim(max(0.0, min(speeds) - 3.0), max(max(speeds), G.SPEED_KMH) + 2.2)   # подпись линии — внутри поля
     ax.set_xlabel("единичная мощность ГДГ, кВт (три машины)")
     ax.set_ylabel("достижимая скорость при отказе одного ГДГ, км/ч")
     ax.set_title("Проверка n−1, фарватер 4 м", fontsize=10, loc="left")

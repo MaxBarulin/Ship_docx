@@ -62,9 +62,7 @@ class TechSheet(object):
         # строка разработчиков
         y1 = yt - 12.0
         self.line(xa, y1, x1, y1)
-        cols = [("Разраб.", "Барулин М."), ("Пров.", "Соколов А."),
-                ("Т. контр.", "Игнатьев Г."), ("Н. контр.", "Рябова М."),
-                ("Утв.", "Соколов А.")]
+        cols = eskd.PEOPLE
         w = (x1 - xa) / 5.0
         for i, (role, fam) in enumerate(cols):
             cx = xa + i * w

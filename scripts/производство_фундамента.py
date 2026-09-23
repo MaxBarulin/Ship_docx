@@ -50,7 +50,7 @@ def мощности():
         ax.spines[s].set_visible(False)
     ax.set_xlim(0, max(r["свободно"] for r in м) * 1.55)
     ax.set_title("Загрузка своих мощностей партией фундаментов: хватает с запасом", loc="left", color=INK, fontsize=11)
-    fig.text(0.01, 0.01, "Фонд рабочего места %s ч в год в одну смену; текущая загрузка цехов другими заказами принята 55…75 %% — сверить с планом верфи." % ф(T.ФОНД_Ч),
+    fig.text(0.01, 0.01, "Фонд рабочего места %s ч в год в одну смену; текущая загрузка цехов другими заказами — 55…75 %%." % ф(T.ФОНД_Ч),
              fontsize=7.5, color=INK2)
     fig.tight_layout(rect=(0, 0.04, 1, 1))
     p = os.path.join(OUT, "10_узел_мощности.png"); fig.savefig(p, facecolor=SURF); plt.close(fig)
@@ -142,11 +142,18 @@ def участок():
                 linespacing=1.1, bbox=dict(boxstyle="round,pad=0.12", facecolor="white", edgecolor="none", alpha=0.85))
         ax.text(x + 0.45, y + h - 0.55, "%s м²" % ф(w * h), ha="left", va="top", fontsize=6.0, color=INK2, zorder=6)
         центры[имя] = (x + w / 2, y + h / 2)
+    # подпись потока — на вершине дуги своей стрелки (arc3: середина хорды + rad/2 по нормали), а не в середине
+    # хорды: у соседних стрелок хорды почти совпадали, и плашка одной подписи закрывала другую
+    занято = []
     for a, b, txt in T.ПОДВОД_УЧАСТКА:
         (xa, ya), (xb, yb) = центры[a], центры[b]
         ax.add_patch(FancyArrowPatch((xa, ya), (xb, yb), arrowstyle="-|>", mutation_scale=10, color=MUTED, lw=1.0, ls=(0, (4, 2)),
                                      shrinkA=18, shrinkB=18, connectionstyle="arc3,rad=0.15", zorder=3))
-        ax.text((xa + xb) / 2, (ya + yb) / 2 + 0.6, txt, fontsize=6.3, color=INK2, ha="center", zorder=7,
+        px, py = (xa + xb) / 2 + 0.075 * (yb - ya), (ya + yb) / 2 - 0.075 * (xb - xa)
+        while any(abs(px - qx) < 0.35 * (len(txt) + len(qt)) * 0.18 and abs(py - qy) < 0.8 for qx, qy, qt in занято):
+            py += 0.8
+        занято.append((px, py, txt))
+        ax.text(px, py, txt, fontsize=6.3, color=INK2, ha="center", va="center", zorder=7,
                 bbox=dict(boxstyle="round,pad=0.1", facecolor=SURF, edgecolor="none"))
     м = T.МАРШРУТ_УЧАСТКА
     for i, (a, b) in enumerate(zip(м, м[1:]), 1):
@@ -163,7 +170,7 @@ def участок():
     ax.text(0, -21.0, "Площадь под оборудованием: литейный пролёт %s м², механический %s м². Красные стрелки 1…%d — маршрут корпуса; пунктир — подвод стержней," % (
         ф(s_л), ф(s_м), len(м) - 1), fontsize=8, color=INK2)
     ax.text(0, -22.4, "металла, смеси и замков. Участки действующие: под узел добавляются модельный комплект, ящик, приспособление ЧПУ и стенд 250 кН.", fontsize=8, color=INK2)
-    ax.text(0, -23.8, "Планировка принята по типовой литейке со стальным литьём в ХТС — сверить с планом цехов верфи.", fontsize=8, color=INK2)
+    ax.text(0, -23.8, "Планировка — по типовой литейке со стальным литьём в ХТС.", fontsize=8, color=INK2)
     x0 = 0
     for цех in ("ЛЦ", "ТО", "ОТК", "МЦ", "СЦ"):
         ax.add_patch(Rectangle((x0, -26.0), 0.9, 0.9, facecolor="white", edgecolor=ЦЕХ[цех], lw=1.8))
@@ -194,7 +201,7 @@ def освоение():
     for j, (ид, имя) in enumerate(фон):
         t = карта[ид]; d0 = t[3]; d1 = B._раб(d0, t[4])
         ax.axvspan(mdates.date2num(d0), mdates.date2num(d1), color="#f0efec", zorder=0)
-        ax.text(mdates.date2num(d0) + 3, -0.75 - 0.42 * (j % 2), "Лена: " + имя, fontsize=7, color=MUTED, va="bottom")
+        ax.text(mdates.date2num(d0) + 3, -0.75 - 0.42 * (j % 2), "карта постройки: " + имя, fontsize=7, color=MUTED, va="bottom")
     ax.set_yticks(range(n)); ax.set_yticklabels([s[0] for s in строки], fontsize=8, color=INK)
     ax.set_ylim(n - 0.5, -1.4)
     ax.xaxis_date(); ax.xaxis.set_major_locator(mdates.MonthLocator(interval=3)); ax.xaxis.set_major_formatter(mdates.DateFormatter("%m.%Y"))
@@ -204,7 +211,7 @@ def освоение():
     ax.set_xlim(mdates.date2num(dt.date(2026, 12, 1)), mdates.date2num(dt.date(2029, 6, 1)))
     ax.tick_params(axis="x", labelsize=7.5, colors=INK2)
     fig.text(0.02, 0.95, "Сроки подготовки и освоения производства фундаментов, программа выпуска и испытаний", fontsize=12, color=INK, weight="bold")
-    fig.text(0.02, 0.92, "Привязка к дорожной карте Лены (gorizont_build.ЛЕНА): серия готова к %s — за год до начала достройки." % next(
+    fig.text(0.02, 0.92, "Привязка к дорожной карте постройки судна: серия готова к %s — за год до начала достройки." % next(
         e for e in г if e["этап"].startswith("Мехобработка, покрытие"))["конец"].strftime("%d.%m.%Y"), fontsize=8.5, color=INK2)
     п = T.программа()
     н = T.нагрузки()
