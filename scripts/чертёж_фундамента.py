@@ -1,78 +1,249 @@
 # -*- coding: utf-8 -*-
-"""Чертежи узла ВГ-2026.46.00 «Фундамент-замок модуля литой» - DXF и PNG.
+"""Чертежи узла ВГ-2026.46.00 «Фундамент-замок модуля (твистлок «ласточкин хвост»)» - DXF и PNG из 3D.
 
     python scripts/чертёж_фундамента.py
 
-Листы (CAD/узел/, растр - renders/горизонт_2026/чертежи_dxf/):
+Виды - проекции тел 3D-модели узла с удалением невидимых линий, разрезы - те же тела, рассечённые
+плоскостью, со штриховкой сечений. Тела - CAD/src/twistlock.py: корпус - модель конструктора (STEP)
+как есть, остальное по lib.gorizont_twistlock. Размеры, допуски и технические требования - из библиотеки
+узла. Листы (CAD/узел/, растр - renders/горизонт_2026/чертежи_dxf/):
 
-* ВГ-2026.46.00 СБ    - сборочный чертёж - разрез А-А, вид сверху, разрез Б-Б, позиции, ТТ;
-* ВГ-2026.46.01       - корпус, чертёж детали (отливка 20ГЛ, мехобработка);
-* ВГ-2026.46.01 ОТЛ   - отливка. Элементы литейной формы по ГОСТ 3.1125-88 - разъём,
-                        припуски, прибыль, литники, стержень со знаками, холодильники;
-* ВГ-2026.46.01-МП СБ - плита модельная верхняя и нижняя (оснастка, КЗ 4.2);
-* ВГ-2026.46.01-СЯ СБ - ящик стержневой.
+* ВГ-2026.46.00 СБ          - сборочный чертёж: ступенчатый разрез А-А, разрез Б-Б, вид сверху с положениями
+                              рукоятки, позиции, шов корпуса с платиком, техническая характеристика, ТТ;
+* ВГ-2026.46.01             - корпус: вид спереди, вид сверху, разрез по отверстию, разрез по полости рукоятки;
+* ВГ-2026.46.02 … 46.05     - стержень, элемент запирающий, платик, шайба разрезная;
+* ВГ-2026.46.01 ЛФ          - отливка в форме: разъём, припуски, прибыли, стержни, литниковая система;
+* ВГ-2026.46.01-МД          - модель корпуса со знаками стержней;
+* ВГ-2026.46.01-СЯ1, -СЯ2   - ящики стержневые: стержень отверстия и стержень полости рукоятки.
 
-Все размеры - из `lib.gorizont_twistlock`, те же, что у 3D (CAD/src/twistlock.py).
-Сечения корпуса строятся булевыми операциями на плоскости (shapely), поэтому
-окно, выточка и прибыль на разрезах совпадают с моделью, а не нарисованы рядом.
+Для листов модульного решения (scripts/модульное_решение.py, МР-02) - Лист, разрез_АА(L), план_узла(), Z_НАСТИЛ.
 """
 import os, sys, math, importlib
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-sys.path.insert(0, os.path.join(ROOT, "src"))
-sys.path.insert(0, os.path.join(ROOT, "scripts"))
+for _п in (os.path.join(ROOT, "src"), os.path.join(ROOT, "scripts"), os.path.join(ROOT, "CAD", "src")):
+    if _п not in sys.path:
+        sys.path.insert(0, _п)
 import ezdxf
 from ezdxf.enums import TextEntityAlignment as TA
-from shapely.geometry import Polygon, box, Point, MultiPolygon
+from ezdxf import bbox as EB
+from shapely.geometry import Polygon, MultiPolygon, LineString, box, Point
 from shapely.ops import unary_union
 from shapely import affinity
+import build123d as bd
+from OCP.HLRBRep import HLRBRep_Algo, HLRBRep_HLRToShape
+from OCP.HLRAlgo import HLRAlgo_Projector
+from OCP.gp import gp_Ax2, gp_Pnt, gp_Dir
+from OCP.TopExp import TopExp_Explorer
+from OCP.TopAbs import TopAbs_EDGE
+from build123d.topology.shape_core import downcast
+from OCP.BRepLib import BRepLib
+from OCP.BRepAdaptor import BRepAdaptor_Curve
+from OCP.GeomAbs import GeomAbs_Line
 from lib import gorizont_twistlock as T
+import twistlock as TW
 D = importlib.import_module("чертежи_dxf")
 PNG = importlib.import_module("чертежи_png")
 
 OUT = os.path.join(ROOT, "CAD", "узел")
 os.makedirs(OUT, exist_ok=True)
-K, Z, P, B, O, R = T.КОРПУС, T.ЗАМОК, T.ПРИПУСКИ, T.БОЛТ, T.ОПОРА, T.РЫЧАГ
-Lx, Ly, tf, Dн, Dв, H, tв = K["L_x"], K["L_y"], K["t_фл"], K["D_н"], K["D_в"], K["H"], K["t_верх"]
-Lu, Wu, hu = K["упор"]
-Z_HEAD = H + T.ФИТИНГ_ДНО + T.ЗАЗОР_ГОЛОВКИ
-Z_CBORE = H + hu - K["d_выточка"][1]
-Z_CAV = H - tв
-Z_SQ_TOP = Z_CAV - Z["l_резьбы"]
-Z_SQ_BOT = Z_SQ_TOP - Z["l_квадрата"]
-Z_PL = -O["прокладка"]                       # низ прокладки = верх подкладного листа
-Z_LI = Z_PL - O["лист"][2]                   # верх настила
-Z_DE = Z_LI - O["настил"]                    # низ настила
-БЛ = T.балка()
+for _ф, _р in (("A2", (594, 420)), ("A3", (420, 297)), ("A4", (210, 297))):
+    D.SHEETS.setdefault(_ф, _р)
+
+K, З, С, П, Ш, О, Б = T.КОРПУС, T.ЗАПОР, T.СТЕРЖЕНЬ, T.ПЛАТИК, T.ШАЙБА, T.ОПОРА, T.БОЛТ
+Z_ПЛЕЧО = K["плечо_z"]                     # плечо под фитинг, начало узла
+Z_ПЛ, Z_ПЛ_НИЗ, Z_ПР = TW.Z_ПЛ, TW.Z_ПЛ_НИЗ, TW.Z_ПР
+Z_НАСТИЛ, Z_НАСТ_НИЗ = TW.Z_ЛИСТ, TW.Z_НАСТ    # верх и низ настила
+Z_ГОЛОВА = З["z_вала"][1] + З["голова"][2] + З["голова"][3]
+ЦЕЛЫЕ = ("pos.3 ", "pos.10 ", "pos.11 ", "pos.12 ")    # не рассекаются в продольном разрезе (ГОСТ 2.305, 2.315)
 
 
 def ф(x, nd=0):
-    s = ("%." + str(nd) + "f") % x
-    return s.replace(".", ",")
+    return (("%." + str(nd) + "f") % x).replace(".", ",")
 
 
-# ------------------------------------------------------------------ инструменты листа
-СЛОИ = [("20_ВИДИМЫЕ", 7, "CONTINUOUS", 50), ("21_НЕВИДИМЫЕ", 8, "DASHED", 25), ("22_ТОНКИЕ", 8, "CONTINUOUS", 18),
-        ("23_ШТРИХОВКА", 8, "CONTINUOUS", 18), ("24_ФАНТОМ", 8, "PHANTOM", 18), ("25_ЛИТЬЁ", 1, "CONTINUOUS", 25),
-        ("26_ЛИТЬЁ_ТОНКИЕ", 1, "DASHED", 18), ("07_ОСИ", 2, "CENTER", 18)]
+# ------------------------------------------------------------------ проекции 3D → лист
+#: вид: (направление к наблюдателю, верх листа)
+ВИД = {"спереди": ((0.0, -1.0, 0.0), (0.0, 0.0, 1.0)), "сзади": ((0.0, 1.0, 0.0), (0.0, 0.0, 1.0)),
+       "сверху": ((0.0, 0.0, 1.0), (0.0, 1.0, 0.0)), "снизу": ((0.0, 0.0, -1.0), (0.0, 1.0, 0.0)),
+       "слева": ((-1.0, 0.0, 0.0), (0.0, 0.0, 1.0)), "справа": ((1.0, 0.0, 0.0), (0.0, 0.0, 1.0))}
+
+
+def _вектор(a, b):
+    return (a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0])
+
+
+def на_вид(вид):
+    """Точка модели (x, y, z) → точка вида (по листу вправо, вверх) - как у проекции HLR."""
+    d, u = ВИД[вид]
+    r = _вектор(tuple(-c for c in d), u)
+    return lambda p: (p[0] * r[0] + p[1] * r[1] + p[2] * r[2], p[0] * u[0] + p[1] * u[1] + p[2] * u[2])
+
+
+def _кривые(comp):
+    out = []
+    if comp is None or comp.IsNull():
+        return out
+    ex = TopExp_Explorer(comp, TopAbs_EDGE)
+    while ex.More():
+        e = downcast(ex.Current())
+        BRepLib.BuildCurves3d_s(e, 1e-5)
+        c = BRepAdaptor_Curve(e)
+        t0, t1 = c.FirstParameter(), c.LastParameter()
+        if c.GetType() == GeomAbs_Line:
+            n = 1
+        else:
+            грубо = [c.Value(t0 + (t1 - t0) * i / 8.0) for i in range(9)]
+            длина = sum(грубо[i].Distance(грубо[i + 1]) for i in range(8))
+            n = max(6, int(длина / 0.8))
+        pts = [(c.Value(t0 + (t1 - t0) * i / n).X(), c.Value(t0 + (t1 - t0) * i / n).Y()) for i in range(n + 1)]
+        if sum(math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]) for i in range(len(pts) - 1)) > 0.05:
+            out.append(pts)
+        ex.Next()
+    return out
+
+
+def hlr(тела, вид, скрытые=False):
+    """Видимые (и невидимые) линии тел на виде - списки точек в координатах вида."""
+    d, u = ВИД[вид]
+    algo = HLRBRep_Algo()
+    for s in тела:
+        for q in (s if isinstance(s, (list, tuple)) or type(s).__name__ == "ShapeList" else [s]):
+            algo.Add(q.wrapped)
+    ax = gp_Ax2(gp_Pnt(0, 0, 0), gp_Dir(*d))
+    ax.SetYDirection(gp_Dir(*u))
+    algo.Projector(HLRAlgo_Projector(ax))
+    algo.Update()
+    algo.Hide()
+    h = HLRBRep_HLRToShape(algo)
+    видимые = _кривые(h.VCompound()) + _кривые(h.OutLineVCompound())
+    невидимые = (_кривые(h.HCompound()) + _кривые(h.OutLineHCompound())) if скрытые else []
+    return видимые, невидимые
+
+
+_ОСИ = {"x": (1.0, 0.0, 0.0), "y": (0.0, 1.0, 0.0), "z": (0.0, 0.0, 1.0)}
+
+
+def сечение(тело, ось, c, вид):
+    """Сечение тела плоскостью «ось = c» в координатах вида (shapely)."""
+    n = _ОСИ[ось]
+    pl = bd.Plane(origin=tuple(c * k for k in n), z_dir=n)
+    try:
+        r = тело.intersect(bd.Face.make_rect(4000, 4000, pl))
+    except Exception:
+        return Polygon()
+    if r is None:
+        return Polygon()
+    м = на_вид(вид)
+
+    def pts(w):
+        k = max(24, int(w.length / 0.4))
+        return [м(tuple(w.position_at(i / k))) for i in range(k)]
+    части = []
+    for f in r.faces():
+        части.append(Polygon(pts(f.outer_wire()), [pts(w) for w in f.inner_wires()]).buffer(0))
+    return unary_union(части) if части else Polygon()
+
+
+def _полупространство(ось, c, знак, R=4000.0):
+    """Тело «ось < c» (знак -1) или «ось > c» (знак +1)."""
+    k = "xyz".index(ось)
+    ц = [0.0, 0.0, 0.0]
+    ц[k] = c + знак * R / 2.0
+    return bd.Pos(*ц) * bd.Box(R, R, R)
+
+
+def разрез(детали, зоны, вид, целые=ЦЕЛЫЕ):
+    """Разрез (ступенчатый - несколько зон). Зона - (ось, c, призмы или None): в зоне снимается всё, что между
+    наблюдателем и плоскостью «ось = c». Призмы - [(x0, x1, y0, y1)] по плану, ограничивают зону. Возвращает
+    (тела для HLR, [(метка, сечение)])."""
+    d, _ = ВИД[вид]
+    снять = None
+    for ось, c, обл in зоны:
+        s = d["xyz".index(ось)]
+        тело = _полупространство(ось, c, 1.0 if s > 0 else -1.0)
+        if обл is not None:                      # зона ограничена по другой оси - пересечь с призмами области
+            пр = None
+            for b in обл:
+                q = призма(*b)
+                пр = q if пр is None else пр + q
+            тело = тело & пр
+        снять = тело if снять is None else снять + тело
+    тела, сеч = [], []
+    for sh in детали:
+        метка = getattr(sh, "label", "") or ""
+        if метка.startswith(целые):
+            # целая деталь в разрезе: снимается, только если вся перед плоскостями
+            ост = sh - снять
+            if ост is not None and ост.volume > 1e-3:
+                тела.append(sh)
+            continue
+        ост = sh - снять
+        if ост is None or ост.volume < 1e-3:
+            continue
+        тела.append(ост)
+        if ост.volume < sh.volume - 1e-3:
+            g = []
+            for ось, c, обл in зоны:
+                сч = сечение(sh, ось, c, вид)
+                if обл is not None:
+                    сч = сч.intersection(unary_union([_обл2(b, вид) for b in обл]))
+                g.append(сч)
+            сеч.append((метка, unary_union(g)))
+    return тела, сеч
+
+
+def _обл2(b, вид):
+    """Призма зоны (x0, x1, y0, y1) на виде - прямоугольник."""
+    м = на_вид(вид)
+    x0, x1, y0, y1 = b
+    a, c = м((x0, y0, -2000.0)), м((x1, y1, 2000.0))
+    return box(min(a[0], c[0]), min(a[1], c[1]), max(a[0], c[0]), max(a[1], c[1]))
+
+
+def призма(x0, x1, y0, y1, z0=-2000.0, z1=2000.0):
+    return bd.Pos((x0 + x1) / 2.0, (y0 + y1) / 2.0, (z0 + z1) / 2.0) * bd.Box(x1 - x0, y1 - y0, z1 - z0)
+
+
+#: штриховка сечений: угол, шаг, узор. Соседние детали - встречным наклоном или другим шагом (ГОСТ 2.306),
+#: неметаллы (стеклотекстолит) - клеткой
+ШТРИХ = {"pos.1 ": (45.0, 1.0, "ANSI31"), "pos.2 ": (135.0, 0.5, "ANSI31"), "pos.4 ": (135.0, 1.0, "ANSI31"),
+         "pos.5 ": (135.0, 0.45, "ANSI31"), "pos.6 ": (45.0, 0.35, "ANSI37"), "pos.7 ": (45.0, 0.3, "ANSI37"),
+         "pos.8 ": (45.0, 0.3, "ANSI37"), "pos.9 ": (45.0, 0.6, "ANSI31"), "deck": (135.0, 0.6, "ANSI31")}
+
+
+def _штрих(метка):
+    return next((v for k, v in ШТРИХ.items() if метка.startswith(k)), (45.0, 1.0, "ANSI31"))
+
+
+# ------------------------------------------------------------------ лист
+СЛОИ = [("20_ВИДИМЫЕ", 7, "CONTINUOUS", 50), ("21_НЕВИДИМЫЕ", 7, "DASHED", 25), ("22_ТОНКИЕ", 7, "CONTINUOUS", 18),
+        ("23_ШТРИХОВКА", 7, "CONTINUOUS", 18), ("24_ФАНТОМ", 7, "PHANTOM", 18), ("25_ЛИТЬЁ", 7, "CONTINUOUS", 35),
+        ("26_РАЗЪЁМ", 7, "DASHDOT", 35), ("07_ОСИ", 7, "CENTER", 18)]
 
 
 class Лист(object):
-    def __init__(self, sc):
-        self.sc = sc
-        self.o = (0.0, 0.0)          # начало текущего вида на листе
+    """Лист DXF в масштабе 1 : sc. Координаты - миллиметры модели, начало текущего вида - вид(ox, oy)."""
+
+    def __init__(self, sc, формат="A1"):
+        self.sc, self.формат = sc, формат
+        W, H = D.SHEETS[формат]
+        self.W, self.H = W * sc, H * sc
+        self.o = (0.0, 0.0)
         self.doc = D.newdoc()
         self.msp = self.doc.modelspace()
         for nm, col, lt, lw in СЛОИ:
             if nm not in self.doc.layers:
                 self.doc.layers.add(name=nm, color=col, linetype=lt)
             self.doc.layers.get(nm).dxf.lineweight = lw
+        for nm in ("08_ТЕКСТ", "09_РАЗМЕРЫ", "00_РАМКА"):
+            self.doc.layers.get(nm).color = 7
         self.doc.header["$LTSCALE"] = 0.35 * sc
         ds = self.doc.dimstyles.new("ГОСТ") if "ГОСТ" not in self.doc.dimstyles else self.doc.dimstyles.get("ГОСТ")
         ds.dxf.dimtxt, ds.dxf.dimasz, ds.dxf.dimexe, ds.dxf.dimexo, ds.dxf.dimgap = 3.5, 3.0, 2.0, 0.0, 1.0
         ds.dxf.dimscale, ds.dxf.dimtad, ds.dxf.dimdec, ds.dxf.dimzin = sc, 1, 1, 8
         ds.dxf.dimtih, ds.dxf.dimtoh, ds.dxf.dimtxsty = 0, 0, "ГОСТ"
         ds.dxf.dimdsep = ord(",")
-        ds.dxf.dimclrd, ds.dxf.dimclre, ds.dxf.dimclrt = 6, 6, 7
+        ds.dxf.dimclrd, ds.dxf.dimclre, ds.dxf.dimclrt = 7, 7, 7
 
     def вид(self, ox, oy):
         self.o = (ox, oy)
@@ -80,7 +251,6 @@ class Лист(object):
     def _p(self, p):
         return (p[0] + self.o[0], p[1] + self.o[1])
 
-    # линии
     def pl(self, pts, layer="20_ВИДИМЫЕ", close=False):
         if len(pts) > 1:
             self.msp.add_lwpolyline([self._p(p) for p in pts], close=close, dxfattribs={"layer": layer})
@@ -94,9 +264,6 @@ class Лист(object):
     def circle(self, c, r, layer="20_ВИДИМЫЕ"):
         self.msp.add_circle(self._p(c), r, dxfattribs={"layer": layer})
 
-    def arc(self, c, r, a0, a1, layer="20_ВИДИМЫЕ"):
-        self.msp.add_arc(self._p(c), r, a0, a1, dxfattribs={"layer": layer})
-
     def axis(self, a, b):
         self.line(a, b, "07_ОСИ")
 
@@ -105,99 +272,173 @@ class Лист(object):
         self.axis((c[0], c[1] - r), (c[0], c[1] + r))
 
     def geom(self, g, layer="20_ВИДИМЫЕ"):
-        """Контур геометрии shapely - внешние и внутренние кольца."""
         for p in (g.geoms if hasattr(g, "geoms") else [g]):
-            if p.is_empty:
+            if p.is_empty or not hasattr(p, "exterior"):
                 continue
             self.pl(list(p.exterior.coords), layer, True)
             for i in p.interiors:
                 self.pl(list(i.coords), layer, True)
 
-    def behind(self, g, mask, layer="20_ВИДИМЫЕ"):
-        """Контур предмета за плоскостью разреза - части, закрытые сечением, не рисуются."""
-        lines = g.boundary.difference(mask.buffer(-0.05)) if mask is not None else g.boundary
-        for ln in (lines.geoms if hasattr(lines, "geoms") else [lines]):
-            if not ln.is_empty and ln.length > 0.2:
-                self.pl(list(ln.coords), layer)
-
-    def hatch(self, g, angle=45.0, step=None, pattern="ANSI31"):
-        """Штриховка сечения по ГОСТ 2.306. Металл - 45°, соседние детали - встречным наклоном или шагом."""
-        step = step or 1.0
-        for p in (g.geoms if hasattr(g, "geoms") else [g]):
-            if p.is_empty or p.area < 1.0:
+    def линии(self, кривые, layer="20_ВИДИМЫЕ", dx=0.0, dy=0.0, k=1.0, без=None):
+        """Полилинии проекции. без - область (shapely), внутри которой линии не рисуются."""
+        for pts in кривые:
+            pts = [(dx + k * x, dy + k * y) for x, y in pts]
+            if без is not None:
+                ln = LineString(pts).difference(без) if len(pts) > 1 else None
+                if ln is None or ln.is_empty:
+                    continue
+                for g in (ln.geoms if hasattr(ln, "geoms") else [ln]):
+                    if g.length > 0.2:
+                        self.pl(list(g.coords), layer)
                 continue
-            h = self.msp.add_hatch(dxfattribs={"layer": "23_ШТРИХОВКА"})
-            h.set_pattern_fill(pattern, scale=0.5 * self.sc * step, angle=angle - 45.0)
-            h.paths.add_polyline_path([self._p(c) for c in list(p.exterior.coords)[:-1]], is_closed=True, flags=ezdxf.const.BOUNDARY_PATH_EXTERNAL)
+            self.pl(pts, layer)
+
+    def hatch(self, g, angle=45.0, step=1.0, pattern="ANSI31"):
+        for p in (g.geoms if hasattr(g, "geoms") else [g]):
+            if p.is_empty or not hasattr(p, "exterior") or p.area < 0.5:
+                continue
+            h = self.msp.add_hatch(color=7, dxfattribs={"layer": "23_ШТРИХОВКА"})
+            if pattern == "SOLID":
+                h.set_solid_fill(color=7)
+            else:
+                h.set_pattern_fill(pattern, scale=0.5 * self.sc * step, angle=angle - 45.0)
+            h.paths.add_polyline_path([self._p(c) for c in list(p.exterior.coords)[:-1]], is_closed=True,
+                                      flags=ezdxf.const.BOUNDARY_PATH_EXTERNAL)
             for i in p.interiors:
                 h.paths.add_polyline_path([self._p(c) for c in list(i.coords)[:-1]], is_closed=True)
             self.geom(p)
 
     def text(self, x, y, s, h=3.5, al=TA.MIDDLE_CENTER, layer="08_ТЕКСТ", rot=0.0):
         x, y = self._p((x, y))
-        D.text(self.msp, x, y, s, h, self.sc, layer, al, rot)
+        return D.text(self.msp, x, y, s, h, self.sc, layer, al, rot)
 
-    # размеры
     def dim(self, p1, p2, base, angle=0.0, text=None):
         d = self.msp.add_linear_dim(base=self._p(base), p1=self._p(p1), p2=self._p(p2), angle=angle, dimstyle="ГОСТ",
                                     override={"dimtxsty": "ГОСТ"}, dxfattribs={"layer": "09_РАЗМЕРЫ"},
                                     **({"text": text} if text is not None else {}))
         d.render()
 
-    def dimh(self, x0, x1, y_obj, y_dim, text=None):
-        self.dim((x0, y_obj), (x1, y_obj), (0.5 * (x0 + x1), y_dim), 0.0, text)
+    def dimh(self, x0, x1, y_obj, y_dim, text=None, y_obj1=None):
+        self.dim((x0, y_obj), (x1, y_obj if y_obj1 is None else y_obj1), (0.5 * (x0 + x1), y_dim), 0.0, text)
 
-    def dimv(self, y0, y1, x_obj, x_dim, text=None):
-        self.dim((x_obj, y0), (x_obj, y1), (x_dim, 0.5 * (y0 + y1)), 90.0, text)
+    def dimv(self, y0, y1, x_obj, x_dim, text=None, x_obj1=None):
+        self.dim((x_obj, y0), (x_obj if x_obj1 is None else x_obj1, y1), (x_dim, 0.5 * (y0 + y1)), 90.0, text)
 
-    def note(self, x, y, xe, ye, s, h=3.0):
-        """Выноска с надписью на полке."""
-        self.line((x, y), (xe, ye), "09_РАЗМЕРЫ")
-        w = len(s) * h * 0.62 * self.sc
-        sgn = 1.0 if xe >= x else -1.0
-        self.line((xe, ye), (xe + sgn * w, ye), "09_РАЗМЕРЫ")
-        self.text(xe + sgn * w / 2.0, ye + 1.2 * self.sc, s, h, TA.BOTTOM_CENTER)
+    def dim_угол(self, c, r, a0, a1, text=None):
+        d = self.msp.add_angular_dim_cra(center=self._p(c), radius=r, start_angle=a0, end_angle=a1, distance=2.0 * self.sc,
+                                         dimstyle="ГОСТ", override={"dimtxsty": "ГОСТ", "dimaunit": 0, "dimadec": 0},
+                                         dxfattribs={"layer": "09_РАЗМЕРЫ"}, **({"text": text} if text else {}))
+        d.render()
+
+    def dim_радиус(self, c, r, a, text=None):
+        d = self.msp.add_radius_dim(center=self._p(c), radius=r, angle=a, dimstyle="ГОСТ", override={"dimtxsty": "ГОСТ"},
+                                    dxfattribs={"layer": "09_РАЗМЕРЫ"}, **({"text": text} if text else {}))
+        d.render()
+
+    def полка(self, pt, колено, s, h=3.0, стрелка=False):
+        """Линия-выноска с полкой и надписью над полкой (ГОСТ 2.316). Полка - по длине надписи."""
+        self.line(pt, колено, "09_РАЗМЕРЫ")
+        if стрелка:
+            self._стрелка(pt, колено)
+        sgn = 1.0 if колено[0] >= pt[0] else -1.0
+        e = self.text(колено[0] + sgn * 1.0 * self.sc, колено[1] + 1.0 * self.sc, s, h,
+                      TA.BOTTOM_LEFT if sgn > 0 else TA.BOTTOM_RIGHT)
+        bb = EB.extents([e], fast=False)
+        w = (bb.extmax.x - bb.extmin.x) + 2.0 * self.sc
+        self.line(колено, (колено[0] + sgn * w, колено[1]), "09_РАЗМЕРЫ")
+
+    def _стрелка(self, pt, от):
+        s = self.sc
+        a = math.atan2(от[1] - pt[1], от[0] - pt[0])
+        L, W = 3.5 * s, 1.0 * s
+        b1 = (pt[0] + L * math.cos(a) - W * math.sin(a), pt[1] + L * math.sin(a) + W * math.cos(a))
+        b2 = (pt[0] + L * math.cos(a) + W * math.sin(a), pt[1] + L * math.sin(a) - W * math.cos(a))
+        h = self.msp.add_hatch(color=7, dxfattribs={"layer": "09_РАЗМЕРЫ"})
+        h.paths.add_polyline_path([self._p(pt), self._p(b1), self._p(b2)], is_closed=True)
 
     def pos(self, pt, shelf, n):
-        """Позиция по ГОСТ 2.109 - точка на детали, линия-выноска, номер над полкой."""
-        self.msp.add_circle(self._p(pt), 0.9 * self.sc, dxfattribs={"layer": "09_РАЗМЕРЫ"})
+        """Позиция (ГОСТ 2.109) - точка на детали, выноска, номер над полкой."""
+        s = self.sc
+        self.msp.add_circle(self._p(pt), 0.8 * s, dxfattribs={"layer": "09_РАЗМЕРЫ"})
         h = self.msp.add_hatch(color=7, dxfattribs={"layer": "09_РАЗМЕРЫ"})
-        h.paths.add_edge_path().add_arc(self._p(pt), 0.9 * self.sc, 0, 360)
+        h.paths.add_edge_path().add_arc(self._p(pt), 0.8 * s, 0, 360)
         self.line(pt, shelf, "09_РАЗМЕРЫ")
-        w = 9.0 * self.sc
+        w = 10.0 * s
         sgn = 1.0 if shelf[0] >= pt[0] else -1.0
         self.line(shelf, (shelf[0] + sgn * w, shelf[1]), "09_РАЗМЕРЫ")
-        self.text(shelf[0] + sgn * w / 2.0, shelf[1] + 1.0 * self.sc, str(n), 5.0, TA.BOTTOM_CENTER)
+        self.text(shelf[0] + sgn * w / 2.0, shelf[1] + 1.0 * s, str(n), 5.0, TA.BOTTOM_CENTER)
+
+    def позиции(self, пункты, x_лев, x_прав, xc, шаг=11.0):
+        """Номера позиций столбцами слева и справа от вида. Порядок полок по высоте - как у точек, выноски не
+        пересекаются. пункты - [(номер, точка)]."""
+        шаг = шаг * self.sc
+        for сторона, x in ((-1, x_лев), (1, x_прав)):
+            гр = sorted([p for p in пункты if (p[1][0] < xc) == (сторона < 0)], key=lambda p: -p[1][1])
+            ys = []
+            for n, (px, py) in гр:
+                y = py + 3.0 * self.sc
+                if ys and y > ys[-1] - шаг:
+                    y = ys[-1] - шаг
+                ys.append(y)
+            for (n, pt), y in zip(гр, ys):
+                self.pos(pt, (x, y), n)
 
     def rough(self, x, y, val, up=True):
-        """Знак шероховатости ГОСТ 2.309 - галочка и значение Ra над полкой."""
+        """Знак шероховатости (ГОСТ 2.309) - вершиной на поверхности, значение над полкой."""
         s = self.sc
         k = 1.0 if up else -1.0
         a, b, c = (x - 2.5 * s, y + k * 4.3 * s), (x, y), (x + 5.0 * s, y + k * 8.6 * s)
         self.pl([a, b, c], "09_РАЗМЕРЫ")
-        self.line(c, (c[0] + 10.0 * s, c[1]), "09_РАЗМЕРЫ")
-        self.text(c[0] + 5.0 * s, c[1] + k * 1.0 * s, "Ra " + val, 2.5, TA.BOTTOM_CENTER if up else TA.TOP_CENTER)
+        self.line(c, (c[0] + 12.0 * s, c[1]), "09_РАЗМЕРЫ")
+        self.text(c[0] + 6.0 * s, c[1] + k * 1.0 * s, val, 2.5, TA.BOTTOM_CENTER if up else TA.TOP_CENTER)
+
+    def rough_угол(self, val):
+        """Шероховатость остальных поверхностей - в правом верхнем углу листа: знак, значение, (√)."""
+        s = self.sc
+        x, y = self.W - 5.0 * s - 60.0 * s, self.H - 5.0 * s - 14.0 * s
+        o = self.o
+        self.o = (0.0, 0.0)
+        self.text(x, y + 3.0 * s, val, 3.5, TA.BOTTOM_LEFT)
+        x2 = x + 22.0 * s
+        self.pl([(x2, y + 7.0 * s), (x2 + 2.5 * s, y + 2.7 * s), (x2 + 7.5 * s, y + 11.3 * s)], "09_РАЗМЕРЫ")
+        self.text(x2 + 11.0 * s, y + 3.0 * s, "(", 3.5, TA.BOTTOM_LEFT)
+        x3 = x2 + 14.0 * s
+        self.pl([(x3, y + 7.0 * s), (x3 + 2.5 * s, y + 2.7 * s), (x3 + 7.5 * s, y + 11.3 * s)], "09_РАЗМЕРЫ")
+        self.text(x3 + 9.0 * s, y + 3.0 * s, ")", 3.5, TA.BOTTOM_LEFT)
+        self.o = o
 
     def cut(self, a, b, letter, look):
-        """След секущей плоскости - утолщённые штрихи, стрелки взгляда, буквы."""
+        """След секущей плоскости - разомкнутые штрихи, стрелки направления взгляда, буквы."""
         s = self.sc
         ux, uy = b[0] - a[0], b[1] - a[1]
-        L = math.hypot(ux, uy); ux, uy = ux / L, uy / L
+        L_ = math.hypot(ux, uy)
+        ux, uy = ux / L_, uy / L_
         for p, sg in ((a, 1.0), (b, -1.0)):
             q = (p[0] + sg * ux * 10 * s, p[1] + sg * uy * 10 * s)
-            self.msp.add_lwpolyline([self._p(p), self._p(q)], dxfattribs={"layer": "20_ВИДИМЫЕ", "const_width": 1.2 * s})
-            tip = (p[0] + look[0] * 12 * s, p[1] + look[1] * 12 * s)
+            self.msp.add_lwpolyline([self._p(p), self._p(q)], dxfattribs={"layer": "20_ВИДИМЫЕ", "const_width": 1.0 * s})
+            tip = (p[0] + look[0] * 10 * s, p[1] + look[1] * 10 * s)
             self.line(p, tip, "20_ВИДИМЫЕ")
             nx, ny = look
-            self.pl([(tip[0] - nx * 4 * s - ny * 1.5 * s, tip[1] - ny * 4 * s + nx * 1.5 * s), tip,
-                     (tip[0] - nx * 4 * s + ny * 1.5 * s, tip[1] - ny * 4 * s - nx * 1.5 * s)], "20_ВИДИМЫЕ")
-            self.text(tip[0] + look[0] * 3 * s - sg * ux * 5 * s, tip[1] + look[1] * 3 * s - sg * uy * 5 * s, letter, 7.0)
+            h = self.msp.add_hatch(color=7, dxfattribs={"layer": "20_ВИДИМЫЕ"})
+            h.paths.add_polyline_path([self._p((tip[0] - nx * 4 * s - ny * 1.2 * s, tip[1] - ny * 4 * s + nx * 1.2 * s)), self._p(tip),
+                                       self._p((tip[0] - nx * 4 * s + ny * 1.2 * s, tip[1] - ny * 4 * s - nx * 1.2 * s))], is_closed=True)
+            self.text(tip[0] + look[0] * 2 * s - sg * ux * 5 * s, tip[1] + look[1] * 2 * s - sg * uy * 5 * s, letter, 5.0)
 
-    def title(self, x, y, s):
-        self.text(x, y, s, 7.0, TA.BOTTOM_CENTER)
+    def излом(self, pts):
+        """Ступенчатый след: перегибы - утолщёнными штрихами."""
+        s = self.sc
+        for i in range(1, len(pts) - 1):
+            p0, p1, p2 = pts[i - 1], pts[i], pts[i + 1]
+            for pa in (p0, p2):
+                dx, dy = pa[0] - p1[0], pa[1] - p1[1]
+                L_ = math.hypot(dx, dy)
+                q = (p1[0] + dx / L_ * 6 * s, p1[1] + dy / L_ * 6 * s)
+                self.msp.add_lwpolyline([self._p(p1), self._p(q)], dxfattribs={"layer": "20_ВИДИМЫЕ", "const_width": 1.0 * s})
+
+    def title(self, x, y, s, h=5.0):
+        return self.text(x, y, s, h, TA.BOTTOM_CENTER)
 
     def обрыв(self, x, z0, z1):
-        """Линия обрыва - тонкая с изломом (ГОСТ 2.303)."""
         s = self.sc
         zm = 0.5 * (z0 + z1)
         self.pl([(x, z0), (x, zm - 3 * s), (x - 2.5 * s, zm - 1 * s), (x + 2.5 * s, zm + 1 * s), (x, zm + 3 * s), (x, z1)], "22_ТОНКИЕ")
@@ -207,651 +448,749 @@ class Лист(object):
         xm = 0.5 * (x0 + x1)
         self.pl([(x0, z), (xm - 3 * s, z), (xm - 1 * s, z - 2.5 * s), (xm + 1 * s, z + 2.5 * s), (xm + 3 * s, z), (x1, z)], "22_ТОНКИЕ")
 
-    def save(self, name, sheet, bbox, mark, title, subtitle, notes, material, wrap=95):
+    def шов(self, pt, колено, катет, гост, тип, способ, h=3.5):
+        """Обозначение шва (ГОСТ 2.312): выноска с односторонней стрелкой, окружность на изломе - шов по замкнутой
+        линии, над полкой - стандарт, тип соединения, способ сварки, знак катета ⊿ и катет."""
+        s = self.sc
+        self.line(pt, колено, "09_РАЗМЕРЫ")
+        self._стрелка(pt, колено)
+        self.circle(колено, 2.0 * s, "09_РАЗМЕРЫ")
+        y0 = колено[1] + 1.0 * s
+        e = self.text(0.0, y0, "%s-%s-%s-" % (гост, тип, способ), h, TA.BOTTOM_LEFT)
+        e2 = self.text(0.0, y0, ф(катет), h, TA.BOTTOM_LEFT)
+        w1 = EB.extents([e], fast=False).size.x
+        w2 = EB.extents([e2], fast=False).size.x
+        t = h * s * 0.9
+        W = w1 + 0.8 * s + t + 0.8 * s + w2
+        x0 = колено[0] + 2.0 * s if колено[0] >= pt[0] else колено[0] - 2.0 * s - W
+        e.set_placement(self._p((x0, y0)), align=TA.BOTTOM_LEFT)
+        xa = x0 + w1 + 0.8 * s
+        self.pl([(xa, y0), (xa + t, y0), (xa, y0 + t), (xa, y0)], "09_РАЗМЕРЫ")
+        e2.set_placement(self._p((xa + t + 0.8 * s, y0)), align=TA.BOTTOM_LEFT)
+        x1 = x0 + W + 1.5 * s if колено[0] >= pt[0] else x0 - 1.5 * s
+        self.line(колено, (x1, колено[1]), "09_РАЗМЕРЫ")
+
+    def след(self, pts, letter, look):
+        """След секущей плоскости (ГОСТ 2.305): разомкнутые штрихи на концах и на перегибах ступенчатого разреза,
+        стрелки направления взгляда и буквы у концов."""
+        s = self.sc
+        for p, q in ((pts[0], pts[1]), (pts[-1], pts[-2])):
+            dx, dy = q[0] - p[0], q[1] - p[1]
+            L_ = math.hypot(dx, dy)
+            u = (dx / L_, dy / L_)
+            self.msp.add_lwpolyline([self._p(p), self._p((p[0] + u[0] * 10 * s, p[1] + u[1] * 10 * s))],
+                                    dxfattribs={"layer": "20_ВИДИМЫЕ", "const_width": 1.0 * s})
+            a = (p[0] - u[0] * 2 * s, p[1] - u[1] * 2 * s)
+            tip = (a[0] + look[0] * 10 * s, a[1] + look[1] * 10 * s)
+            self.line(a, tip, "20_ВИДИМЫЕ")
+            nx, ny = look
+            h = self.msp.add_hatch(color=7, dxfattribs={"layer": "20_ВИДИМЫЕ"})
+            h.paths.add_polyline_path([self._p((tip[0] - nx * 4 * s - ny * 1.2 * s, tip[1] - ny * 4 * s + nx * 1.2 * s)), self._p(tip),
+                                       self._p((tip[0] - nx * 4 * s + ny * 1.2 * s, tip[1] - ny * 4 * s - nx * 1.2 * s))], is_closed=True)
+            self.text(tip[0] + look[0] * 3 * s - u[0] * 5 * s, tip[1] + look[1] * 3 * s - u[1] * 5 * s, letter, 5.0)
+        self.излом(pts)
+
+    def save(self, name, mark, title, subtitle, notes, material, wrap=None):
         self.o = (0.0, 0.0)
-        D.frame(self.msp, sheet, self.sc, bbox, mark, title, subtitle, notes, material=material, wrap=wrap)
+        D.frame(self.msp, self.формат, self.sc, (0.0, 0.0, self.W, self.H), mark, title, subtitle, notes,
+                material=material, wrap=wrap)
         p = os.path.join(OUT, name + ".dxf")
-        self.doc.saveas(p)
+        tmp = p + ".tmp.dxf"
+        self.doc.saveas(tmp)
+        os.replace(tmp, p)
         png = os.path.join(PNG.OUT, name + ".png")
         w, h = PNG.растр(p, png)
-        print("%-44s %4d КБ  PNG %d × %d" % (os.path.relpath(p, ROOT), os.path.getsize(p) // 1024, w, h))
+        print("%-52s %4d КБ  PNG %d × %d" % (os.path.relpath(p, ROOT), os.path.getsize(p) // 1024, w, h))
         return p
 
 
-# ------------------------------------------------------------------ геометрия сечений
-def obround(L, W, c=(0.0, 0.0)):
-    return Point(c).buffer(W / 2.0, 64) if L <= W else unary_union(
-        [box(c[0] - (L - W) / 2.0, c[1] - W / 2.0, c[0] + (L - W) / 2.0, c[1] + W / 2.0),
-         Point(c[0] - (L - W) / 2.0, c[1]).buffer(W / 2.0, 64), Point(c[0] + (L - W) / 2.0, c[1]).buffer(W / 2.0, 64)])
+def _точка(g):
+    """Точка внутри сечения детали - для позиции."""
+    if g.is_empty:
+        return None
+    части = sorted(g.geoms, key=lambda q: -q.area) if hasattr(g, "geoms") else [g]
+    q = части[0].representative_point()
+    return (q.x, q.y)
 
 
-def корпус_XZ(отливка=False):
-    """Разрез корпуса плоскостью Y = 0 (оси x, z). Окно - на стороне -X."""
-    п_н = P["подошва"] if отливка else 0.0
-    п_в = P["площадка"] if отливка else 0.0
-    g = unary_union([box(-Lx / 2, -п_н, Lx / 2, tf), box(-Dн / 2, -п_н, Dн / 2, H + п_в)])
-    g = g.difference(box(-Dв / 2, -п_н - 1, Dв / 2, Z_CAV))
-    z0, z1, _ = K["окно"]
-    g = g.difference(box(-Dн / 2 - 1, z0, -Dв / 2 + 0.01, z1))
-    if отливка:
-        o = T.отливка()
-        g = unary_union([g, box(-o["прибыль_D"] / 2, H + п_в - 0.01, o["прибыль_D"] / 2, H + п_в + o["прибыль_H"])])
-        return g
-    g = unary_union([g, box(-Lu / 2, H - 0.01, Lu / 2, H + hu)])
-    g = g.difference(box(-K["d_вал"] / 2, Z_CAV - 1, K["d_вал"] / 2, H + hu + 1))
-    g = g.difference(box(-K["d_выточка"][0] / 2, Z_CBORE, K["d_выточка"][0] / 2, H + hu + 1))
-    g = g.difference(box(Dв / 2 - 0.01, -1, Lx / 2 + 1, K["дренаж"][1]))
-    zm = K["маслёнка_z"]
-    g = g.difference(box(Dн / 2 - 27.0, zm - 4.5, Dн / 2 + 1, zm + 4.5))
-    g = g.difference(box(K["d_вал"] / 2 - 1, zm - 2.5, Dн / 2 - 26.9, zm + 2.5))
-    return g
+def контур(тела, вид):
+    """Силуэт тел на виде - объединение сечений на нескольких уровнях по глубине (для обрезки фантома)."""
+    d, _ = ВИД[вид]
+    k = next(i for i in range(3) if abs(d[i]) > 0.5)
+    ось = "xyz"[k]
+    out = []
+    for т in тела:
+        bb = т.bounding_box()
+        lo, hi = (bb.min.X, bb.min.Y, bb.min.Z)[k], (bb.max.X, bb.max.Y, bb.max.Z)[k]
+        for i in range(1, 12):
+            out.append(сечение(т, ось, lo + (hi - lo) * i / 12.0, вид))
+    return unary_union(out)
 
 
-def корпус_YZ(отливка=False):
-    """Разрез корпуса плоскостью X = 0 (оси y, z) - рёбра рассечены вдоль."""
-    п_н = P["подошва"] if отливка else 0.0
-    п_в = P["площадка"] if отливка else 0.0
-    t_r, h_r = K["ребро"]
-    ribs = [Polygon([(s * (Dн / 2 - 5), tf - 0.5), (s * (Dн / 2 - 5), tf + h_r), (s * (Ly / 2 - 5), tf - 0.5)]) for s in (1, -1)]
-    g = unary_union([box(-Ly / 2, -п_н, Ly / 2, tf), box(-Dн / 2, -п_н, Dн / 2, H + п_в)] + ribs)
-    g = g.difference(box(-Dв / 2, -п_н - 1, Dв / 2, Z_CAV))
-    if отливка:
-        o = T.отливка()
-        return unary_union([g, box(-o["прибыль_W"] / 2, H + п_в - 0.01, o["прибыль_W"] / 2, H + п_в + o["прибыль_H"])])
-    g = unary_union([g, box(-Wu / 2, H - 0.01, Wu / 2, H + hu)])
-    g = g.difference(box(-K["d_вал"] / 2, Z_CAV - 1, K["d_вал"] / 2, H + hu + 1))
-    g = g.difference(box(-K["d_выточка"][0] / 2, Z_CBORE, K["d_выточка"][0] / 2, H + hu + 1))
-    return g
+# ------------------------------------------------------------------ СБ
+def детали_узла(угол=TW.ЗАКРЫТО):
+    return TW.сборка(угол, с_настилом=True)
 
 
-def замок_проекция(поперёк):
-    """Контур замка (не рассекается) в проекции. Поперёк=True - головка видна длинной стороной."""
-    L, W, hs, hc, (Lt, Wt) = Z["голова"]
-    a, at = (L, Lt) if поперёк else (W, Wt)
-    head = Polygon([(-a / 2, Z_HEAD), (a / 2, Z_HEAD), (a / 2, Z_HEAD + hs), (at / 2, Z_HEAD + hs + hc),
-                    (-at / 2, Z_HEAD + hs + hc), (-a / 2, Z_HEAD + hs)])
-    parts = [head, box(-Z["шейка"][0] / 2, Z_CBORE, Z["шейка"][0] / 2, Z_HEAD), box(-Z["вал"] / 2, Z_CAV, Z["вал"] / 2, Z_CBORE),
-             box(-16.5, Z_SQ_TOP, 16.5, Z_CAV), box(-Z["квадрат"] / 2, Z_SQ_BOT, Z["квадрат"] / 2, Z_SQ_TOP)]
-    return parts
+def разрез_АА(L, детали=None, для_мр=False):
+    """Ступенчатый разрез А-А: по оси узла (Y = 0) в пределах корпуса и по оси болтов (Y = +95) снаружи. Вид спереди,
+    начало вида - ось узла на плече корпуса. Возвращает сечения деталей (для позиций)."""
+    детали = детали or детали_узла()
+    xb = 0.5 * (K["габарит"][0] + (2 * П["болт_x"] - П["овал"][1])) / 2.0 + 10.0        # граница ступени между корпусом и болтами
+    зоны = [("y", 0.0, [(-xb, xb, -2000, 2000)]), ("y", П["болт_y"], [(-2000, -xb, -2000, 2000), (xb, 2000, -2000, 2000)])]
+    тела, сеч = разрез(детали, зоны, "спереди")
+    vis, _ = hlr(тела, "спереди")
+    # переход ступени (x = ±xb) по ГОСТ 2.305 не показывают
+    vis = [p for p in vis if not (len(p) == 2 and abs(abs(p[0][0]) - xb) < 0.05 and abs(abs(p[1][0]) - xb) < 0.05)]
+    L.линии(vis)
+    for метка, g in сеч:
+        a, st, pat = _штрих(метка)
+        L.hatch(g, a, st, pat)
+    ш = швы(unary_union([g for м_, g in сеч if м_.startswith("pos.1 ")]))
+    L.hatch(ш, pattern="SOLID")
+    for x in (-TW.НАСТИЛ[0] / 2.0, TW.НАСТИЛ[0] / 2.0):
+        L.обрыв(x, Z_НАСТ_НИЗ - 6, Z_НАСТИЛ + 6)
+    L.axis((0, Z_НАСТ_НИЗ - 60), (0, Z_ГОЛОВА + 15))
+    for x in (-П["болт_x"], П["болт_x"]):
+        L.axis((x, Z_ПЛ + 25), (x, Z_НАСТ_НИЗ - 55))
+    if not для_мр:
+        фитинг(L)
+    return сеч, xb, ш
 
 
-def мелочь(X):
-    """Гайка круглая, шайбы, торцевой винт - контуры в проекции (оси X, z)."""
-    return [box(X - 29, Z_CAV - 2, X + 29, Z_CAV), box(X - 28, Z_CAV - 3.5, X + 28, Z_CAV - 2),
-            box(X - 26, Z_CAV - 13.5, X + 26, Z_CAV - 3.5), box(X - 20, Z_SQ_BOT - 4, X + 20, Z_SQ_BOT),
-            box(X - 6.5, Z_SQ_BOT - 12, X + 6.5, Z_SQ_BOT - 4)]
+def швы(корпус_сеч):
+    """Сечение шва Т1 у наружных кромок опорных полос на разрезе по оси: треугольник с катетом по платику и по корпусу,
+    под свесом «ласточкина хвоста» - до его поверхности."""
+    x1, k = K["полоса"]["x"][1], T.ШОВ["катет"]
+    out = []
+    for sg in (-1.0, 1.0):
+        tri = Polygon([(sg * x1, Z_ПЛ), (sg * (x1 + k), Z_ПЛ), (sg * x1, Z_ПЛ + k)])
+        out.append(tri.difference(корпус_сеч))
+    return unary_union(out)
 
 
-def болт_сбоку(L, x, mask=None):
-    """Болт с шайбами и гайкой за плоскостью разреза - видимые контуры над фланцем и под настилом."""
-    zh = tf - K["цековка"][1]
-    tw = B["шайба_изол"][2]
-    for g in (box(x - 22, zh, x + 22, zh + 4), box(x - 20.8, zh + 4, x + 20.8, zh + 19), box(x - 7, zh + 4, x + 7, zh + 19),
-              box(x - 25, Z_DE - tw, x + 25, Z_DE), box(x - 22, Z_DE - tw - 4, x + 22, Z_DE - tw),
-              box(x - 20.8, Z_DE - tw - 28, x + 20.8, Z_DE - tw - 4), box(x - 7, Z_DE - tw - 28, x + 7, Z_DE - tw - 4),
-              box(x - 12, Z_DE - tw - 31, x + 12, Z_DE - tw - 28)):
-        L.behind(g, mask)
-    L.axis((x, zh + 25), (x, Z_DE - tw - 36))
-
-
-def палуба(L, x0, x1, ось_вдоль_балки, обрез=60.0):
-    """Настил, подкладной лист, прокладка и балка в разрезе. Вдоль балки стенка рассечена - показана с обрывом."""
-    dl = O["лист"][0] if ось_вдоль_балки else O["лист"][1]
-    L.hatch(box(x0, Z_DE, x1, Z_LI), angle=135.0, step=0.6)
-    L.hatch(box(-dl / 2, Z_LI, dl / 2, Z_PL), angle=45.0, step=0.6)
-    gl = Lx if ось_вдоль_балки else Ly
-    L.hatch(box(-gl / 2, Z_PL, gl / 2, 0.0), angle=45.0, step=0.35, pattern="ANSI37")
-    h, tw_, bf, tf_ = БЛ["h"], БЛ["tw"], БЛ["bf"], БЛ["tf"]
-    if ось_вдоль_балки:
-        L.hatch(box(x0, Z_DE - обрез, x1, Z_DE), angle=135.0, step=1.8)
-        L.обрыв_г(Z_DE - обрез, x0, x1)
-    else:
-        L.hatch(box(-tw_ / 2, Z_DE - h, tw_ / 2, Z_DE), angle=135.0, step=0.6)
-        L.hatch(box(-bf / 2, Z_DE - h - tf_, bf / 2, Z_DE - h), angle=135.0, step=0.6)
-    L.обрыв(x0, Z_DE - (обрез if ось_вдоль_балки else 0.0) - 6, Z_LI + 6)
-    L.обрыв(x1, Z_DE - (обрез if ось_вдоль_балки else 0.0) - 6, Z_LI + 6)
-
-
-def фитинг(L, поперёк):
-    """Угловой фитинг ISO 1161 контура - фантом - днище с отверстием на площадке."""
+def фитинг(L):
+    """Угловой фитинг ISO 1161 контейнера - фантом: днище на плече корпуса, центратор в отверстии."""
     М = T._M().КОНТЕЙНЕР
     fl, fw, fh = М["фитинг_мм"]
     al, aw = М["отверстие_мм"]
-    if not поперёк:
-        a0, a1, h = -101.5, 76.5, al
-    else:
-        a0, a1, h = -89.0, 73.0, aw
-    L.pl([(a0, H), (-h / 2, H), (-h / 2, H + T.ФИТИНГ_ДНО), (a0 + 12, H + T.ФИТИНГ_ДНО), (a0 + 12, H + fh - 12), (a1 - 12, H + fh - 12),
-          (a1 - 12, H + T.ФИТИНГ_ДНО), (h / 2, H + T.ФИТИНГ_ДНО), (h / 2, H), (a1, H), (a1, H + fh), (a0, H + fh), (a0, H)], "24_ФАНТОМ")
+    a0, a1, h = -73.0, 89.0, aw
+    дно = T.ФИТИНГ_ДНО
+    L.pl([(a0, 0), (-h / 2, 0), (-h / 2, дно), (a0 + 12, дно), (a0 + 12, fh - 12), (a1 - 12, fh - 12), (a1 - 12, дно),
+          (h / 2, дно), (h / 2, 0), (a1, 0), (a1, fh), (a0, fh), (a0, 0)], "24_ФАНТОМ")
 
 
-# ------------------------------------------------------------------ лист 1: СБ
-РАМКА_А1_2 = (-700.0, -1088.0, 982.0, 100.0)        # лист А1 в масштабе 1:2 - в миллиметрах модели
-
-
-def разрез_АА(L, с_рычагом=True):
-    """Разрез А-А по оси узла вдоль X. Начало вида - ось узла на подошве корпуса."""
-    сеч = корпус_XZ()
-    палуба(L, -330, 250, True)
-    L.hatch(сеч, 45.0)
-    mask = unary_union([сеч, box(-400, Z_DE, 400, 0.0)])
-    for part in замок_проекция(False):
-        L.geom(part)
-    for g in мелочь(0.0):
-        L.geom(g)
-    if с_рычагом:
-        L.geom(box(-R["ступица"][0] / 2, Z_SQ_BOT, R["ступица"][0] / 2, Z_SQ_TOP))
-        z_a0, z_a1 = R["z_оси"] - R["плечо"][1] / 2, R["z_оси"] + R["плечо"][1] / 2
-        L.geom(box(-R["r_конца"], z_a0, -R["ступица"][0] / 2, z_a1))
-        L.geom(box(-R["r_конца"] - 6, z_a1, -R["r_конца"] + 18, z_a1 + 50))
-        xf = -K["фиксатор_r"]
-        L.behind(box(xf - 15, tf, xf + 15, tf + K["прилив"][1]), None)
-        L.geom(box(xf - 12, z_a1, xf + 12, z_a1 + 12)); L.geom(box(xf - 8, z_a1 + 12, xf + 8, z_a1 + 30))
-        L.geom(box(xf - 5, tf + K["прилив"][1] - 8, xf + 5, z_a0), "21_НЕВИДИМЫЕ")
-        L.circle((xf, z_a1 + 34), 10.0)
-    for x in (-K["болт_x"], K["болт_x"]):
-        болт_сбоку(L, x, mask)
-    фитинг(L, False)
-    L.axis((0, Z_DE - 75), (0, Z_HEAD + 70))
+def разрез_ББ(L, детали=None):
+    """Разрез Б-Б по оси узла поперёк (X = 0), вид слева: полость рукоятки со стержнем."""
+    детали = детали or детали_узла()
+    тела, сеч = разрез(детали, [("x", 0.0, None)], "слева", целые=ЦЕЛЫЕ + ("pos.2 ",))
+    vis, _ = hlr(тела, "слева")
+    L.линии(vis)
+    for метка, g in сеч:
+        a, st, pat = _штрих(метка)
+        L.hatch(g, a, st, pat)
+    for x in (-TW.НАСТИЛ[1] / 2.0, TW.НАСТИЛ[1] / 2.0):
+        L.обрыв(x, Z_НАСТ_НИЗ - 6, Z_НАСТИЛ + 6)
+    L.axis((0, Z_НАСТ_НИЗ - 30), (0, Z_ГОЛОВА + 15))
     return сеч
+
+
+def план_узла(угол=TW.ЗАКРЫТО, с_настилом=False):
+    """Вид сверху на узел - видимые линии (для МР-02)."""
+    тела = [t for t in TW.сборка(угол, с_настилом=с_настилом)]
+    vis, _ = hlr(тела, "сверху")
+    return vis
 
 
 def сб():
     sc = 2
-    L = Лист(sc)
-    н = T.нагрузки(); м = T.массы()
-    # --- разрез А-А
-    L.вид(-60.0, -230.0)
-    разрез_АА(L)
-    z_a1 = R["z_оси"] + R["плечо"][1] / 2
-    L.title(-60, 285, "А-А")
-    L.text(-60, 268, "рычаг, фиксатор и прилив условно повёрнуты в плоскость разреза", 3.0)
-    L.dimv(Z_LI, H, 110, 300)
-    L.dimv(Z_LI, Z_HEAD + sum(Z["голова"][2:4]), 110, 340)
-    L.dimv(H, Z_HEAD, 70, 250, "%s*" % ф(Z_HEAD - H))
-    L.dimh(-Lx / 2, Lx / 2, 0, Z_DE - 95)
-    L.dimh(-K["болт_x"], K["болт_x"], Z_DE - 40, Z_DE - 125)
-    L.dimh(-R["r_конца"], 0, z_a1 + 50, 225, "%s*" % ф(R["r_конца"]))
-    for pt, sh, n in (((0, Z_HEAD + 30), (120, 250), 2), ((22, Z_CAV - 1), (170, 200), 4), ((24, Z_CAV - 8), (170, 175), 12),
-                      ((0, Z_SQ_BOT - 8), (170, 20), 14), ((K["болт_x"], 36), (170, 60), 9),
-                      ((K["болт_x"] + 20, Z_DE - 45), (170, -40), 10),
-                      ((-K["фиксатор_r"], z_a1 + 22), (-330, 190), 16), ((-215, R["z_оси"]), (-330, 150), 3),
-                      ((-100, 12), (-330, 70), 1), ((-100, -1.5), (-330, 30), 5), ((-175, Z_LI + 4), (-330, -10), 8)):
-        L.pos(pt, sh, n)
+    L = Лист(sc, "A1")
+    н, м = T.нагрузки(), T.массы()
+    детали = детали_узла()
+    # --- А-А
+    AX, AY = 560.0, 830.0
+    L.вид(AX, AY)
+    # стержень лежит перед плоскостью разреза - снят
+    сеч, xb, шов = разрез_АА(L, [d for d in детали if not d.label.startswith("pos.2 ")])
+    L.title(0, 175, "А-А")
+    L.dimh(-П["L"] / 2, П["L"] / 2, Z_ПЛ_НИЗ, Z_НАСТ_НИЗ - 80)
+    L.dimh(-П["болт_x"], П["болт_x"], Z_НАСТ_НИЗ - 40, Z_НАСТ_НИЗ - 105)
+    L.dimv(Z_НАСТИЛ, Z_ПЛЕЧО, K["габарит"][0] / 2, 290, ф(-Z_НАСТИЛ))
+    L.dimv(Z_НАСТИЛ, Z_ГОЛОВА, З["голова"][0] / 2, 330, "%s*" % ф(Z_ГОЛОВА - Z_НАСТИЛ))
+    L.dimv(Z_ПЛЕЧО, Z_ГОЛОВА, З["голова"][0] / 2, 250, "%s*" % ф(Z_ГОЛОВА))
+    по_метке = {}
+    for метка, g in сеч:
+        if not метка.startswith("pos."):
+            continue
+        n = int(метка.split()[0].split(".")[1])
+        if n not in по_метке and not g.is_empty:
+            по_метке[n] = g
+    пункты = []
+    for n in (1, 4, 5, 6, 9, 7, 8):
+        if n in по_метке:
+            g = по_метке[n]
+            if n in (7, 8):          # втулка и шайба изолирующие - у болта справа
+                g = g.intersection(box(0, -2000, 2000, 2000))
+            t = _точка(g)
+            if t:
+                пункты.append((n, t))
+    пункты += [(3, (-25.0, Z_ГОЛОВА - 12.0)), (10, (П["болт_x"] + 8.0, Z_ПЛ + 8.0)),
+               (12, (П["болт_x"] + 20.0, Z_НАСТ_НИЗ - Б["шайба_изол"][2] - 2.5)), (11, (П["болт_x"] + 12.0, Z_НАСТ_НИЗ - 20.0))]
+    L.позиции(пункты, -300.0, 300.0, 0.0)
+    # выносной элемент I - шов корпуса с платиком
+    ц_I = (K["полоса"]["x"][1] + 3.0, Z_ПЛ + 2.0)
+    L.circle(ц_I, 12.0, "22_ТОНКИЕ")
+    L.полка((ц_I[0] + 8.5, ц_I[1] + 8.5), (130.0, 22.0), "I", 5.0)
+    # --- I (2 : 1)
+    L.вид(1080.0, 420.0)
+    k, R = 4.0, 30.0
+    окно = Point(ц_I).buffer(R, 128)
+
+    def увел(g):
+        return affinity.scale(affinity.translate(g, -ц_I[0], -ц_I[1]), k, k, origin=(0, 0))
+    for метка, g in сеч:
+        gg = g.intersection(окно)
+        if not gg.is_empty:
+            a, st, pat = _штрих(метка)
+            L.hatch(увел(gg), a, st, pat)
+    шI = увел(шов.intersection(окно))
+    L.hatch(шI, pattern="SOLID")
+    L.circle((0.0, 0.0), R * k, "22_ТОНКИЕ")
+    L.title(0.0, R * k + 10.0, "I (2 : 1)")
+    ц = шI.centroid
+    L.шов((ц.x - 2.0, ц.y + 2.0), (-95.0, 150.0), T.ШОВ["катет"], T.ШОВ["гост"], T.ШОВ["тип"], "ИУП")
+    # --- Б-Б
+    BX, BY = 1230.0, 830.0
+    L.вид(BX, BY)
+    сеч_б = разрез_ББ(L, детали)
+    L.title(0, 175, "Б-Б")
+    L.dimh(-П["B"] / 2, П["B"] / 2, Z_ПЛ_НИЗ, Z_НАСТ_НИЗ - 80)
+    L.dimh(-П["болт_y"], П["болт_y"], Z_НАСТ_НИЗ - 40, Z_НАСТ_НИЗ - 105, None)
+    L.dimh(-О["лист"][1] / 2, О["лист"][1] / 2, Z_ПР, Z_НАСТ_НИЗ - 130)
+    ст = TW.стержень(TW.ЗАКРЫТО)
+    bb = ст.bounding_box()
+    мв = на_вид("слева")
+    p2 = мв(((bb.min.X + bb.max.X) / 2.0 + 20.0, bb.min.Y + 20.0, З["z_отв"]))
+    L.позиции([(2, p2)], -260.0, 260.0, 0.0)
     # --- вид сверху
-    L.вид(-60.0, -780.0)
-    L.rect(-O["лист"][0] / 2, -O["лист"][1] / 2, O["лист"][0] / 2, O["лист"][1] / 2, "22_ТОНКИЕ")
-    fl = box(-Lx / 2, -Ly / 2, Lx / 2, Ly / 2).buffer(-K["R_фл"]).buffer(K["R_фл"], 32)
-    L.geom(fl)
-    L.circle((0, 0), Dн / 2)
-    for sg in (1, -1):
-        L.pl([(-K["ребро"][0] / 2, sg * Dн / 2 * 0.99), (-K["ребро"][0] / 2, sg * (Ly / 2 - 5)), (K["ребро"][0] / 2, sg * (Ly / 2 - 5)), (K["ребро"][0] / 2, sg * Dн / 2 * 0.99)])
-    L.geom(obround(Lu, Wu))
-    L.geom(affinity.rotate(obround(Z["голова"][0], Z["голова"][1]), 90.0, origin=(0, 0)))
-    L.geom(affinity.rotate(obround(*Z["голова"][4]), 90.0, origin=(0, 0)))
-    for (x, y) in [(sx * K["болт_x"], sy * K["болт_y"]) for sx in (-1, 1) for sy in (-1, 1)]:
-        L.pl([(x + 20.8 * math.cos(math.radians(30 + 60 * i)), y + 20.8 * math.sin(math.radians(30 + 60 * i))) for i in range(6)], close=True)
-        L.circle((x, y), 22.0, "22_ТОНКИЕ"); L.cross((x, y), 30)
-    for a in K["фиксатор_углы"]:
-        L.circle((K["фиксатор_r"] * math.cos(math.radians(a)), K["фиксатор_r"] * math.sin(math.radians(a))), K["прилив"][0] / 2)
-    z0, z1, span = K["окно"]
-    L.arc((0, 0), Dв / 2, 180 - span / 2, 180 + span / 2, "21_НЕВИДИМЫЕ")
-    def рычаг_план(a, layer):
-        arm = box(R["ступица"][0] / 2 - 2, -R["плечо"][0] / 2, R["r_конца"], R["плечо"][0] / 2).union(Point(R["r_конца"], 0).buffer(R["плечо"][0] / 2, 32))
-        arm = affinity.rotate(arm, a, origin=(0, 0)).difference(Point(0, 0).buffer(Dн / 2))
-        L.geom(arm, layer)
-        c = lambda r: (r * math.cos(math.radians(a)), r * math.sin(math.radians(a)))
-        L.circle(c(R["r_конца"] - 6), 12.0, layer); L.circle(c(K["фиксатор_r"]), 12.0, layer); L.circle(c(K["фиксатор_r"]), 8.0, layer)
-    рычаг_план(225.0, "20_ВИДИМЫЕ")
-    рычаг_план(135.0, "24_ФАНТОМ")
-    L.cross((0, 0), 110)
-    L.text(-150, 215, "«открыто»", 3.5); L.text(-150, -215, "«закрыто»", 3.5)
-    L.title(0, 245, "Вид сверху (фитинг не показан)")
-    L.cut((-300, 0), (260, 0), "А", (0, -1))
-    L.cut((0, 262), (0, -262), "Б", (1, 0))
-    L.dimh(-Lx / 2, Lx / 2, -Ly / 2, -Ly / 2 - 25)
-    L.dimh(-O["лист"][0] / 2, O["лист"][0] / 2, -O["лист"][1] / 2, -Ly / 2 - 55)
-    L.dimv(-Ly / 2, Ly / 2, Lx / 2, 240)
-    L.dimv(-K["болт_y"], K["болт_y"], K["болт_x"], 275)
-    L.dimv(-O["лист"][1] / 2, O["лист"][1] / 2, O["лист"][0] / 2, 310)
-    L.dimh(-K["болт_x"], K["болт_x"], K["болт_y"], 190)
-    L.note(K["болт_x"] + 14, K["болт_y"] + 14, 120, 225, "4 отв. Ø%s в листе и настиле" % ф(B["втулка"][0]))
-    # --- разрез Б-Б
-    SX = 640.0
-    L.вид(SX, -230.0)
-    for g, a, st, pat in ((box(-250, Z_DE, 250, Z_LI), 135.0, 0.6, "ANSI31"), (box(-O["лист"][1] / 2, Z_LI, O["лист"][1] / 2, Z_PL), 45.0, 0.6, "ANSI31"),
-                          (box(-Ly / 2, Z_PL, Ly / 2, 0.0), 45.0, 0.35, "ANSI37"),
-                          (box(-БЛ["tw"] / 2, Z_DE - БЛ["h"], БЛ["tw"] / 2, Z_DE), 135.0, 0.6, "ANSI31"),
-                          (box(-БЛ["bf"] / 2, Z_DE - БЛ["h"] - БЛ["tf"], БЛ["bf"] / 2, Z_DE - БЛ["h"]), 135.0, 0.6, "ANSI31")):
-        L.hatch(g, a, st, pat)
-    L.обрыв(-250, Z_DE - 6, Z_LI + 6); L.обрыв(250, Z_DE - 6, Z_LI + 6)
-    сеч = корпус_YZ()
-    L.hatch(сеч, 45.0)
-    mask = unary_union([сеч, box(-400, Z_DE, 400, 0.0)])
-    for part in замок_проекция(True):
-        L.geom(part)
-    for g in мелочь(0.0):
-        L.geom(g)
-    L.geom(box(-R["ступица"][0] / 2, Z_SQ_BOT, R["ступица"][0] / 2, Z_SQ_TOP))
-    for y in (-K["болт_y"], K["болт_y"]):
-        болт_сбоку(L, y, mask)
-    фитинг(L, True)
-    L.axis((0, Z_DE - БЛ["h"] - 25), (0, Z_HEAD + 70))
-    L.title(0, 285, "Б-Б")
-    L.dimh(-Ly / 2, Ly / 2, 0, Z_DE - 40)
-    L.dimh(-K["болт_y"], K["болт_y"], Z_DE - 40, Z_DE - 75)
-    L.dimh(-Z["голова"][0] / 2, Z["голова"][0] / 2, Z_HEAD + Z["голова"][2], 250)
-    L.dimv(Z_DE - БЛ["h"] - БЛ["tf"], Z_DE, БЛ["bf"] / 2, 200, "%s (балка %s)" % (ф(БЛ["h"] + БЛ["tf"]), БЛ["обозначение"]))
-    for pt, sh, n in (((140, 12), (230, 110), 1), ((-150, -1.5), (-290, 40), 5), ((110, Z_LI + 4), (230, 20), 8),
-                      ((K["болт_y"] + 23, Z_DE - B["шайба_изол"][2] - 2), (230, -60), 11), ((-K["болт_y"] - 24, Z_DE - 1.5), (-290, -40), 7),
-                      ((-K["болт_y"] - 14, Z_DE - 8), (-290, -80), 6), ((26, Z_CAV - 2.8), (230, 190), 13), ((80, K["маслёнка_z"]), (230, 160), 15)):
-        L.pos(pt, sh, n)
-    # --- таблица характеристик
+    TX, TY = 560.0, 345.0
+    L.вид(TX, TY)
+    vis, _ = hlr(детали, "сверху")
+    L.линии(vis)
+    тело = контур([TW.корпус(), TW.платик()], "сверху")
+    L.линии(hlr([TW.стержень(TW.ОТКРЫТО)], "сверху")[0], "24_ФАНТОМ", без=тело.buffer(0.3))
+    голова = hlr([TW.запор(TW.ОТКРЫТО).intersect(призма(-200, 200, -200, 200, З["z_вала"][1], 200))], "сверху")[0]
+    L.линии(голова, "24_ФАНТОМ")
+    L.cross((0, 0), 80)
+    for x in (-П["болт_x"], П["болт_x"]):
+        for y in (-П["болт_y"], П["болт_y"]):
+            L.cross((x, y), 22)
+    r = С["r_конца"]
+    ao, az = math.radians(TW.ОТКРЫТО), math.radians(TW.ЗАКРЫТО)
+    L.dim_угол((0, 0), r - 25.0, TW.ОТКРЫТО, TW.ЗАКРЫТО, "%s°" % ф(T.ПОВОРОТ))
+    L.полка((r * math.cos(ao), r * math.sin(ao)), (-190.0, -215.0), "открыто", 3.5)
+    L.полка((r * math.cos(az), r * math.sin(az)), (190.0, -215.0), "закрыто", 3.5)
+    yb = П["болт_y"]
+    L.след([(-265.0, yb), (-xb, yb), (-xb, 0.0), (xb, 0.0), (xb, yb), (265.0, yb)], "А", (0, 1))
+    L.след([(0.0, 222.0), (0.0, -222.0)], "Б", (1, 0))
+    L.dimh(-TW.НАСТИЛ[0] / 2, TW.НАСТИЛ[0] / 2, -TW.НАСТИЛ[1] / 2, -TW.НАСТИЛ[1] / 2 - 62, "%s (вырезка настила)" % ф(TW.НАСТИЛ[0]))
+    L.dimh(-О["лист"][0] / 2, О["лист"][0] / 2, О["лист"][1] / 2, TW.НАСТИЛ[1] / 2 + 45)
+    L.dimv(-П["болт_y"], П["болт_y"], П["болт_x"], 275, None)
+    L.полка((П["болт_x"] + 16, -П["болт_y"] - 12), (300.0, -150.0), "4 отв. ⌀%s в листе и настиле" % ф(Б["втулка"][0] + 0.6, 1), 3.0)
+    # --- характеристика и ТТ
     L.вид(0.0, 0.0)
-    rows = [["Рабочая нагрузка на опору (SWL) - отрыв / сжатие / сдвиг", "%s / %s / %s кН" % (ф(н["SWL"]["отрыв"]), ф(н["SWL"]["сжатие"]), ф(н["SWL"]["сдвиг"]))],
-            ["Предельная расчётная - отрыв / сжатие / сдвиг", "%s / %s / %s кН" % (ф(н["предельный"]["отрыв"]), ф(н["предельный"]["сжатие"]), ф(н["предельный"]["сдвиг"]))],
-            ["Расчётный модуль", "%s, %s т" % (н["модуль"][0].replace("_", " "), ф(н["модуль"][1], 1))],
+    S = н["SWL"]
+    пр = н["предельный"]
+    rows = [["Рабочая нагрузка на опору (SWL) - отрыв, сжатие, сдвиг", "%s, %s, %s кН" % (ф(S["отрыв"]), ф(S["сжатие"]), ф(S["сдвиг"]))],
+            ["Предельная расчётная - отрыв, сжатие, сдвиг", "%s, %s, %s кН" % (ф(пр["отрыв"], 1), ф(пр["сжатие"], 1), ф(пр["сдвиг"], 1))],
+            ["Расчётный модуль", "%s %s т, только в ряду ДП" % (н["модуль"][0], ф(н["модуль"][1], 1))],
             ["Высота опоры над настилом", "%s мм" % ф(T.высота_опоры() * 1000)],
-            ["Масса узла / с подкладным листом", "%s / %s кг" % (ф(м["узел"], 1), ф(м["узел_с_листом"], 1))],
-            ["Фундаментов на судно", "%d (18 слотов × 4)" % len(T._M().фундаменты())]]
-    D.table(L.msp, 400, -600, sc, ["Техническая характеристика", "Значение"], rows, [120, 60], h_row=7.0)
-    нт = н["SWL"]
+            ["Поворот рукоятки «открыто» - «закрыто»", "%s°" % ф(T.ПОВОРОТ)],
+            ["Масса узла без листа поз. 9, с листом", "%s кг, %s кг" % (ф(м["узел"], 1), ф(м["узел_с_листом"], 1))],
+            ["Фундаментов на судно", "%d" % T.программа()["на_судно"]]]
+    D.table(L.msp, 1302.0, 560.0, sc, ["Техническая характеристика", "Значение"], rows, [118, 67], h_row=7.0)
+    ш = T.ШОВ
     notes = ("*Размеры для справок.",
-             "Замок поз. 2 вставить в корпус сверху, снизу поставить шайбу поз. 4, шайбу стопорную поз. 13 и гайку поз. 12. Осевой зазор вала 0,2…0,5 мм, лапку шайбы отогнуть в шлиц гайки.",
-             "Рычаг поз. 3 надеть на квадрат вала, закрепить винтом поз. 14 на анаэробном фиксаторе резьбы, фиксатор поз. 16 ввернуть в рычаг.",
-             "Поворот замка «открыто» - «закрыто» 90°, усилие на рукоятке не более 150 Н. Фиксатор входит в отверстие прилива в обоих положениях.",
-             "Отверстие вала заполнить смазкой Литол-24 ГОСТ 21150-2017 через маслёнку поз. 15.",
-             "Лист поз. 8 приварить к настилу над балкой %s угловым швом по контуру, катет 5 мм, сварка в аргоне. Отверстия Ø%s сверлить по кондуктору после сварки." % (БЛ["обозначение"], ф(B["втулка"][0])),
-             "Прокладку поз. 5 и втулки поз. 6 ставить на герметике У-30МЭС-5 ГОСТ 13489-79. Кромку прокладки загерметизировать после затяжки.",
-             "Болты поз. 9 затянуть крест-накрест моментом 400 Н·м (усилие затяжки %s кН), резьбу смазать пастой против задиров." % ф(B["затяжка"] * B["σт"] * B["As"] / 1000.0),
-             "Рабочая нагрузка на опору (SWL). Отрыв %s кН, сжатие %s кН, сдвиг %s кН - маркировать на фланце вместе с номером фундамента." % (ф(нт["отрыв"]), ф(нт["сжатие"]), ф(нт["сдвиг"])),
-             "Испытания - по программе ВГ-2026.46.00 ПМ, покрытие поз. 1, 2, 3 - ТДЦ 40 мкм ГОСТ Р 9.316-2006.")
-    return L.save(T.MARK.replace(".", "_") + "_СБ", "A1", РАМКА_А1_2, T.MARK + " СБ", T.NAME,
-                  "Сборочный чертёж · %d шт. на судно · фитинг ISO 1161 показан фантомом" % len(T._M().фундаменты()),
+             "Корпус поз. 1 приварить к платику поз. 4 швом %s по замкнутому контуру корпуса, катет %s мм, "
+             "проволока %s в смеси газов (%s). Контроль шва ВИК 100 %%." % (ш["тип"], ф(ш["катет"]), ш["проволока"], ш["газ"]),
+             "Покрытие сварного корпуса и запора поз. 3 - грунтовка ГФ-021 в два слоя, эмаль ПФ-115. Отверстие ⌀30, вал "
+             "поз. 3 и резьбу М14×1,5 не окрашивать.",
+             "Вал поз. 3 смазать Литол-24 ГОСТ 21150-2017 и вставить в корпус сверху. Шайбу поз. 5 завести снизу через окно "
+             "платика в проточку вала.",
+             "Стержень поз. 2 ввернуть через прорезь корпуса в резьбу вала на анаэробном фиксаторе резьбы средней прочности.",
+             "Поворот запора от выреза до выреза корпуса %s° без заеданий, в положениях «открыто» и «закрыто» стержень входит "
+             "в вырез." % ф(T.ПОВОРОТ),
+             "Лист поз. 9 приварить к настилу над подпалубной балкой %s при постройке судна. Отверстия в листе и настиле "
+             "сверлить по платику на месте." % T.балка()["обозначение"],
+             "Прокладку поз. 6 и втулки поз. 7 ставить на герметике У-30МЭС-5 ГОСТ 13489-79.",
+             "Болты поз. 10 затянуть крест-накрест моментом %d Н·м." % T.момент_затяжки(),
+             "Рабочую нагрузку (SWL) и номер фундамента нанести на платик краской.",
+             "Испытания - по программе %s ПМ." % T.MARK)
+    return L.save(T.MARK.replace(".", "_") + "_СБ", T.MARK + " СБ", T.NAME,
+                  "Сборочный чертёж. %d шт. на судно, фитинг ISO 1161 - тонкой штрихпунктирной" % T.программа()["на_судно"],
                   notes, "Масса %s кг" % ф(м["узел"], 1), wrap=82)
 
 
-# ------------------------------------------------------------------ план корпуса (общий для листов)
-def план_корпуса(отливка=False, масштаб=1.0):
-    """Вид сверху на корпус - список (геометрия, слой). Ось X - вдоль судна, окно - на -X."""
-    k = масштаб
-    out = []
-    fl = box(-Lx / 2, -Ly / 2, Lx / 2, Ly / 2).buffer(-K["R_фл"]).buffer(K["R_фл"], 32)
-    out.append((fl, "20_ВИДИМЫЕ"))
-    out.append((Point(0, 0).buffer(Dн / 2, 128), "20_ВИДИМЫЕ"))
-    for sg in (1, -1):
-        out.append((box(-K["ребро"][0] / 2, min(sg * Dн / 2 * 0.99, sg * (Ly / 2 - 5)), K["ребро"][0] / 2, max(sg * Dн / 2 * 0.99, sg * (Ly / 2 - 5))), "20_ВИДИМЫЕ"))
-    for a in K["фиксатор_углы"]:
-        c = (K["фиксатор_r"] * math.cos(math.radians(a)), K["фиксатор_r"] * math.sin(math.radians(a)))
-        out.append((Point(c).buffer(K["прилив"][0] / 2, 64), "20_ВИДИМЫЕ"))
-        if not отливка:
-            out.append((Point(c).buffer(K["d_фикс"] / 2, 32), "20_ВИДИМЫЕ"))
-    z0, z1, span = K["окно"]
-    wedge = Polygon([(0, 0)] + [((Dн / 2 + 2) * math.cos(math.radians(180 - span / 2 + span * i / 32)),
-                                 (Dн / 2 + 2) * math.sin(math.radians(180 - span / 2 + span * i / 32))) for i in range(33)])
-    окно = wedge.intersection(Point(0, 0).buffer(Dн / 2, 128).difference(Point(0, 0).buffer(Dв / 2, 128)))
-    out.append((окно, "21_НЕВИДИМЫЕ"))
-    if отливка:
-        o = T.отливка()
-        out.append((obround(o["прибыль_D"], o["прибыль_W"]), "25_ЛИТЬЁ"))
-    else:
-        out.append((obround(Lu, Wu), "20_ВИДИМЫЕ"))
-        out.append((Point(0, 0).buffer(K["d_вал"] / 2, 64), "20_ВИДИМЫЕ"))
-        out.append((Point(0, 0).buffer(K["d_выточка"][0] / 2, 64), "20_ВИДИМЫЕ"))
-        for x, y in [(sx * K["болт_x"], sy * K["болт_y"]) for sx in (-1, 1) for sy in (-1, 1)]:
-            out.append((Point(x, y).buffer(K["d_отв"] / 2, 48), "20_ВИДИМЫЕ"))
-            out.append((Point(x, y).buffer(K["цековка"][0] / 2, 48), "20_ВИДИМЫЕ"))
-        w = K["дренаж"][0]
-        out.append((box(Dв / 2, -w / 2, Lx / 2, w / 2), "21_НЕВИДИМЫЕ"))
-    out.append((Point(0, 0).buffer(Dв / 2, 128), "21_НЕВИДИМЫЕ"))
-    if k != 1.0:
-        out = [(affinity.scale(g, k, k, origin=(0, 0)), l) for g, l in out]
-    return out
+# ------------------------------------------------------------------ детали
+def _вид_тела(L, тело, вид, скрытые=False):
+    vis, hid = hlr([тело], вид, скрытые)
+    L.линии(vis)
+    if скрытые:
+        L.линии(hid, "21_НЕВИДИМЫЕ")
 
 
-def рисовать(L, items, rot=0.0, dx=0.0, dy=0.0):
-    for g, layer in items:
-        g = affinity.translate(affinity.rotate(g, rot, origin=(0, 0)), dx, dy)
-        if layer == "25_ЛИТЬЁ":
-            L.geom(g, "25_ЛИТЬЁ")
-        else:
-            L.geom(g, layer)
-
-
-# ------------------------------------------------------------------ литейные контуры
-def стержень_XZ():
-    """Стержень в разрезе по X (координаты отливки) - полость с нижним знаком, язык в окне, нога-знак до верха модели."""
-    п_н, п_в = P["подошва"], P["площадка"]
-    z0, z1, _ = K["окно"]
-    return unary_union([box(-Dв / 2, -п_н - T.ЗНАК_НИЗ, Dв / 2, Z_CAV), box(-Dн / 2 - T.ЗНАК_ОКНА, z0, -Dв / 2 + 0.01, z1),
-                        box(-Dн / 2 - T.ЗНАК_ОКНА, z0, -Dн / 2 + 0.01, H + п_в)])
-
-
-def модель_XZ():
-    """Модель отливки (верх) в разрезе по X. Отливка с прибылью, полость заполнена, знак окна - до верха."""
-    п_н, п_в = P["подошва"], P["площадка"]
-    z0, z1, _ = K["окно"]
-    g = unary_union([корпус_XZ(отливка=True), box(-Dв / 2, -п_н, Dв / 2, Z_CAV + 0.01),
-                     box(-Dн / 2 - 0.01, z0, -Dв / 2 + 0.01, z1), box(-Dн / 2 - T.ЗНАК_ОКНА, z0, -Dн / 2 + 0.01, H + п_в)])
-    return g
-
-
-# ------------------------------------------------------------------ лист 2: корпус
-РАМКА_А1_1 = (0.0, 0.0, 841.0, 594.0)
+def _разрез_тела(L, тело, ось, c, вид, метка="pos.1 "):
+    тела, сеч = разрез([тело], [(ось, c, None)], вид, целые=())
+    L.линии(hlr(тела, вид)[0])
+    for _, g in сеч:
+        a, st, pat = _штрих(метка)
+        L.hatch(g, a, st, pat)
+    return unary_union([g for _, g in сеч])
 
 
 def корпус_лист():
-    L = Лист(1)
+    L = Лист(1, "A1")
     м = T.массы()
-    # --- разрез А-А
-    L.вид(175.0, 372.0)
-    L.hatch(корпус_XZ(), 45.0)
-    L.axis((0, -12), (0, H + hu + 12))
-    L.axis((K["d_вал"] / 2, K["маслёнка_z"]), (Dн / 2 + 12, K["маслёнка_z"]))
-    L.title(0, 196, "А-А")
-    L.dimh(-Lx / 2, Lx / 2, 0, -20)
-    L.dimh(-Dн / 2, Dн / 2, H, 152, "Ø%s" % ф(Dн))
-    L.dimh(-Lu / 2, Lu / 2, H + hu, 172)
-    L.dimh(-Dв / 2, Dв / 2, 30, 38, "Ø%s" % ф(Dв))
-    L.dimh(-K["d_вал"] / 2, K["d_вал"] / 2, Z_CAV + 8, Z_CAV - 14, "Ø%sH9" % ф(K["d_вал"]))
-    L.dimv(0, tf, -Lx / 2, -Lx / 2 - 12)
-    L.dimv(0, K["окно"][0], -Dн / 2, -Lx / 2 - 26)
-    L.dimv(K["окно"][0], K["окно"][1], -Dн / 2, -Lx / 2 - 12)
-    L.dimv(0, Z_CAV, Dв / 2, 45)
-    L.dimv(0, H, Lx / 2, Lx / 2 + 12)
-    L.dimv(0, H + hu, Lx / 2, Lx / 2 + 26)
-    L.dimv(Z_CBORE, H + hu, K["d_выточка"][0] / 2, 36)
-    L.dimv(0, K["маслёнка_z"], Dн / 2, Dн / 2 + 12)
-    L.note(K["d_выточка"][0] / 2, H + hu - 2, 60, 190, "Ø%s × %s - выточка под бурт" % (ф(K["d_выточка"][0]), ф(K["d_выточка"][1])), 2.5)
-    L.note(Dн / 2 - 6, K["маслёнка_z"] + 3, Dн / 2 + 44, K["маслёнка_z"] + 40, "М10×1-7H, канал Ø5 до Ø36", 2.5)
-    L.note(100, 3, 130, -40, "паз слива %s × %s" % (ф(K["дренаж"][0]), ф(K["дренаж"][1])), 2.5)
-    L.note(-K["d_вал"] / 2, Z_CAV + 22, -70, 190, "Ra 1,6", 2.5)
-    L.rough(0, 0, "6,3", up=False)
-    L.rough(-72, H, "3,2")
-    L.rough(-Lu / 2 + 12, H + hu, "6,3")
-    L.pl([(-150, 185), (-150, 160)]); L.pl([(-153, 166), (-150, 160), (-147, 166)]); L.text(-141, 182, "В", 5.0)      # справа от стрелки: слева - поле подшивки
-    # --- разрез Б-Б
-    L.вид(565.0, 372.0)
-    L.hatch(корпус_YZ(), 45.0)
-    L.axis((0, -12), (0, H + hu + 12))
-    L.title(0, 196, "Б-Б")
-    L.dimh(-Ly / 2, Ly / 2, 0, -20)
-    L.dimh(-Wu / 2, Wu / 2, H + hu, 160)
-    L.dimv(0, tf + K["ребро"][1], Dн / 2 - 5, Dн / 2 + 30)
-    L.dimv(Z_CAV, H, -Dн / 2, -Dн / 2 - 16, ф(tв))
-    L.dimh(Dн / 2 - 5, Ly / 2 - 5, tf, -38)
-    # --- вид В сверху, повёрнуто
-    L.вид(225.0, 172.0)
-    рисовать(L, план_корпуса(), rot=-90.0)
-    L.axis((-Ly / 2 - 10, 0), (Ly / 2 + 10, 0)); L.axis((0, -Lx / 2 - 8), (0, Lx / 2 + 8))
-    L.title(0, 150, "В (повёрнуто)")
-    L.dimh(-Ly / 2, Ly / 2, -Lx / 2, -Lx / 2 - 14)
-    L.dimh(-K["болт_y"], K["болт_y"], K["болт_x"], Lx / 2 + 10)
-    L.dimv(-Lx / 2, Lx / 2, Ly / 2, Ly / 2 + 12)
-    L.dimv(-K["болт_x"], K["болт_x"], K["болт_y"], Ly / 2 + 26)
-    L.note(K["болт_y"] + 9, -K["болт_x"] - 9, 200, -110, "4 отв. Ø%s, цековать Ø%s на глубину %s, Ra 12,5" % (ф(K["d_отв"]), ф(K["цековка"][0]), ф(K["цековка"][1])), 2.5)
-    a = math.radians(225.0)
-    cr = (K["фиксатор_r"] * math.sin(a), -K["фиксатор_r"] * math.cos(a))
-    L.note(cr[0] + 5, cr[1] + 5, 200, 100, "2 отв. Ø%s глуб. 20 на R%s, ±45° от оси окна" % (ф(K["d_фикс"], 1), ф(K["фиксатор_r"])), 2.5)
-    L.note(-4, 72, 200, 80, "окно %d°, высота %s…%s от подошвы" % (K["окно"][2], ф(K["окно"][0]), ф(K["окно"][1])), 2.5)
-    L.note(Ly / 2 - 25, 8, 200, 40, "рёбра %s × %s, неуказанные радиусы R%s" % (ф(K["ребро"][0]), ф(K["ребро"][1]), ф(K["R_лит"])), 2.5)
-    L.вид(0, 0)
-    L.text(800, 578, "Rz 320 (√)", 4.0)
-    notes = ("Отливка - сталь 20ГЛ ГОСТ 977-88, группа 3. %s." % T.ТОЧНОСТЬ,
-             "Неуказанные литейные радиусы R%s. Формовочные уклоны 1° - в тело отливки на необрабатываемых поверхностях." % ф(K["R_лит"]),
-             "Термообработка отливки - нормализация 900…920 °С, отпуск 600…650 °С, твёрдость не более 187 НВ.",
-             "Механические свойства на пробе от плавки - σ0,2 ≥ 275 МПа, σв ≥ 540 МПа, δ ≥ 18 %, KCU ≥ 491 кДж/м² (ГОСТ 977-88).",
-             "Контроль - ВИК 100 %, МПД сопряжений стакана с фланцем, рёбрами и площадкой - 100 %, трещины не допускаются, РК первых 6 отливок.",
-             "Исправление дефектов заваркой - по ГОСТ 977-88 с МПД после заварки. На упоре и площадке - с разрешения конструктора.",
-             "Допуск параллельности площадки относительно подошвы 0,1 мм. Перпендикулярности отверстия Ø36H9 к подошве 0,05 мм.",
-             "Неуказанные предельные отклонения размеров - отверстий H14, валов h14, остальных ±IT14/2.",
-             "Размеры отверстий Ø36H9 и Ø44 - после покрытия ТДЦ 40 мкм ГОСТ Р 9.316-2006.",
-             "Маркировать литыми знаками на фланце - «ВГ-46», номер плавки, клеймо ОТК ударным способом.")
-    return L.save("ВГ-2026_46_01_корпус", "A1", РАМКА_А1_1, "ВГ-2026.46.01", "Корпус",
-                  "Деталь поз. 1 узла %s · отливка 20ГЛ, мехобработка" % T.MARK, notes,
-                  "Сталь 20ГЛ ГОСТ 977-88 · масса %s кг" % ф(м["корпус"], 1), wrap=76)
-
-
-# ------------------------------------------------------------------ лист 3: отливка
-def отливка_лист():
-    L = Лист(1)
+    b = TW.корпус()
+    x1, x0 = K["полоса"]["x"][1], K["полоса"]["x"][0]
+    zb, zt = K["z"]
+    # --- главный вид (спереди)
+    L.вид(190.0, 440.0)
+    _вид_тела(L, b, "спереди")
+    L.axis((0, zb - 12), (0, zt + 12))
+    L.dimh(-K["кромка"], K["кромка"], -40.0, zb - 34, ф(K["габарит"][0]))
+    L.dimh(-x1, x1, zb, zb - 16)
+    L.dimh(-K["центратор"][0] / 2, K["центратор"][0] / 2, zt, zt + 14)
+    L.dimh(-72.56, 72.56, Z_ПЛЕЧО, zt + 30, "%s" % ф(2 * 72.56, 1))
+    L.dimv(zb, zt, -K["кромка"], -K["кромка"] - 34, ф(K["габарит"][2]))
+    L.dimv(zb, Z_ПЛЕЧО, -x1, -K["кромка"] - 18)
+    L.dimv(Z_ПЛЕЧО, zt, K["центратор"][0] / 2, 100)
+    L.rough(50.0, Z_ПЛЕЧО, "12,5")
+    L.rough(70.0, zb, "12,5", up=False)
+    zc = sum(K["полость"]["z"]) / 2.0
+    L.след([(-142.0, zc), (122.0, zc)], "Б", (0, -1))
+    # --- вид сверху
+    L.вид(190.0, 190.0)
+    _вид_тела(L, b, "сверху")
+    L.cross((0, 0), 100)
+    L.dimv(-80.0, 80.0, K["кромка"], 118, ф(K["габарит"][1]))
+    L.dimv(-K["центратор"][1] / 2, K["центратор"][1] / 2, -K["центратор"][0] / 2, -112, ф(K["центратор"][1]))
+    L.полка((K["d_отв"] / 2 * 0.7, K["d_отв"] / 2 * 0.7), (60.0, 100.0), "⌀%sH9 сквозное, Ra 3,2" % ф(K["d_отв"]), 3.0)
+    L.след([(0.0, 98.0), (0.0, -98.0)], "А", (1, 0))
+    # --- А-А (x = 0, вид слева)
+    L.вид(470.0, 440.0)
+    _разрез_тела(L, b, "x", 0.0, "слева")
+    L.title(0, zt + 42, "А-А")
+    L.axis((0, zb - 12), (0, zt + 12))
+    L.dimh(-K["d_отв"] / 2, K["d_отв"] / 2, zt, zt + 16, "⌀%sH9" % ф(K["d_отв"]))
+    п = K["полость"]
+    L.dimv(п["z"][0], п["z"][1], 40.0, 98.0, ф(п["z"][1] - п["z"][0]))
+    L.dimv(п["z"][1], Z_ПЛЕЧО, 40.0, 116.0, ф(-п["z"][1]))
+    L.dimv(zb, K["низ_z"], -20.0, -100.0, ф(K["низ_z"] - zb))
+    L.dimh(-80.0, 80.0, zb, zb - 18, ф(K["габарит"][1]))
+    L.полка((58.0, zc), (120.0, zc - 45.0), "полость рукоятки", 3.0)
+    # --- Б-Б (z = середина полости, вид сверху)
+    L.вид(470.0, 190.0)
+    _разрез_тела(L, b, "z", zc, "сверху")
+    L.title(0, 95, "Б-Б")
+    L.cross((0, 0), 90)
+    r = 58.0
+    for a in (TW.ОТКРЫТО, TW.ЗАКРЫТО):
+        L.axis((0, 0), (r * math.cos(math.radians(a)), r * math.sin(math.radians(a))))
+    L.dim_угол((0, 0), 48.0, TW.ОТКРЫТО, TW.ЗАКРЫТО, "%s°" % ф(T.ПОВОРОТ))
+    L.полка((0.0, -40.0), (95.0, -112.0), "положения рукоятки", 3.0)
+    L.rough_угол("Rz 320")
     o = T.отливка()
-    л = T.ЛИТЬЁ
-    п_н, п_в = P["подошва"], P["площадка"]
-    # --- отливка в форме, разрез по X
-    L.вид(205.0, 150.0)
-    сеч = корпус_XZ(отливка=True)
-    L.hatch(сеч.difference(box(-500, H + п_в, 500, 1000)), 45.0)
-    L.geom(box(-o["прибыль_D"] / 2, H + п_в, o["прибыль_D"] / 2, H + п_в + o["прибыль_H"]), "25_ЛИТЬЁ")
-    L.geom(корпус_XZ(), "22_ТОНКИЕ")
-    L.hatch(стержень_XZ(), angle=0.0, step=0.8, pattern="ANSI37")
-    L.text(0, 30, "Ст. 1", 4.0)
-    L.note(-Dн / 2 - 10, H - 20, -140, 250, "нога-знак окна", 2.5)
-    L.note(-40, -п_н - 25, -125, -35, "нижний знак Ø%s × %s" % (ф(Dв), ф(T.ЗНАК_НИЗ)), 2.5)
-    L.msp.add_lwpolyline([L._p((-185, -п_н)), L._p((175, -п_н))], dxfattribs={"layer": "25_ЛИТЬЁ", "linetype": "DASHDOT", "const_width": 0.8})
-    L.line((180, -п_н), (180, -п_н + 14), "25_ЛИТЬЁ"); L.line((180, -п_н), (180, -п_н - 14), "25_ЛИТЬЁ")
-    L.text(188, -п_н + 9, "В", 4.5, layer="25_ЛИТЬЁ"); L.text(188, -п_н - 9, "Н", 4.5, layer="25_ЛИТЬЁ")
-    L.text(155, -п_н + 5, "МФ", 3.5, layer="25_ЛИТЬЁ")
-    L.note(-100, -п_н / 2, -160, 8, "припуск %s" % ф(п_н), 2.5)
-    L.note(70, H + п_в / 2, 110, 205, "припуск %s" % ф(п_в), 2.5)
-    L.note(40, H + п_в + o["прибыль_H"] - 20, 90, 300, "прибыль 1 - открытая", 2.5)
-    L.dimh(-o["прибыль_D"] / 2, o["прибыль_D"] / 2, H + п_в + o["прибыль_H"], H + п_в + o["прибыль_H"] + 10)
-    L.dimv(H + п_в, H + п_в + o["прибыль_H"], o["прибыль_D"] / 2, o["прибыль_D"] / 2 + 18)
-    L.dimv(-п_н, H + п_в, Lx / 2, Lx / 2 + 14)
-    L.dimh(-Lx / 2, Lx / 2, -п_н, -п_н - 60)
-    pit_h = 9.0
-    L.geom(box(-Lx / 2 - 38, -п_н, -Lx / 2, -п_н + pit_h), "25_ЛИТЬЁ")
-    L.note(-Lx / 2 - 20, -п_н + pit_h, -125, 40, "питатель 40/32 × %s" % ф(pit_h), 2.5)
-    L.title(0, 312, "Отливка в форме - разрез по оси вдоль X")
-    L.text(0, 300, "Тонкой линией - контур детали. Красным - прибыль, питатели, разъём. Клеткой - стержень.", 2.5)
-    # --- вид сверху на отливку в форме
-    L.вид(650.0, 395.0)
-    рисовать(L, план_корпуса(отливка=True))
-    хол = л["холодильник"]
-    места = [(0, Dн / 2 + хол[1] / 2 + 2, 0), (0, -Dн / 2 - хол[1] / 2 - 2, 0)]
-    for a in K["фиксатор_углы"]:
-        места.append(((K["фиксатор_r"] + 28) * math.cos(math.radians(a)), (K["фиксатор_r"] + 28) * math.sin(math.radians(a)), a))
-    for i, (x, y, a) in enumerate(места, 1):
-        g = affinity.rotate(box(x - хол[0] / 2, y - хол[1] / 2, x + хол[0] / 2, y + хол[1] / 2), a, origin=(x, y))
-        L.hatch(g, 45.0, 0.25)
-        L.text(x + (38 if x >= 0 else -36), y, "Х%d" % i, 3.5)
-    span = K["окно"][2]
-    нога = Polygon([(0, 0)] + [((Dн / 2 + T.ЗНАК_ОКНА) * math.cos(math.radians(180 - span / 2 + span * i / 32)),
-                                (Dн / 2 + T.ЗНАК_ОКНА) * math.sin(math.radians(180 - span / 2 + span * i / 32))) for i in range(33)]).difference(Point(0, 0).buffer(Dн / 2, 128))
-    L.hatch(нога, angle=0.0, step=0.8, pattern="ANSI37")
-    sx = -Lx / 2 - 115
-    L.circle((sx, 0), o["d_стояка"] / 2, "25_ЛИТЬЁ")
-    L.geom(box(sx, -80, sx + 40, 80), "25_ЛИТЬЁ")
-    for y in (-60, 60):
-        L.geom(box(sx + 40, y - 20, -Lx / 2, y + 20), "25_ЛИТЬЁ")
-    L.note(sx, o["d_стояка"] / 2, sx + 20, 130, "стояк Ø%s - общий на две отливки" % ф(o["d_стояка"]), 2.5)
-    L.title(0, 178, "Вид сверху на отливку в форме")
-    # --- таблица
-    L.вид(0, 0)
-    rows = [["Способ", "ХТС альфа-сет, опоки %s × %s × %s/%s" % tuple(ф(v) for v in л["опока"])],
-            ["Отливок в форме / металла на форму", "%d / %s кг" % (л["отливок_в_форме"], ф(o["металл_на_форму"], 1))],
-            ["Масса отливки / детали / прибыли", "%s / %s / %s кг" % (ф(o["масса_отливки"], 1), ф(o["масса_детали"], 1), ф(o["масса_прибыли"], 1))],
-            ["Выход годного", "%s %%" % ф(o["выход_годного"], 1)],
-            ["Модуль теплового узла / прибыли", "%s / %s мм" % (ф(o["модуль_узла"], 1), ф(o["модуль_прибыли"], 1))],
-            ["Питание - нужно / даёт прибыль", "%s / %s кг" % (ф(o["питание_нужно_кг"], 2), ф(o["питание_отдаёт_кг"], 2))],
-            ["Продолжительность заливки τ = S√G", "%s с" % ф(o["τ_с"], 1)],
-            ["Расчётный напор Hр (Асатиани)", "%s мм" % ф(o["H_р_мм"])],
-            ["Fст : Fшл : Fпит, см²", "%s : %s : %s, питателей %d по %s" % (ф(o["F_ст"], 1), ф(o["F_шл"], 1), ф(o["F_пит"], 1), o["питателей"], ф(o["пит_1"], 1))],
-            ["Температура заливки", "%d…%d °С" % л["t_заливки"]],
-            ["Усадка линейная / уклоны", "%s %% / 1°" % ф(T.УСАДКА, 1)],
-            ["Смесь на форму / смолы", "%s т / %s кг" % (ф(o["смесь_на_форму_т"], 3), ф(o["смола_кг"], 1))],
-            ["Стержень", "%s кг ХТС, 1 на отливку" % ф(o["стержень_кг"], 1)],
-            ["Холодильники наружные Х1…Х4", "%s × %s × %s, сталь" % tuple(ф(v) for v in л["холодильник"])]]
-    D.table(L.msp, 420, 196, 1, ["Литейная технология", "Значение"], rows, [74, 86], h_row=6.2)
-    notes = ("Элементы литейной формы - по ГОСТ 3.1125-88, размеры модели - с усадкой %s %%." % ф(T.УСАДКА, 1),
-             "Форма - ХТС на щелочной фенольной смоле (альфа-сет) %s %% от песка, отвердитель %s %% от смолы, песок %s." % (ф(л["смесь"]["смола"], 1), ф(л["смесь"]["отвердитель"]), л["смесь"]["песок"]),
-             "Форму и стержень окрасить - %s." % л["краска"],
-             "Прибыль 1 открытая %s × %s × %s. Зеркало засыпать утепляющей смесью сразу после заливки, упор вырезать фрезой из шейки прибыли." % (ф(o["прибыль_D"]), ф(o["прибыль_W"]), ф(o["прибыль_H"])),
-             "Холодильники Х1…Х4 наружные - ставить на модель до засыпки смеси, чистые, без ржавчины.",
-             "Заливать при %d…%d °С из чайникового ковша, раскисление алюминием 1 кг/т, выдержка в форме не менее 3 ч." % л["t_заливки"],
-             "Нога-знак окна стержня идёт до верха модели. При знаке только по высоте окна модель не вынимается - поднутрение.")
-    return L.save("ВГ-2026_46_01_ЛФ_отливка", "A1", РАМКА_А1_1, "ВГ-2026.46.01 ЛФ", "Корпус. Отливка",
-                  "Элементы литейной формы · прибыль, питатели, стержень, холодильники", notes,
-                  "Сталь 20ГЛ ГОСТ 977-88 · отливка %s кг" % ф(o["масса_отливки"], 1), wrap=76)
+    notes = ("Отливка - сталь 20ГСЛ ГОСТ 977-88, группа 2. %s." % T.ТОЧНОСТЬ,
+             "Неуказанные размеры, литейные радиусы и уклоны - по электронной модели детали. Грани «ласточкина хвоста» - "
+             "под %s° к вертикали." % ф(K["хвост_угол"]),
+             "Термообработка - %s. Твёрдость не более 187 НВ." % T.МАТЕРИАЛЫ["20ГСЛ"]["термо"],
+             "Механические свойства на образцах от плавки - σт не менее %s МПа, σв не менее %s МПа, δ не менее %s %%, "
+             "KCU не менее %s кДж/м²." % (ф(T.МАТЕРИАЛЫ["20ГСЛ"]["σт"]), ф(T.МАТЕРИАЛЫ["20ГСЛ"]["σв"]),
+                                         T.МАТЕРИАЛЫ["20ГСЛ"]["δ"], T.МАТЕРИАЛЫ["20ГСЛ"]["KCU"]),
+             "Раковины, трещины и засоры на опорных полосах, плече и центраторе не допускаются. Исправление дефектов "
+             "заваркой - по ГОСТ 977-88, на плече и центраторе - с разрешения конструктора.",
+             "Отверстие ⌀%sH9 льётся ⌀%s под сверление и развёртывание, опорные полосы и плечо зачистить в размер." % (
+                 ф(K["d_отв"]), ф(K["d_отв"] - 2 * T.ПРИПУСКИ["отверстие"])),
+             "Неуказанные предельные отклонения размеров обработанных поверхностей - H14, h14, ±IT14/2.",
+             "Маркировать литыми знаками «ВГ-46» и номером плавки, клеймо ОТК ударным способом.")
+    return L.save("ВГ-2026_46_01_корпус", "ВГ-2026.46.01", "Корпус",
+                  "Деталь поз. 1 узла %s. Отливка %s кг, деталь %s кг" % (T.MARK, ф(o["масса_отливки"], 2), ф(м["корпус"], 2)),
+                  notes, "Сталь 20ГСЛ ГОСТ 977-88, масса %s кг" % ф(м["корпус"], 2), wrap=86)
 
 
-# ------------------------------------------------------------------ лист 4: плита модельная (оснастка)
-def плита_лист():
-    sc = 2
-    L = Лист(sc)
-    o = T.отливка()
-    л = T.ЛИТЬЁ
-    k = o["модель_масштаб"]
+def стержень_лист():
+    L = Лист(1, "A4")
+    d, l = С["d"], С["l"]
+    рез, lр = С["резьба"]
+    L.вид(40.0, 205.0)
+    f = 1.0
+    L.pl([(f, -d / 2), (l - f, -d / 2), (l, -d / 2 + f), (l, d / 2 - f), (l - f, d / 2), (f, d / 2), (0, d / 2 - f),
+          (0, -d / 2 + f)], close=True)
+    for x in (f, l - f):
+        L.line((x, -d / 2), (x, d / 2))
+    d1 = d - 1.227 * 1.5
+    L.line((0.0, d1 / 2), (lр, d1 / 2), "22_ТОНКИЕ")
+    L.line((0.0, -d1 / 2), (lр, -d1 / 2), "22_ТОНКИЕ")
+    L.line((lр, -d / 2), (lр, d / 2))
+    L.axis((-8.0, 0.0), (l + 8.0, 0.0))
+    L.dimh(0.0, l, -d / 2, -30.0)
+    L.dimh(0.0, lр, d / 2, 20.0)
+    L.dimv(-d / 2, d / 2, 70.0, 70.0 + 0.0, "⌀%sh11" % ф(d))
+    L.полка((6.0, d1 / 2 + 0.5), (38.0, 44.0), рез + "-6g", 3.0)
+    L.полка((l - 0.5, d / 2 - 0.5), (l - 10.0, 34.0), "2 фаски 1×45°", 3.0)
+    L.rough_угол("Ra 6,3")
+    notes = ("Круг 16 ГОСТ 2590-2006 из стали 40Х ГОСТ 4543-2016, улучшение 235…277 НВ.",
+             "Неуказанные предельные отклонения размеров h14, ±IT14/2.",
+             "Покрытие - грунтовка ГФ-021, эмаль ПФ-115. Резьбу не окрашивать.")
+    return L.save("ВГ-2026_46_02_стержень", "ВГ-2026.46.02", "Стержень",
+                  "Деталь поз. 2 узла %s, рукоятка запора" % T.MARK, notes,
+                  "Круг 40Х ГОСТ 2590-2006, масса %s кг" % ф(T.массы()["стержень"], 2))
+
+
+def запор_лист():
+    L = Лист(1, "A3")
+    угол = 0.0                                              # резьбовое отверстие - вдоль X
+    з = TW.запор(угол)
+    ах = TW._head_угол(угол) % 180.0                       # длинная ось головы в плане
+    z0, z1 = З["z_вала"]
+    длина, ширина, прямая, конус, (дл_в, шир_в) = З["голова"]
+    # --- А-А по оси резьбового отверстия
+    L.вид(95.0, 170.0)
+    _разрез_тела(L, з, "y", 0.0, "спереди", "pos.3 ")
+    L.axis((0, z0 - 10), (0, Z_ГОЛОВА + 10))
+    L.axis((-26.0, З["z_отв"]), (26.0, З["z_отв"]))
+    L.title(-40.0, Z_ГОЛОВА + 18, "А-А")
+    L.dimh(-З["вал"] / 2, З["вал"] / 2, 5.0, 5.0, "⌀%sf9" % ф(З["вал"]))
+    пр = З["проточка"]
+    L.dimh(-пр["d"] / 2, пр["d"] / 2, sum(пр["z"]) / 2, sum(пр["z"]) / 2, "⌀%s" % ф(пр["d"]))
+    L.dimv(z0, Z_ГОЛОВА, -26.0, -62.0, ф(Z_ГОЛОВА - z0, 1))
+    L.dimv(z0, z1, -15.0, -46.0, ф(z1 - z0, 1))
+    L.dimv(пр["z"][0], пр["z"][1], 15.0, 36.0, ф(пр["z"][1] - пр["z"][0], 1))
+    L.dimv(z0, пр["z"][0], 15.0, 36.0, ф(пр["z"][0] - z0, 1))
+    L.dimv(z0, З["z_отв"], 15.0, 52.0, ф(З["z_отв"] - z0, 1))
+    L.dimv(z1, z1 + прямая, 30.0, 62.0, ф(прямая))
+    L.dimv(z1 + прямая, Z_ГОЛОВА, 30.0, 62.0, ф(конус))
+    L.полка((-6.0, З["z_отв"] - 3.0), (-44.0, z0 - 12.0), "М14×1,5-6Н", 3.0)
+    L.line((0.0, Z_ГОЛОВА + 45.0), (0.0, Z_ГОЛОВА + 31.0))
+    L._стрелка((0.0, Z_ГОЛОВА + 27.0), (0.0, Z_ГОЛОВА + 31.0))
+    L.text(6.0, Z_ГОЛОВА + 40.0, "Б", 5.0)
+    # --- вид Б (сверху)
+    L.вид(250.0, 175.0)
+    _вид_тела(L, з, "сверху")
+    L.title(0, 70, "Б")
+    L.cross((0, 0), 40)
+    ca, sa = math.cos(math.radians(ах)), math.sin(math.radians(ах))
+    L.axis((-62 * ca, -62 * sa), (62 * ca, 62 * sa))
+    L.dim((-длина / 2 * ca, -длина / 2 * sa), (длина / 2 * ca, длина / 2 * sa),
+          (-sa * 45.0, ca * 45.0), ах)
+    L.dim((sa * ширина / 2, -ca * ширина / 2), (-sa * ширина / 2, ca * ширина / 2), (ca * 72.0, sa * 72.0), ах + 90.0)
+    L.dim_угол((0, 0), 34.0, 0.0, ах, "%s°" % ф(ах))
+    L.полка((дл_в / 2 * ca * 0.8, дл_в / 2 * sa * 0.8), (70.0, -48.0), "верх головы %s × %s" % (ф(дл_в), ф(шир_в)), 3.0)
+    # след А-А на виде Б и стрелка вида Б на разрезе
+    L.след([(-66.0, 0.0), (66.0, 0.0)], "А", (0, 1))
+    L.rough_угол("Ra 12,5")
+    notes = ("Поковка группы IV ГОСТ 8479-70, КП 590, сталь 40Х ГОСТ 4543-2016, 235…277 НВ.",
+             "Резьба М14×1,5-6Н сквозная, ось перпендикулярна оси вала, под %s° к длинной оси головы." % ф(ах),
+             "Шероховатость вала ⌀%sf9 - Ra 1,6. Неуказанные радиусы R2, неуказанные предельные отклонения размеров H14, h14, ±IT14/2." % ф(З["вал"]),
+             "Покрытие головки - грунтовка ГФ-021, эмаль ПФ-115. Вал ⌀%sf9, проточку и резьбу не окрашивать." % ф(З["вал"]))
+    return L.save("ВГ-2026_46_03_запор", "ВГ-2026.46.03", "Элемент запирающий",
+                  "Деталь поз. 3 узла %s, поковка по кооперации" % T.MARK, notes,
+                  "Сталь 40Х ГОСТ 4543-2016, масса %s кг" % ф(T.массы()["запор"], 2))
+
+
+def платик_лист():
+    L = Лист(2, "A3")
+    p = TW.платик()
+    Lп, Bп, t = П["L"], П["B"], П["t"]
+    L.вид(270.0, 400.0)
+    _вид_тела(L, p, "сверху")
+    L.cross((0, 0), Lп / 2 + 15)
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            L.cross((sx * П["болт_x"], sy * П["болт_y"]), 30)
+    L.dimh(-Lп / 2, Lп / 2, -Bп / 2, -Bп / 2 - 30)
+    L.dimh(-П["болт_x"], П["болт_x"], П["болт_y"], Bп / 2 + 25)
+    L.dimv(-Bп / 2, Bп / 2, Lп / 2, Lп / 2 + 40)
+    L.dimv(-П["болт_y"], П["болт_y"], П["болт_x"], Lп / 2 + 75)
+    L.dimh(-П["окно"][0] / 2, П["окно"][0] / 2, П["окно"][1] / 2, П["окно"][1] / 2 + 30)
+    L.dimv(-П["окно"][1] / 2, П["окно"][1] / 2, -П["окно"][0] / 2 + 20, -П["окно"][0] / 2 - 30)
+    ox, oy = -П["болт_x"], -П["болт_y"]
+    L.полка((ox + 8.0, oy + П["овал"][0] / 2 - 1.0), (-60.0, -48.0), "4 паза %s × %s" % (ф(П["овал"][0]), ф(П["овал"][1])), 3.0)
+    L.след([(-Lп / 2 - 14, 0.0), (Lп / 2 + 14, 0.0)], "А", (0, 1))
+    # --- А-А
+    L.вид(270.0, 170.0 - Z_ПЛ)
+    _разрез_тела(L, p, "y", 0.0, "спереди", "pos.4 ")
+    L.title(0, Z_ПЛ + 22, "А-А")
+    L.dimv(Z_ПЛ_НИЗ, Z_ПЛ, -Lп / 2, -Lп / 2 - 20, ф(t))
+    L.rough_угол("Rz 80")
+    notes = ("Лист 20 09Г2С-325 ГОСТ 19281-2014. Резка плазменная, неуказанные предельные отклонения ±1 мм.",
+             "Концы пазов калибровать сверлом ⌀%s по кондуктору." % ф(П["овал"][0]),
+             "Грат и окалину удалить, острые кромки притупить.")
+    return L.save("ВГ-2026_46_04_платик", "ВГ-2026.46.04", "Платик",
+                  "Деталь поз. 4 узла %s" % T.MARK, notes,
+                  "Лист 09Г2С ГОСТ 19281-2014, масса %s кг" % ф(T.массы()["платик"], 2))
+
+
+def шайба_лист():
+    L = Лист(1, "A4")
+    ш = TW.шайба()
+    Dш, dш, t, разрез_ = Ш["D"], Ш["d"], Ш["t"], Ш["разрез"]
+    L.вид(65.0, 215.0)
+    _вид_тела(L, ш, "сверху")
+    L.cross((0, 0), 34)
+    L.dimv(-разрез_ / 2, разрез_ / 2, Dш / 2, Dш / 2 + 24, ф(разрез_, 1))
+    L.полка((Dш / 2 * 0.7, Dш / 2 * 0.7), (30.0, 40.0), "⌀%s" % ф(Dш), 3.0)
+    L.полка((-dш / 2 * 0.7, -dш / 2 * 0.7), (24.0, -40.0), "⌀%s" % ф(dш, 1), 3.0)
+    L.след([(-Dш / 2 - 8, 0.0), (Dш / 2 + 8, 0.0)], "А", (0, 1))
+    L.вид(160.0, 215.0 - Ш["z"][0])
+    _разрез_тела(L, ш, "y", 0.0, "спереди", "pos.5 ")
+    L.title(0, Ш["z"][1] + 12, "А-А")
+    L.dimv(Ш["z"][0], Ш["z"][1], Dш / 2, Dш / 2 + 12, ф(t))
+    L.rough_угол("Rz 80")
+    notes = ("Лист 12 09Г2С-325 ГОСТ 19281-2014. Резка плазменная, неуказанные предельные отклонения ±0,5 мм.",
+             "Опорные торцы плоские, отклонение от плоскостности не более 0,2 мм. Грат удалить.")
+    return L.save("ВГ-2026_46_05_шайба", "ВГ-2026.46.05", "Шайба разрезная",
+                  "Деталь поз. 5 узла %s" % T.MARK, notes,
+                  "Лист 09Г2С ГОСТ 19281-2014, масса %s кг" % ф(T.массы()["шайба"], 2))
+
+
+# ------------------------------------------------------------------ литьё и оснастка
+def _разъём(L, x0, x1, z):
+    """Линия разъёма формы и модели (ГОСТ 3.1125-88): штрихпунктирная, стрелки «В» и «Н», знак «МФ»."""
+    s = L.sc
+    L.line((x0, z), (x1, z), "26_РАЗЪЁМ")
+    L.line((x1, z), (x1, z + 14 * s), "20_ВИДИМЫЕ")
+    L.line((x1, z), (x1, z - 14 * s), "20_ВИДИМЫЕ")
+    L.text(x1 + 5 * s, z + 9 * s, "В", 3.5)
+    L.text(x1 + 5 * s, z - 9 * s, "Н", 3.5)
+    L.text(x1 - 12 * s, z + 4 * s, "МФ", 3.5)
+
+
+def литьё_лист():
+    L = Лист(1, "A1")
+    о, л = T.отливка(), T.ЛИТЬЁ
+    отл, дет = TW.отливка(), TW.корпус()
+    ст1, ст2 = TW.стержень_1(), TW.стержень_2()
     Lf, Bf, Hв, Hн = л["опока"]
-    PL = (Lf + 100.0, Bf + 100.0, 30.0)
-    xc = Lf / 4.0
-    x_in = xc - Lx * k / 2                           # торец фланца модели со стороны стояка
-    # --- план верхней плиты
-    L.вид(-80.0, -285.0)
-    L.rect(-PL[0] / 2, -PL[1] / 2, PL[0] / 2, PL[1] / 2)
-    L.rect(-Lf / 2, -Bf / 2, Lf / 2, Bf / 2, "24_ФАНТОМ")
-    span = K["окно"][2]
-    for sx in (-1, 1):
-        rot = 0.0 if sx > 0 else 180.0
-        for g, layer in план_корпуса(отливка=True, масштаб=k):
-            if layer == "21_НЕВИДИМЫЕ":
-                continue
-            L.geom(affinity.translate(affinity.rotate(g, rot, origin=(0, 0)), sx * xc, 0), layer)
-        нога = Polygon([(0, 0)] + [((Dн / 2 + T.ЗНАК_ОКНА) * k * math.cos(math.radians(180 - span / 2 + span * i / 32)),
-                                    (Dн / 2 + T.ЗНАК_ОКНА) * k * math.sin(math.radians(180 - span / 2 + span * i / 32))) for i in range(33)]).difference(Point(0, 0).buffer(Dн / 2 * k, 128))
-        L.hatch(affinity.translate(affinity.rotate(нога, rot, origin=(0, 0)), sx * xc, 0), 0.0, 0.8, "ANSI37")
-        L.cross((sx * xc, 0), 185)
-        for y in (-60, 60):
-            L.geom(box(min(sx * x_in, sx * (x_in - 38)), y - 20, max(sx * x_in, sx * (x_in - 38)), y + 20), "25_ЛИТЬЁ")
-    L.circle((0, 0), o["d_стояка"] / 2, "25_ЛИТЬЁ"); L.circle((0, 0), o["d_стояка"] / 2 + 8, "25_ЛИТЬЁ")
-    L.geom(unary_union([box(-(x_in - 38), -80, -(x_in - 78), 80), box(x_in - 78, -80, x_in - 38, 80), box(-(x_in - 78), -20, x_in - 78, 20)]), "25_ЛИТЬЁ")
-    for sx in (-1, 1):
-        L.circle((sx * (PL[0] / 2 - 25), 0), 12.0); L.circle((sx * (PL[0] / 2 - 25), 0), 20.0, "22_ТОНКИЕ"); L.cross((sx * (PL[0] / 2 - 25), 0), 28)
-    L.cross((0, 0), 60)
-    L.title(0, PL[1] / 2 + 42, "Плита модельная верхняя - вид сверху")
-    L.dimh(-PL[0] / 2, PL[0] / 2, -PL[1] / 2, -PL[1] / 2 - 25)
-    L.dimh(-Lf / 2, Lf / 2, -Bf / 2, -PL[1] / 2 - 52, "%s (опока в свету)" % ф(Lf))
-    L.dimh(-xc, xc, 0, PL[1] / 2 + 15)
-    L.dimh(-(PL[0] / 2 - 25), PL[0] / 2 - 25, 0, -PL[1] / 2 - 79)
-    L.dimv(-PL[1] / 2, PL[1] / 2, PL[0] / 2, PL[0] / 2 + 25)
-    L.dimv(-Bf / 2, Bf / 2, Lf / 2, PL[0] / 2 + 50, ф(Bf))
-    for pt, sh, n in (((-PL[0] / 2 + 30, -PL[1] / 2 + 20), (-PL[0] / 2 + 60, -PL[1] / 2 + 60), 1), ((xc + 70, 90), (PL[0] / 2 - 90, 200), 2),
-                      ((xc, 0), (PL[0] / 2 - 90, 150), 3), ((0, o["d_стояка"] / 2 + 8), (60, 200), 4),
-                      ((-(x_in - 58), 70), (-250, 200), 5), ((x_in - 18, -60), (PL[0] / 2 - 90, -200), 6),
-                      ((PL[0] / 2 - 25, -12), (PL[0] / 2 - 90, -110), 7)):
-        L.pos(pt, sh, n)
-    # --- разрез по оси моделей
-    L.вид(-80.0, -1000.0)
-    L.hatch(box(-PL[0] / 2, -PL[2], PL[0] / 2, 0), 45.0, 1.2)
-    for sx in (-1, 1):
-        g = affinity.translate(affinity.scale(модель_XZ(), sx * k, k, origin=(0, 0)), sx * xc, P["подошва"] * k)
-        L.hatch(g.difference(box(-2000, -500, 2000, 0.01)), 135.0, 1.0)
-    L.hatch(Polygon([(-o["d_стояка"] / 2, 0), (o["d_стояка"] / 2, 0), (o["d_стояка"] / 2 + 8, Hв), (-o["d_стояка"] / 2 - 8, Hв)]), 135.0, 1.0)
-    L.hatch(box(-(x_in - 38), 0, x_in - 38, 30), 135.0, 1.0)
-    for sx in (-1, 1):
-        L.hatch(box(sx * (PL[0] / 2 - 25) - 12, 0, sx * (PL[0] / 2 - 25) + 12, 60), 45.0, 0.5)
-    L.rect(-Lf / 2, 0, Lf / 2, Hв, "24_ФАНТОМ")
-    L.title(0, Hв + 18, "Разрез по оси моделей (опока верха - фантом)")
-    L.dimv(0, Hв, Lf / 2, Lf / 2 + 25, "%s (опока)" % ф(Hв))
-    L.dimv(0, (H + P["подошва"] + P["площадка"] + o["прибыль_H"]) * k, xc + o["прибыль_D"] / 2 * k, xc + 120)
-    L.dimv(-PL[2], 0, -PL[0] / 2, -PL[0] / 2 - 20)
-    L.text(0, -18, "модели сплошные - полость стакана и окно даёт стержень Ст. 1, нога-знак окна выведена до верха модели", 3.0)
-    # --- нижняя плита
-    L.вид(640.0, -285.0)
-    L.rect(-PL[0] / 4, -PL[1] / 2, PL[0] / 4, PL[1] / 2)
-    for sx in (-1, 1):
-        L.circle((sx * xc / 2, 0), Dв * k / 2); L.circle((sx * xc / 2, 0), Dв * k / 2 + T.ЗНАК_НИЗ * math.tan(math.radians(7)), "22_ТОНКИЕ")
-        L.cross((sx * xc / 2, 0), 85)
-    L.title(0, PL[1] / 2 + 42, "Плита модельная нижняя (схема)")
-    L.text(0, -PL[1] / 2 - 20, "знаки стержней Ø%s, h %s, уклон 7°" % (ф(Dв * k, 1), ф(T.ЗНАК_НИЗ)), 3.0)
-    L.pos((-PL[0] / 4 + 20, PL[1] / 2 - 20), (-PL[0] / 4 + 50, PL[1] / 2 + 15), 8)
-    # --- спецификация
-    L.вид(0, 0)
-    rows = [["1", "Плита модельная %s × %s × %s" % (ф(PL[0]), ф(PL[1]), ф(PL[2])), "1", "Д16Т ГОСТ 21631-76"],
-            ["2", "Модель отливки ВГ-2026.46.01 (верх)", "2", "пластик модельный ПУ"],
-            ["3", "Модель прибыли %s × %s × %s" % (ф(o["прибыль_D"] * k), ф(o["прибыль_W"] * k), ф(o["прибыль_H"] * k)), "2", "пластик модельный ПУ"],
-            ["4", "Модель стояка Ø%s/%s" % (ф(o["d_стояка"]), ф(o["d_стояка"] + 16)), "1", "пластик модельный ПУ"],
-            ["5", "Модель коллектора, сечение %s см²" % ф(o["F_шл"], 1), "1", "пластик модельный ПУ"],
-            ["6", "Модель питателя 40/32 × 9", "4", "пластик модельный ПУ"],
-            ["7", "Штырь центрирующий Ø24", "2", "сталь 45, 40…45 HRC"],
-            ["8", "Плита модельная нижняя со знаками", "1", "Д16Т, пластик ПУ"],
-            ["9", "Винт М8×30 ГОСТ Р ИСО 4762, штифт 8×30", "16/8", "сталь"]]
-    D.table(L.msp, 400, -640, sc, ["Поз.", "Наименование", "Кол.", "Материал"], rows, [12, 78, 12, 46], h_row=7.0)
-    notes = ("Размеры моделей даны с учётом линейной усадки стали 20ГЛ %s %%, формовочные уклоны 1° по ГОСТ 3212-92." % ф(T.УСАДКА, 1),
-             "Модели - полиуретановый модельный пластик плотностью 0,7…1,2 г/см³, фрезеровать по 3D-модели отливки ВГ-2026.46.01.",
-             "Отклонение расположения моделей и штырей не более ±0,2 мм. Плоскостность рабочей поверхности плиты 0,1 мм на 500 мм.",
-             "Рабочие поверхности моделей Ra 1,6, знаки Ra 3,2, перед формовкой - разделительный состав.",
-             "Стойкость комплекта не менее 500 съёмов (программа на судно - %d отливок)." % T.программа()["всего"])
-    return L.save("ВГ-2026_46_01-МП_плита_модельная", "A1", РАМКА_А1_2, "ВГ-2026.46.01-МП СБ", "Плита модельная",
-                  "Оснастка для формовки корпуса ВГ-2026.46.01 · две отливки в форме · ХТС", notes,
-                  "Д16Т, пластик модельный ПУ", wrap=82)
+    zр = K["z"][0]
+    Wr, Lr, Hr = о["прибыль"]
+    # --- А-А по прибылям (y = 10)
+    yr = 10.0
+    L.вид(210.0, 390.0)
+    g = сечение(отл, "y", yr, "спереди")
+    L.hatch(g, 45.0, 1.0)
+    L.geom(сечение(дет, "y", yr, "спереди"), "22_ТОНКИЕ")
+    L.hatch(сечение(ст1, "y", yr, "спереди"), 45.0, 0.6, "ANSI37")
+    L.rect(-150.0, zр - Hн, 150.0, zр + Hв, "22_ТОНКИЕ")
+    for x in (-150.0, 150.0):
+        L.обрыв(x, zр - Hн - 4, zр + Hв + 4)
+    _разъём(L, -170.0, 175.0, zр)
+    L.title(0, zр + Hв + 14, "А-А")
+    L.text(0.0, 14.0, "Ст. 1", 3.5)
+    xc = (K["центратор"][0] / 2.0 + 72.56) / 2.0 + 2.0
+    L.dimv(Z_ПЛЕЧО, Z_ПЛЕЧО + Hr, xc + Wr / 2, 110.0, ф(Hr))
+    L.dimh(xc - Wr / 2, xc + Wr / 2, Z_ПЛЕЧО + Hr, Z_ПЛЕЧО + Hr + 14.0, ф(Wr))
+    L.dimv(zр - Hн, zр, -150.0, -165.0, ф(Hн))
+    L.dimv(zр, zр + Hв, -150.0, -165.0, ф(Hв))
+    L.полка((xc, Z_ПЛЕЧО + Hr - 12.0), (60.0, 100.0), "прибыль открытая", 3.0)
+    L.полка((-40.0, -44.0), (-110.0, -95.0), "припуск %s" % ф(T.ПРИПУСКИ["полосы"]), 3.0)
+    # --- Б-Б по оси (x = 0)
+    L.вид(530.0, 390.0)
+    L.hatch(сечение(отл, "x", 0.0, "слева"), 45.0, 1.0)
+    L.geom(сечение(дет, "x", 0.0, "слева"), "22_ТОНКИЕ")
+    L.hatch(сечение(ст1, "x", 0.0, "слева"), 45.0, 0.6, "ANSI37")
+    L.hatch(сечение(ст2, "x", 0.0, "слева"), 45.0, 0.6, "ANSI37")
+    L.rect(-110.0, zр - Hн, 110.0, zр + Hв, "22_ТОНКИЕ")
+    for x in (-110.0, 110.0):
+        L.обрыв(x, zр - Hн - 4, zр + Hв + 4)
+    _разъём(L, -125.0, 120.0, zр)
+    L.title(0, zр + Hв + 14, "Б-Б")
+    L.полка((0.0, 40.0), (-70.0, 80.0), "Ст. 1", 3.0)
+    L.полка((70.0, -30.0), (40.0, -110.0), "Ст. 2, знак до разъёма", 3.0)
+    L.dimh(-K["d_отв"] / 2 + T.ПРИПУСКИ["отверстие"], K["d_отв"] / 2 - T.ПРИПУСКИ["отверстие"], K["z"][1] + TW.ЗНАК_СТ1,
+           K["z"][1] + TW.ЗНАК_СТ1 + 12.0, "⌀%s" % ф(K["d_отв"] - 2 * T.ПРИПУСКИ["отверстие"]))
+    L.dimv(K["z"][1], K["z"][1] + TW.ЗНАК_СТ1, 13.0, 40.0, ф(TW.ЗНАК_СТ1))
+    # --- план формы, М 1 : 4 (верхняя полуформа снята)
+    k = 0.25
+    L.вид(330.0, 125.0)
+    L.rect(-Lf / 2 * k, -Bf / 2 * k, Lf / 2 * k, Bf / 2 * k)
+    план = hlr([отл], "сверху")[0]
+    for sx in (-1.0, 1.0):
+        L.линии(план, dx=sx * Lf / 4 * k, k=k)
+    r_ст = о["d_стояка"] / 2.0
+    L.circle((0, 0), r_ст * k)
+    L.circle((0, 0), (r_ст + 8.0) * k, "22_ТОНКИЕ")
+    x_к = Lf / 4 - K["кромка"] - 25.0
+    L.rect(-x_к * k, -10.0 * k, x_к * k, 10.0 * k)
+    for sx in (-1.0, 1.0):
+        for y in (-40.0, 40.0):
+            xa, xb_ = sx * x_к, sx * (Lf / 4 - K["полоса"]["x"][1])
+            L.rect(min(xa, xb_) * k, (y - 8.0) * k, max(xa, xb_) * k, (y + 8.0) * k)
+        L.rect((sx * x_к - 6.0) * k, -48.0 * k, (sx * x_к + 6.0) * k, 48.0 * k)
+    L.title(0, Bf / 2 * k + 8.0, "План формы, М 1 : 4 (верхняя полуформа снята)")
+    L.dimh(-Lf / 2 * k, Lf / 2 * k, -Bf / 2 * k, -Bf / 2 * k - 14.0, ф(Lf))
+    L.dimv(-Bf / 2 * k, Bf / 2 * k, Lf / 2 * k, Lf / 2 * k + 14.0, ф(Bf))
+    L.полка((0.0, 0.0), (-100.0, 55.0), "стояк ⌀%s" % ф(о["d_стояка"]), 3.0)
+    L.полка((-x_к * k + 5.0, 0.0), (-110.0, -70.0), "коллектор", 3.0)
+    L.полка(((x_к + 8.0) * k, 40.0 * k), (100.0, 62.0), "питатели, %d шт." % о["питателей"], 3.0)
+    # --- таблица
+    L.вид(0.0, 0.0)
+    rows = [["Форма", "ХТС, опоки %s × %s × %s/%s" % tuple(ф(v) for v in л["опока"])],
+            ["Отливок в форме, металла на форму", "%d, %s кг" % (л["отливок_в_форме"], ф(о["металл_на_форму"], 1))],
+            ["Масса детали, отливки, прибылей на отливку", "%s, %s, %s кг" % (ф(о["масса_детали"], 2), ф(о["масса_отливки"], 2),
+                                                                            ф(о["масса_прибылей"], 2))],
+            ["Выход годного", "%s %%" % ф(о["выход_годного"], 1)],
+            ["Модуль отливки, теплового узла, прибыли", "%s, %s, %s мм" % (ф(о["модуль_отливки"], 1), ф(о["модуль_узла"], 1),
+                                                                         ф(о["модуль_прибыли"], 1))],
+            ["Питание нужно, даёт прибыль", "%s, %s кг" % (ф(о["питание_нужно_кг"], 2), ф(о["питание_отдаёт_кг"], 2))],
+            ["Заливка τ = S√G", "%s с" % ф(о["τ_с"], 1)],
+            ["Расчётный напор", "%s мм" % ф(о["H_р_мм"])],
+            ["Fст, Fкол, Fпит", "%s, %s, %s см²" % (ф(о["F_ст"], 2), ф(о["F_шл"], 2), ф(о["F_пит"], 2))],
+            ["Температура заливки", "%d…%d °С" % л["t_заливки"]],
+            ["Смесь на форму, смола", "%s т, %s кг" % (ф(о["смесь_на_форму_т"], 3), ф(о["смола_кг"], 2))],
+            ["Стержни Ст. 1 и Ст. 2 на отливку", "%s кг смеси" % ф(о["стержни_кг"], 2)],
+            ["Груз на форму", "%d кг" % T.груз_на_форму()["груз_кг"]]]
+    D.table(L.msp, 651.0, 560.0, 1, ["Литейная технология", "Значение"], rows, [100, 85], h_row=6.2)
+    notes = ("Элементы литейной формы - по ГОСТ 3.1125-88. Отливка в верхней полуформе, разъём по опорным полосам.",
+             "Форма и стержни - ХТС на щелочной фенольной смоле %s %% от песка, отвердитель %s %% от смолы, песок %s." % (
+                 ф(л["смесь"]["смола"], 1), ф(л["смесь"]["отвердитель"]), л["смесь"]["песок"]),
+             "Форму и стержни окрасить - краска %s." % л["краска"],
+             "Знак стержня Ст. 2 выведен через лицевую грань и опущен до разъёма. Ст. 2 ставить на нижнюю полуформу, Ст. 1 - "
+             "в знаки обеих полуформ.",
+             "Припуск на литое отверстие %s мм на сторону, на опорные полосы и плечо %s мм." % (ф(T.ПРИПУСКИ["отверстие"]),
+                                                                                           ф(T.ПРИПУСКИ["полосы"])),
+             "Прибыли открытые %s × %s × %s, зеркало засыпать утепляющей смесью сразу после заливки." % (ф(Lr), ф(Wr), ф(Hr)),
+             "Выдержка отливок в форме не менее %s ч, прибыли отрезать после термообработки." % ф(л["охлаждение_ч"]))
+    return L.save("ВГ-2026_46_01_ЛФ_отливка", "ВГ-2026.46.01 ЛФ", "Корпус. Отливка",
+                  "Элементы литейной формы. Разъём, припуски, прибыли, стержни, литники", notes,
+                  "Сталь 20ГСЛ ГОСТ 977-88, отливка %s кг" % ф(о["масса_отливки"], 2), wrap=86)
 
 
-# ------------------------------------------------------------------ лист 5: ящик стержневой
-def ящик_лист():
-    L = Лист(1)
+def модель_лист():
+    L = Лист(1, "A1")
+    м_ = TW.модель()
+    kу = 1.0 + T.УСАДКА / 100.0
+    bb = м_.bounding_box()
+    L.вид(200.0, 430.0)
+    _вид_тела(L, м_, "спереди")
+    L.axis((0, bb.min.Z - 12), (0, bb.max.Z + 12))
+    _разъём(L, -130.0, 130.0, K["z"][0] * kу)
+    L.dimh(bb.min.X, bb.max.X, K["z"][0] * kу, bb.min.Z - 40.0, ф(bb.max.X - bb.min.X, 1))
+    L.dimv(K["z"][0] * kу, bb.max.Z, bb.min.X, bb.min.X - 25.0, ф(bb.max.Z - K["z"][0] * kу, 1))
+    L.dimv(bb.min.Z, K["z"][0] * kу, bb.min.X, bb.min.X - 25.0, ф(K["z"][0] * kу - bb.min.Z, 1))
+    L.полка((0.0, bb.max.Z - 5.0), (70.0, bb.max.Z + 25.0), "знак Ст. 1", 3.0)
+    L.полка((0.0, bb.min.Z + 5.0), (60.0, bb.min.Z - 22.0), "знак Ст. 1", 3.0)
+    L.вид(200.0, 190.0)
+    _вид_тела(L, м_, "сверху")
+    L.cross((0, 0), 100)
+    L.dimv(bb.min.Y, bb.max.Y, bb.max.X, bb.max.X + 25.0, ф(bb.max.Y - bb.min.Y, 1))
+    L.полка((0.0, bb.min.Y + 8.0), (-110.0, bb.min.Y - 12.0), "знак Ст. 2", 3.0)
+    L.вид(500.0, 430.0)
+    _вид_тела(L, м_, "слева")
+    L.axis((0, bb.min.Z - 12), (0, bb.max.Z + 12))
+    _разъём(L, -110.0, 110.0, K["z"][0] * kу)
+    L.dimh(-bb.max.Y, -bb.min.Y, K["z"][0] * kу, bb.min.Z - 40.0, ф(bb.max.Y - bb.min.Y, 1))
     o = T.отливка()
-    k = o["модель_масштаб"]
-    п_н, п_в = P["подошва"], P["площадка"]
-    z0, z1, span = K["окно"]
-    Z_TOP = H + п_в                                   # верх ноги-знака = низ ящика (стержень перевёрнут)
-    bz = lambda z: (Z_TOP - z) * k                    # высота в ящике от плиты-подставки
-    hc = bz(-п_н - T.ЗНАК_НИЗ)
-    dc = Dв * k
-    r_leg = (Dн / 2 + T.ЗНАК_ОКНА) * k
-    Bx, By, Bz = 2 * r_leg + 70.0, dc + 110.0, hc          # верх ящика - открытый торец знака: засыпка сверху
-    x0b = -r_leg - 35.0
-    # --- план
-    L.вид(230.0, 190.0)
-    for sg in (1, -1):
-        L.rect(x0b, 0, x0b + Bx, sg * By / 2)
-    L.circle((0, 0), dc / 2)
-    wedge = Polygon([(0, 0)] + [(r_leg * math.cos(math.radians(180 - span / 2 + span * i / 32)),
-                                 r_leg * math.sin(math.radians(180 - span / 2 + span * i / 32))) for i in range(33)])
-    L.geom(wedge.difference(Point(0, 0).buffer(dc / 2 - 0.01)), "21_НЕВИДИМЫЕ")
-    for sx in (-1, 1):
-        L.circle((sx * (Bx / 2 - 15), 0), 6.0); L.cross((sx * (Bx / 2 - 15), 0), 12)
-    L.cross((0, 0), 120)
-    L.title(0, By / 2 + 22, "Вид сверху (со стороны засыпки)")
-    L.dimh(x0b, x0b + Bx, -By / 2, -By / 2 - 16)
-    L.dimv(-By / 2, By / 2, x0b + Bx, x0b + Bx + 16)
-    L.dimh(-dc / 2, dc / 2, 0, By / 2 - 12, "Ø%s" % ф(dc, 1))
-    for pt, sh, n in (((x0b + 10, By / 2 - 10), (x0b - 5, By / 2 + 12), 1), ((-r_leg + 8, 30), (x0b - 20, 60), 2), ((Bx / 2 - 15, 6), (x0b + Bx + 30, 40), 4)):
-        L.pos(pt, sh, n)
-    # --- разрез по оси X
-    L.вид(610.0, 170.0)
-    полость = unary_union([box(-dc / 2, bz(Z_CAV), dc / 2, hc),                       # полость стакана с нижним знаком
-                           box(-r_leg, bz(z1), -dc / 2 + 0.01, bz(z0)),               # язык в окне
-                           box(-r_leg, 0.0, -Dн / 2 * k + 0.01, bz(z0))])             # нога-знак до плиты
-    L.hatch(box(x0b, 0, x0b + Bx, Bz).difference(полость), 45.0, 1.0)
-    L.hatch(box(x0b - 10, -20, x0b + Bx + 10, 0), 135.0, 1.0)
-    L.title(0, Bz + 22, "Разрез по оси (стержень знаком вверх)")
-    L.dimv(0, hc, x0b + Bx, x0b + Bx + 16, ф(hc, 1))
-    L.dimv(bz(z1), bz(z0), -r_leg, x0b - 16, ф((z1 - z0) * k, 1))
-    L.dimv(0, bz(z0), -r_leg, x0b - 32, ф(bz(z0), 1))
-    L.pos((x0b + Bx - 15, -10), (x0b + Bx + 30, -30), 3)
-    L.text(0, -35, "засыпка сверху, вибрация 20 с, отверждение 35 мин, разъём по плоскости окна", 3.0)
-    L.вид(0, 0)
-    rows = [["1", "Половина ящика с полостью стержня", "2", "пластик модельный ПУ"],
-            ["2", "Вставка окна и ноги-знака", "1", "пластик модельный ПУ"],
-            ["3", "Плита-подставка", "1", "Д16Т"],
-            ["4", "Штифт установочный Ø12", "2", "сталь 45"],
-            ["5", "Струбцина", "2", "покупная"]]
-    D.table(L.msp, 30, 560, 1, ["Поз.", "Наименование", "Кол.", "Материал"], rows, [12, 78, 14, 45], h_row=7.0)
-    notes = ("Размеры полости даны с учётом линейной усадки %s %%, стержневые уклоны 1° по ГОСТ 3212-92." % ф(T.УСАДКА, 1),
-             "Разъём ящика - по плоскости симметрии окна, половины фиксировать штифтами поз. 4, стягивать струбцинами поз. 5.",
-             "Стержень - ХТС альфа-сет, масса %s кг. Окраска цирконовой краской, два слоя с поджигом." % ф(o["стержень_кг"], 1),
-             "Рабочие поверхности ящика Ra 1,6. Разделительный состав перед каждой засыпкой.")
-    return L.save("ВГ-2026_46_01-СЯ_ящик_стержневой", "A1", РАМКА_А1_1, "ВГ-2026.46.01-СЯ СБ", "Ящик стержневой",
-                  "Оснастка - стержень полости и окна корпуса ВГ-2026.46.01", notes, "Пластик модельный ПУ, Д16Т", wrap=76)
+    notes = ("Модель деревянная, сосна ГОСТ 8486-86, влажность не более 12 %%. Размеры - с усадкой стали %s %%, "
+             "модель больше детали в %s раза." % (ф(T.УСАДКА, 1), ф(kу, 2)),
+             "Формовочные уклоны %s." % T.УКЛОН,
+             "Модель окрасить - поверхности отливки красным, знаки стержней чёрным, линию разъёма и прибыли - по ГОСТ 3.1125-88.",
+             "Прибыли %s × %s × %s - съёмные, на шипах." % tuple(ф(v) for v in (o["прибыль"][1], o["прибыль"][0], o["прибыль"][2])),
+             "Две модели на плите с литниковой системой - по листу ВГ-2026.46.01 ЛФ. Стойкость комплекта - не менее %d съёмов." %
+             (T.программа()["всего"] // 2 + 20),
+             "Неуказанные размеры - по электронной модели отливки со знаками стержней.")
+    return L.save("ВГ-2026_46_01-МД_модель", "ВГ-2026.46.01-МД", "Модель корпуса",
+                  "Оснастка - модель отливки ВГ-2026.46.01 со знаками стержней Ст. 1 и Ст. 2", notes,
+                  "Сосна ГОСТ 8486-86", wrap=86)
+
+
+def ящик_1_лист():
+    L = Лист(1, "A3")
+    kу = 1.0 + T.УСАДКА / 100.0
+    d = (K["d_отв"] - 2 * T.ПРИПУСКИ["отверстие"]) * kу
+    lс = (K["z"][1] - K["низ_z"] + 2 * TW.ЗНАК_СТ1) * kу
+    ст, hs = 25.0, 30.0
+    Lb, Bb = lс + ст, d + 2 * ст
+    # --- план нижней половины (засыпка с открытого торца)
+    L.вид(120.0, 188.0)
+    L.rect(0.0, -Bb / 2, Lb, Bb / 2)
+    L.rect(0.0, -d / 2, lс, d / 2)
+    L.axis((-8.0, 0.0), (Lb + 8.0, 0.0))
+    for x in (ст, Lb - ст):
+        L.circle((x, Bb / 2 - 10.0), 4.0)
+        L.circle((x, -Bb / 2 + 10.0), 4.0)
+        L.cross((x, Bb / 2 - 10.0), 7.0)
+        L.cross((x, -Bb / 2 + 10.0), 7.0)
+    L.dimh(0.0, Lb, -Bb / 2, -Bb / 2 - 26.0)
+    L.dimh(0.0, lс, d / 2, Bb / 2 + 26.0, ф(lс, 1))
+    L.dimv(-Bb / 2, Bb / 2, Lb, Lb + 14.0)
+    L.полка((Lb - ст, Bb / 2 - 14.0), (Lb + 5.0, Bb / 2 + 26.0), "4 штифта ⌀8", 3.0)
+    L.title(Lb / 2, Bb / 2 + 44.0, "Половина нижняя, вид сверху")
+    L.след([(Lb * 0.45, Bb / 2 + 8.0), (Lb * 0.45, -Bb / 2 - 8.0)], "А", (1, 0))
+    # --- А-А
+    L.вид(340.0, 205.0)
+    for sg in (-1.0, 1.0):
+        g = box(-Bb / 2, 0.0, Bb / 2, sg * hs).difference(Point(0.0, 0.0).buffer(d / 2, 128))
+        L.hatch(g, 45.0 if sg > 0 else 135.0, 1.0)
+    L.axis((-Bb / 2 - 6, 0.0), (Bb / 2 + 6, 0.0))
+    L.cross((0.0, 0.0), d / 2 + 6)
+    L.dimh(-d / 2, d / 2, 0.0, hs + 12.0, "⌀%s" % ф(d, 1))
+    L.dimv(-hs, hs, Bb / 2, Bb / 2 + 12.0)
+    L.title(0.0, hs + 24.0, "А-А")
+    notes = ("Ящик деревянный разъёмный по оси стержня, берёза ГОСТ 2695-83. Размеры полости - с усадкой %s %%." % ф(T.УСАДКА, 1),
+             "Стержень Ст. 1 - ХТС, засыпка с торца, уплотнение вибрацией, съём через %d мин." % T.ЛИТЬЁ["смесь"]["съём_мин"],
+             "Рабочие поверхности - Ra 3,2, покрыть лаком. Разделительный состав перед каждой засыпкой.")
+    return L.save("ВГ-2026_46_01-СЯ1_ящик_стержневой", "ВГ-2026.46.01-СЯ1", "Ящик стержневой",
+                  "Оснастка - стержень Ст. 1 литого отверстия корпуса ВГ-2026.46.01", notes, "Берёза ГОСТ 2695-83")
+
+
+def ящик_2_лист():
+    L = Лист(1, "A3")
+    kу = 1.0 + T.УСАДКА / 100.0
+    ст2 = TW.стержень_2().scale(kу)
+    bb = ст2.bounding_box()
+    w = 22.0
+    x0, x1, y0, y1 = bb.min.X - w, bb.max.X + w, bb.min.Y - w, bb.max.Y + w
+    # --- план: полость стержня в ящике, засыпка сверху
+    L.вид(140.0, 200.0 - (y0 + y1) / 2)
+    L.rect(x0, y0, x1, y1)
+    L.линии(hlr([ст2], "сверху")[0])
+    L.line((0.0, y0 - 6), (0.0, y1 + 6), "07_ОСИ")
+    L.dimh(x0, x1, y0, y0 - 14.0)
+    L.dimv(y0, y1, x1, x1 + 28.0)
+    L.dimh(bb.min.X, bb.max.X, bb.max.Y, y1 + 14.0, ф(bb.max.X - bb.min.X, 1))
+    L.след([(x0 - 10.0, (bb.min.Y + bb.max.Y) / 2), (x1 + 10.0, (bb.min.Y + bb.max.Y) / 2)], "А", (0, 1))
+    # --- А-А
+    L.вид(330.0, 205.0)
+    yc = (bb.min.Y + bb.max.Y) / 2
+    g = сечение(ст2, "y", yc, "спереди")
+    корпус_я = box(x0, bb.min.Z - w, x1, bb.max.Z).difference(g)
+    L.hatch(корпус_я, 45.0, 1.0)
+    L.geom(g)
+    L.dimv(bb.min.Z, bb.max.Z, x1, x1 + 12.0, ф(bb.max.Z - bb.min.Z, 1))
+    L.title(0.0, bb.max.Z + 14.0, "А-А")
+    notes = ("Ящик деревянный из двух половин с разъёмом по оси, берёза ГОСТ 2695-83. Размеры полости - с усадкой %s %%." %
+             ф(T.УСАДКА, 1),
+             "Стержень Ст. 2 - ХТС, засыпка сверху, уплотнение вибрацией, съём через %d мин." % T.ЛИТЬЁ["смесь"]["съём_мин"],
+             "Неуказанные размеры полости - по электронной модели стержня. Рабочие поверхности Ra 3,2, покрыть лаком.")
+    return L.save("ВГ-2026_46_01-СЯ2_ящик_стержневой", "ВГ-2026.46.01-СЯ2", "Ящик стержневой",
+                  "Оснастка - стержень Ст. 2 полости рукоятки корпуса ВГ-2026.46.01", notes, "Берёза ГОСТ 2695-83")
+
+
+ЛИСТЫ = [сб, корпус_лист, стержень_лист, запор_лист, платик_лист, шайба_лист, литьё_лист, модель_лист, ящик_1_лист, ящик_2_лист]
+#: листы прежнего узла - удалить вместе с растром и DWG
+УСТАРЕЛИ = ["ВГ-2026_46_01-МП_плита_модельная", "ВГ-2026_46_01-СЯ_ящик_стержневой"]
 
 
 def main():
-    сб()
-    корпус_лист()
-    отливка_лист()
-    плита_лист()
-    ящик_лист()
+    for имя in УСТАРЕЛИ:
+        for p in (os.path.join(OUT, имя + ".dxf"), os.path.join(PNG.OUT, имя + ".png"),
+                  os.path.join(ROOT, "CAD", "DWG", "узел", имя + ".dwg")):
+            if os.path.exists(p):
+                os.remove(p)
+    for f in ЛИСТЫ:
+        f()
 
 
 if __name__ == "__main__":
