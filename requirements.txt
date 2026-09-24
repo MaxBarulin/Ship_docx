@@ -11,4 +11,5 @@ build123d    # 3D узла: CAD/src/twistlock.py → STEP, STL, GLB
 pyshp        # маршрут: реки Natural Earth (import shapefile)
 playwright   # маршрут: снимок Яндекс Карт; нужен установленный Chrome, работает локально
 openpyxl     # приложение Б - экономика книгой Excel с формулами
-python-docx  # пояснительная записка в Word по шаблону команды
+python-docx  # пояснительная записка в Word по шаблону команды, текст выступления
+python-pptx  # презентация для защиты

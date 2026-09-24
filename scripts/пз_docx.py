@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 """Пояснительная записка в Word и PDF по шаблону команды.
 
-    python scripts/пз_docx.py            # → docs/проект/ПЗ/Без границ_ПЗ.docx и .pdf
+    python scripts/пз_docx.py            # → docs/проект/ПЗ/Без границ_ПЗ_(версия 2).docx и .pdf
 
 Шаблон - docs/команда/правки 23.09.26/ПЗ_УЖЦ_2026.docx: титульный лист берётся как есть, оформление - как в
 шаблоне (А4, поля 30/15/20/20, двойная рамка страницы, Times New Roman, полуторный интервал, логотип команды
 внизу по центру, номер страницы справа). Текст - docs/проект/записка.md без шапки для вёрстки. Каждый блок -
 свой раздел с новой страницы, внизу слева номер и наименование блока (приложение к КЗ, п. 8). Содержание - поле
 оглавления, его, номера страниц и PDF делает Word (COM). Без Word - только .docx, оглавление обновится при открытии.
+Чертежи (листы DXF, облик, планы палуб, теоретический чертёж, страницы дорожной карты) - на альбомных страницах
+(для чертежей формат любой, приложение к КЗ, п. 1): лист А1 - на А3, узкие растры - на А4 по их натуральному размеру.
 """
 import copy, io, os, re, subprocess, sys, tempfile
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -25,8 +27,9 @@ from PIL import Image
 ЗАПИСКА = os.path.join(ROOT, "docs", "проект", "записка.md")
 КОМАНДА = "Без границ"
 OUT_DIR = os.path.join(ROOT, "docs", "проект", "ПЗ")
-DOCX = os.path.join(OUT_DIR, "%s_ПЗ.docx" % КОМАНДА)
-PDF = os.path.join(OUT_DIR, "%s_ПЗ.pdf" % КОМАНДА)
+ИМЯ = "%s_ПЗ_(версия 2)" % КОМАНДА
+DOCX = os.path.join(OUT_DIR, ИМЯ + ".docx")
+PDF = os.path.join(OUT_DIR, ИМЯ + ".pdf")
 ШРИФТ = "Times New Roman"
 КЕГЛЬ = 12
 ИНТЕРВАЛ = 1.5
@@ -135,34 +138,27 @@ def _поле(par, код, текст="1", size=None):
 
 
 # --- колонтитул ------------------------------------------------------------------------------------
-def _без_рамок(tbl):
-    tblPr = tbl._tbl.tblPr
-    b = OxmlElement("w:tblBorders")
-    for края in ("top", "left", "bottom", "right", "insideH", "insideV"):
-        e = OxmlElement("w:%s" % края); e.set(qn("w:val"), "nil"); b.append(e)
-    tblPr.append(b)
+def _ptab(par, выравнивание):
+    """Позиционная табуляция Word от полей страницы - центр и правый край берутся по формату листа раздела."""
+    run = par.add_run()
+    t = OxmlElement("w:ptab")
+    t.set(qn("w:relativeTo"), "margin"); t.set(qn("w:alignment"), выравнивание); t.set(qn("w:leader"), "none")
+    run._r.append(t)
 
 
 def колонтитул(footer, слева, логотип):
-    """Внизу страницы: слева номер и наименование блока, по центру логотип команды, справа номер страницы."""
+    """Внизу страницы одной строкой: слева номер и наименование блока, по центру логотип команды, справа номер
+    страницы. Позиции - от полей листа, поэтому один колонтитул годится и книжным, и альбомным страницам."""
     el = footer._element
     for ch in list(el):
         el.remove(ch)
-    tbl = footer.add_table(rows=1, cols=3, width=Mm(ШИРИНА_МАКС))
-    _без_рамок(tbl)
-    for c, w in zip(tbl.rows[0].cells, (Mm(78), Mm(40), Mm(47))):
-        c.width = w
-    c0, c1, c2 = tbl.rows[0].cells
-    p = c0.paragraphs[0]; p.style = "ПЗ Таблица"
+    p = footer.add_paragraph(style="ПЗ Таблица")
+    p.paragraph_format.space_after = Pt(0)
     run = p.add_run(слева); _шрифт(run, 11)
-    p = c1.paragraphs[0]; p.style = "ПЗ Таблица"; p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    _ptab(p, "center")
     p.add_run().add_picture(логотип, height=Mm(14))
-    p = c2.paragraphs[0]; p.style = "ПЗ Таблица"; p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    _ptab(p, "right")
     _поле(p, "PAGE", "1", 12)
-    for c in (c0, c1, c2):
-        tcPr = c._tc.get_or_add_tcPr()
-        va = OxmlElement("w:vAlign"); va.set(qn("w:val"), "bottom"); tcPr.append(va)
-    footer.add_paragraph().paragraph_format.space_after = Pt(0)
 
 
 # --- разметка --------------------------------------------------------------------------------------
@@ -179,11 +175,19 @@ def _текст(par, s, size=None, bold=False):
             _шрифт(run, size, bold or ж)
 
 
-def _растр(путь, tmp):
-    """Растр для документа - длинная сторона не больше ПИКС_МАКС, фото - JPEG, схемы и чертежи - PNG."""
+def _растр(путь, tmp, пикс=None, кайма=False):
+    """Растр для документа - длинная сторона не больше ПИКС_МАКС, фото - JPEG, схемы и чертежи - PNG.
+    кайма - срезать белые поля по краям (у страниц MS Project и листов) с отступом 1 %%, содержимое не меняется."""
     im = Image.open(путь)
+    if кайма:
+        серый = im.convert("L").point(lambda v: 255 if v < 240 else 0)
+        рамка = серый.getbbox()
+        if рамка:
+            отступ = int(0.01 * max(im.size))
+            x0, y0, x1, y1 = рамка
+            im = im.crop((max(0, x0 - отступ), max(0, y0 - отступ), min(im.size[0], x1 + отступ), min(im.size[1], y1 + отступ)))
     w, h = im.size
-    k = min(1.0, ПИКС_МАКС / float(max(w, h)))
+    k = min(1.0, (пикс or ПИКС_МАКС) / float(max(w, h)))
     имя = os.path.join(tmp, "%04d%s" % (len(os.listdir(tmp)), os.path.splitext(путь)[1].lower()))
     if k < 1.0:
         im = im.resize((int(w * k), int(h * k)), Image.LANCZOS)
@@ -197,11 +201,11 @@ def _растр(путь, tmp):
     return имя, im.size
 
 
-def _рисунок(d, путь, tmp):
-    файл, (w, h) = _растр(путь, tmp)
-    ширина = ШИРИНА_МАКС
-    if ширина * h / float(w) > ВЫСОТА_МАКС:
-        ширина = ВЫСОТА_МАКС * w / float(h)
+def _рисунок(d, путь, tmp, поле=(ШИРИНА_МАКС, ВЫСОТА_МАКС), пикс=None, кайма=False):
+    файл, (w, h) = _растр(путь, tmp, пикс, кайма)
+    ширина = поле[0]
+    if ширина * h / float(w) > поле[1]:
+        ширина = поле[1] * w / float(h)
     p = d.add_paragraph(style="ПЗ Рисунок")
     p.add_run().add_picture(файл, width=Mm(ширина))
 
@@ -287,15 +291,42 @@ def _раздел(d, левый_текст, логотип, первый=False):
     pb = sp.find(qn("w:pgBorders"))
     if pb is not None and pb.get(qn("w:display")):
         del pb.attrib[qn("w:display")]
+    _лист(s, "A4", False)
     s.footer.is_linked_to_previous = False
     колонтитул(s.footer, левый_текст, логотип)
     return s
 
 
+#: чертежи - на альбомных листах: (признак пути, формат). Лист А1 из DXF - на А3, растры 200 dpi - на А4.
+ЧЕРТЕЖИ = (("чертежи_dxf/", "A3"), ("облик/1_", "A4"), ("облик/2_", "A4"), ("облик/3_", "A4"), ("планы/2_", "A4"),
+           ("планы/3_", "A4"), ("планы/4_", "A4"), ("расчёты/01_теоретический", "A4"), ("02а_дорожная_карта", "A4"))
+ФОРМАТЫ = {"A4": (210.0, 297.0), "A3": (297.0, 420.0)}
+
+
+def _лист(s, формат, альбом):
+    from docx.enum.section import WD_ORIENT
+    a, b = ФОРМАТЫ[формат]
+    s.orientation = WD_ORIENT.LANDSCAPE if альбом else WD_ORIENT.PORTRAIT
+    s.page_width, s.page_height = (Mm(b), Mm(a)) if альбом else (Mm(a), Mm(b))
+
+
+def _поле_набора(формат, альбом):
+    a, b = ФОРМАТЫ[формат]
+    w, h = (b, a) if альбом else (a, b)
+    return w - 30.0 - 15.0, h - 20.0 - 20.0 - 22.0      # поля шаблона, место под колонтитул и подпись
+
+
+def _смена_листа(d, формат, альбом):
+    """Продолжение блока на листе другого формата: новый раздел, колонтитул - тот же (связан с предыдущим)."""
+    s = d.add_section(WD_SECTION.NEW_PAGE)
+    _лист(s, формат, альбом)
+    return s
+
+
 def разобрать(текст):
-    """Строки записки после шапки: блоки начинаются с «## N» и «## Приложение»."""
+    """Строки записки после шапки: введение, блоки «## N» и «## Приложение»."""
     строки = текст.split("\n")
-    i0 = next(i for i, s in enumerate(строки) if re.match(r"^## 1 ", s))
+    i0 = next(i for i, s in enumerate(строки) if re.match(r"^## (Введение|1 )", s))
     return строки[i0:]
 
 
@@ -326,8 +357,12 @@ def собрать():
     строки = разобрать(io.open(ЗАПИСКА, encoding="utf-8").read())
     i = 0
     таблица_буфер = []
+    лист = None                           # формат альбомного листа, на котором сейчас идёт набор
     while i < len(строки):
         s = строки[i].rstrip()
+        if лист and s.strip() and not re.match(r"^(!\[|Рисунок [\dА-Я]|## )", s):
+            _смена_листа(d, "A4", False)         # после чертежей - снова книжный А4
+            лист = None
         if s.startswith("|"):
             таблица_буфер.append(s)
             i += 1
@@ -343,9 +378,14 @@ def собрать():
         if m:
             ур, заг = len(m.group(1)), m.group(2).strip()
             if ур == 2:
+                лист = None
                 прил = re.match(r"^Приложение ([А-Я])\. (.+)$", заг)
                 _раздел(d, (заг if прил else re.sub(r"^(\d+) ", r"\1. ", заг)), логотип)
-                if прил:
+                if заг == "Введение":
+                    h = d.add_paragraph(заг, style="Heading 1")
+                    h.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    h.paragraph_format.first_line_indent = Cm(0)
+                elif прил:
                     h = d.add_paragraph(style="Heading 1")
                     h.alignment = WD_ALIGN_PARAGRAPH.CENTER
                     h.paragraph_format.first_line_indent = Cm(0)
@@ -366,7 +406,17 @@ def собрать():
         m = re.match(r"^!\[[^\]]*\]\(([^)]+)\)", s)
         if m:
             путь = os.path.normpath(os.path.join(os.path.dirname(ЗАПИСКА), m.group(1)))
-            _рисунок(d, путь, tmp)
+            формат = next((ф for признак, ф in ЧЕРТЕЖИ if признак in m.group(1)), None)
+            if формат:
+                if лист != формат:
+                    _смена_листа(d, формат, True)
+                    лист = формат
+                _рисунок(d, путь, tmp, _поле_набора(формат, True), 5000 if формат == "A3" else 3000, кайма=True)
+            else:
+                if лист:
+                    _смена_листа(d, "A4", False)
+                    лист = None
+                _рисунок(d, путь, tmp)
             continue
         if re.match(r"^Рисунок [\dА-Я]", s):
             d.add_paragraph(s, style="ПЗ Подпись рисунка")
