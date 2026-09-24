@@ -285,6 +285,10 @@ def собрать():
            8.8, 1.45, 4.1, 5.2)
     _заметки(s, текст[4][2])
 
+    cp = prs.core_properties                   # иначе в свойствах «generated using python-pptx» и автор библиотеки
+    cp.author = cp.last_modified_by = "Без границ"
+    cp.title, cp.comments, cp.subject, cp.keywords = "Волжский Горизонт", "", "", ""
+    cp.revision = 1
     prs.save(PPTX)
     return текст
 
@@ -307,14 +311,17 @@ def текст_docx(текст):
         d.add_paragraph().add_run("Слайд %d. %s, около %s" % (i, заг, время)).bold = True
         for a in абзацы:
             d.add_paragraph(a)
+    cp = d.core_properties
+    cp.author = cp.last_modified_by = "Без границ"
+    cp.title, cp.comments = "Текст выступления", ""
     d.save(ТЕКСТ)
     return слов
 
 
 def powerpoint(кадры=None):
-    """PowerPoint: PDF и, если задана папка, кадры слайдов 1600 × 900 для проверки глазами."""
+    """PowerPoint: пересохранить pptx, PDF и, если задана папка, кадры слайдов 1600 × 900 для проверки глазами."""
     ps = ("$ErrorActionPreference='Stop'; $pp = New-Object -ComObject PowerPoint.Application; "
-          "$p = $pp.Presentations.Open('%s', $true, $false, $false); $p.SaveAs('%s', 32); " % (PPTX.replace("'", "''"), PDF.replace("'", "''")))
+          "$p = $pp.Presentations.Open('%s', $false, $false, $false); $p.Save(); $p.SaveAs('%s', 32); " % (PPTX.replace("'", "''"), PDF.replace("'", "''")))
     if кадры:
         ps += ("for ($i = 1; $i -le $p.Slides.Count; $i++) { $p.Slides.Item($i).Export(('%s\\' + $i + '.png'), 'PNG', 1600, 900) }; "
                % кадры.replace("'", "''"))

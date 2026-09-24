@@ -34,7 +34,26 @@ CFG = Configuration(color_policy=ColorPolicy.COLOR, background_policy=Background
           7: (0, 0, 0), 8: (90, 90, 90), 9: (120, 120, 120), 30: (190, 90, 0), 252: (110, 110, 110)}
 
 
-def растр(dxf, png):
+#: Масштабы и ширины форматов, в которых листы нарисованы в DXF (лист в пространстве модели в масштабе чертежа)
+МАСШТАБЫ = (1, 2, 2.5, 4, 5, 10, 15, 20, 25, 40, 50, 75, 100, 150, 200, 250, 400, 500)
+ШИРИНЫ_ФОРМАТОВ = (1189, 841, 594, 420, 297, 210)
+
+
+def масштаб_листа(w):
+    """Масштаб листа: ширина по DXF / ширина формата - ближайший стандартный, при равенстве - меньший."""
+    лучший = None
+    for F in ШИРИНЫ_ФОРМАТОВ:
+        k = w / F
+        n = min(МАСШТАБЫ, key=lambda s: abs(k / s - 1.0))
+        err = abs(k / n - 1.0)
+        if лучший is None or err < лучший[0] - 1e-4 or (abs(err - лучший[0]) <= 1e-4 and n < лучший[1]):
+            лучший = (err, n)
+    return лучший[1]
+
+
+def _фигура(dxf, натуральная=False):
+    """Лист DXF на фигуре matplotlib. натуральная - размер фигуры равен формату листа (для PDF), иначе -
+    ДЛИННАЯ_СТОРОНА_PX по длинной стороне (для растра)."""
     doc = ezdxf.readfile(dxf)
     for layer in doc.layers:
         if layer.color in ТЁМНЫЕ:
@@ -43,14 +62,38 @@ def растр(dxf, png):
     ext = _bb.extents(msp)
     (x0, y0, _), (x1, y1, _) = ext.extmin, ext.extmax
     w, h = x1 - x0, y1 - y0
-    fig_w = ДЛИННАЯ_СТОРОНА_PX / DPI * (1.0 if w >= h else w / h)
-    fig_h = fig_w * h / w
+    if натуральная:
+        n = масштаб_листа(w)
+        fig_w, fig_h = w / n / 25.4, h / n / 25.4
+    else:
+        fig_w = ДЛИННАЯ_СТОРОНА_PX / DPI * (1.0 if w >= h else w / h)
+        fig_h = fig_w * h / w
     fig = plt.figure(figsize=(fig_w, fig_h), dpi=DPI)
     ax = fig.add_axes([0, 0, 1, 1])
     ax.set_facecolor("white")
     Frontend(RenderContext(doc), MatplotlibBackend(ax, adjust_figure=False), config=CFG).draw_layout(msp, finalize=True)
     ax.set_xlim(x0, x1)
     ax.set_ylim(y0, y1)
+    return fig, fig_w, fig_h
+
+
+def в_pdf(dxfs, путь, автор=None):
+    """Листы DXF в один векторный PDF, каждый лист - страница в натуральную величину формата.
+    В свойствах файла - название и автор, без Creator и Producer программы."""
+    from matplotlib.backends.backend_pdf import PdfPages
+    tmp = os.path.join(os.path.dirname(путь), "_tmp_листы.pdf")
+    meta = {"Title": os.path.splitext(os.path.basename(путь))[0], "Author": автор, "Creator": None, "Producer": None}
+    with PdfPages(tmp, metadata=meta) as pp:
+        for dxf in dxfs:
+            fig, _, _ = _фигура(dxf, натуральная=True)
+            pp.savefig(fig, facecolor="white")
+            plt.close(fig)
+    os.replace(tmp, путь)
+    return путь
+
+
+def растр(dxf, png):
+    fig, fig_w, fig_h = _фигура(dxf)
     # Windows иногда отвечает EINVAL на запись большого PNG по кириллическому пути (индексатор держит файл):
     # пишем во временный ASCII-файл рядом и переименовываем, с повтором
     tmp = os.path.join(os.path.dirname(png), "_tmp_render.png")

@@ -407,6 +407,8 @@ def main():
     for ws in wb.worksheets:
         ws.column_dimensions["A"].width = max(ws.column_dimensions["A"].width or 10, 8)
         ws.sheet_view.zoomScale = 90
+    wb.properties.creator = wb.properties.lastModifiedBy = "Без границ"     # иначе в свойствах файла «openpyxl»
+    wb.properties.title = "Приложение Б. Экономика судна «Волжский Горизонт»"
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     tmp = OUT + ".tmp.xlsx"
     wb.save(tmp)
