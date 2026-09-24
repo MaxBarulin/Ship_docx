@@ -10,3 +10,4 @@ pypdfium2    # страницы дорожной карты MS Project в PNG
 build123d    # 3D узла: CAD/src/twistlock.py → STEP, STL, GLB
 pyshp        # маршрут: реки Natural Earth (import shapefile)
 playwright   # маршрут: снимок Яндекс Карт; нужен установленный Chrome, работает локально
+openpyxl     # приложение Б - экономика книгой Excel с формулами
